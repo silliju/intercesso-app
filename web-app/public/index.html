@@ -532,65 +532,6 @@ textarea.form-input { resize: none; }
   </div>
 </div>
 
-<!-- ====================================================  기도 상세  ==================================================== -->
-<div class="page" id="page-prayer-detail">
-  <div class="app-bar">
-    <button class="app-bar-back" onclick="goBack()">‹</button>
-    <div class="app-bar-title">기도 상세</div>
-    <div id="prayer-detail-actions" style="display:flex;gap:4px;"></div>
-  </div>
-  <div class="scroll-body" id="prayer-detail-body" style="padding:16px;padding-bottom:80px;"></div>
-  <!-- 댓글 입력창 -->
-  <div style="background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:center;">
-    <input class="form-input" id="comment-input" type="text" placeholder="격려 메시지를 남겨보세요..." style="flex:1;padding:10px 14px;border-radius:50px;">
-    <button onclick="submitComment()" style="background:var(--primary);border:none;border-radius:50%;width:40px;height:40px;font-size:18px;cursor:pointer;flex-shrink:0;">➤</button>
-  </div>
-</div>
-
-<!-- ====================================================  기도 수정  ==================================================== -->
-<div class="page" id="page-prayer-edit">
-  <div class="app-bar">
-    <button class="app-bar-back" onclick="goBack()">‹</button>
-    <div class="app-bar-title">기도 수정</div>
-    <button onclick="submitPrayerEdit()" id="prayer-edit-save-btn" style="background:none;border:none;color:var(--primary);font-weight:700;font-size:15px;cursor:pointer;padding:4px 8px;">저장</button>
-  </div>
-  <div class="scroll-body" style="padding:16px;">
-    <div class="card" style="padding:20px;">
-      <div class="form-group" style="margin-bottom:20px;">
-        <label class="form-label">제목 *</label>
-        <input class="form-input" id="pe-title" type="text" placeholder="기도 제목을 입력하세요">
-      </div>
-      <div class="form-group" style="margin-bottom:20px;">
-        <label class="form-label">내용 *</label>
-        <textarea class="form-input" id="pe-content" placeholder="기도 내용을 자세히 적어주세요" rows="6"></textarea>
-      </div>
-      <div class="form-group" style="margin-bottom:20px;">
-        <label class="form-label">카테고리</label>
-        <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;" id="pe-category-wrap">
-          <button class="filter-chip" data-cat="건강" onclick="selectEditCategory(this,'건강')">💊 건강</button>
-          <button class="filter-chip" data-cat="가정" onclick="selectEditCategory(this,'가정')">🏠 가정</button>
-          <button class="filter-chip" data-cat="진로" onclick="selectEditCategory(this,'진로')">🎯 진로</button>
-          <button class="filter-chip" data-cat="영적" onclick="selectEditCategory(this,'영적')">✝️ 영적</button>
-          <button class="filter-chip" data-cat="사업" onclick="selectEditCategory(this,'사업')">💼 사업</button>
-          <button class="filter-chip active" data-cat="기타" onclick="selectEditCategory(this,'기타')">🙏 기타</button>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">공개 범위</label>
-        <select class="form-input" id="pe-scope">
-          <option value="public">🌐 전체 공개</option>
-          <option value="friends">👥 지인 공개</option>
-          <option value="community">⛪ 공동체</option>
-          <option value="private">🔒 비공개</option>
-        </select>
-      </div>
-    </div>
-    <div style="height:16px;"></div>
-    <button class="btn btn-primary" onclick="submitPrayerEdit()">수정 완료 ✏️</button>
-    <div style="height:40px;"></div>
-  </div>
-</div>
-
 <!-- ====================================================  알림  ==================================================== -->
 <div class="page" id="page-notifications">
   <div class="app-bar">
@@ -740,6 +681,84 @@ textarea.form-input { resize: none; }
   </div>
 </div>
 
+<!-- ====================================================  기도 상세  ==================================================== -->
+<div class="page" id="page-prayer-detail">
+  <div class="app-bar">
+    <button class="app-bar-back" onclick="goBack()">‹</button>
+    <div class="app-bar-title">기도 상세</div>
+    <div id="pd-owner-actions" style="display:none;display:flex;gap:4px;">
+      <button class="app-bar-action" onclick="pdChangeStatus()" title="상태변경">🔄</button>
+      <button class="app-bar-action" onclick="pdEdit()" title="수정">✏️</button>
+      <button class="app-bar-action" onclick="pdDelete()" title="삭제" style="color:var(--danger);">🗑️</button>
+    </div>
+  </div>
+  <div class="scroll-body" id="pd-body" style="padding-bottom:80px;">
+    <div class="loading-state"><div class="spinner"></div></div>
+  </div>
+  <!-- 댓글 입력창 -->
+  <div style="background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:flex;gap:8px;align-items:center;">
+    <input class="form-input" id="pd-comment-input" type="text" placeholder="격려 메시지를 남겨보세요..." style="flex:1;border-radius:24px;padding:10px 16px;">
+    <button onclick="pdSubmitComment()" style="background:var(--primary);border:none;border-radius:50%;width:40px;height:40px;color:#fff;font-size:18px;cursor:pointer;flex-shrink:0;">➤</button>
+  </div>
+</div>
+
+<!-- ====================================================  기도 수정  ==================================================== -->
+<div class="page" id="page-prayer-edit">
+  <div class="app-bar">
+    <button class="app-bar-back" onclick="goBack()">‹</button>
+    <div class="app-bar-title">기도 수정</div>
+    <button class="app-bar-action" onclick="peSubmit()" style="color:var(--primary);font-weight:700;font-size:15px;">저장</button>
+  </div>
+  <div class="scroll-body" style="padding:16px 20px 40px;">
+    <div class="form-group" style="margin-bottom:20px;">
+      <label class="form-label">제목 *</label>
+      <input class="form-input" id="pe-title" type="text" placeholder="기도 제목을 입력하세요">
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label class="form-label">내용 *</label>
+      <textarea class="form-input" id="pe-content" placeholder="기도 내용을 자세히 적어주세요" rows="6" style="resize:none;"></textarea>
+    </div>
+    <div class="form-group" style="margin-bottom:20px;">
+      <label class="form-label">카테고리</label>
+      <div id="pe-category-chips" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;">
+        <button class="filter-chip" onclick="peSelectCategory(this,'건강')">💊 건강</button>
+        <button class="filter-chip" onclick="peSelectCategory(this,'가정')">🏠 가정</button>
+        <button class="filter-chip" onclick="peSelectCategory(this,'진로')">🎯 진로</button>
+        <button class="filter-chip" onclick="peSelectCategory(this,'영적')">✝️ 영적</button>
+        <button class="filter-chip" onclick="peSelectCategory(this,'사업')">💼 사업</button>
+        <button class="filter-chip active" onclick="peSelectCategory(this,'기타')">🙏 기타</button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:28px;">
+      <label class="form-label">공개 범위</label>
+      <select class="form-input" id="pe-scope" style="margin-top:4px;">
+        <option value="public">🌐 전체 공개</option>
+        <option value="friends">👥 지인 공개</option>
+        <option value="community">⛪ 공동체</option>
+        <option value="private">🔒 비공개</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" onclick="peSubmit()">수정 완료 ✏️</button>
+  </div>
+</div>
+
+<!-- ====================================================  내 기도 목록  ==================================================== -->
+<div class="page" id="page-my-prayers">
+  <div class="app-bar">
+    <button class="app-bar-back" onclick="goBack()">‹</button>
+    <div class="app-bar-title">내 기도 목록</div>
+    <button class="app-bar-action" onclick="goPage('prayer-create')">➕</button>
+  </div>
+  <!-- 상태 필터 -->
+  <div class="filter-bar" style="padding:10px 0;">
+    <button class="filter-chip active" onclick="myPrayerFilter(this,'all')" style="margin-left:12px;">전체</button>
+    <button class="filter-chip" onclick="myPrayerFilter(this,'praying')">🙏 기도중</button>
+    <button class="filter-chip" onclick="myPrayerFilter(this,'answered')">✅ 응답받음</button>
+    <button class="filter-chip" onclick="myPrayerFilter(this,'grateful')" style="margin-right:12px;">🙌 감사</button>
+  </div>
+  <div class="scroll-body" id="my-prayers-list" style="padding-top:8px;padding-bottom:80px;"></div>
+</div>
+
 <!-- ====================================================  토스트  ==================================================== -->
 <div id="toast"></div>
 
@@ -832,6 +851,7 @@ function goPage(id) {
   // 페이지별 데이터 로드
   if (id === 'dashboard') loadDashboard();
   if (id === 'notifications') loadNotifications();
+  if (id === 'my-prayers') loadMyPrayers();
 
   // FAB 표시 제어
   const fabPages = ['home', 'prayers', 'intercession'];
@@ -1260,6 +1280,259 @@ async function submitGroup() {
 }
 
 /* ============================================================
+   기도 상세 (prayer-detail)
+============================================================ */
+let _currentPrayerId = null;
+let _currentPrayer = null;
+
+async function openPrayerDetail(prayerId) {
+  _currentPrayerId = prayerId;
+  _currentPrayer = null;
+  goPage('prayer-detail');
+  const body = document.getElementById('pd-body');
+  body.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  document.getElementById('pd-owner-actions').style.display = 'none';
+
+  const res = await api('GET', `/prayers/${prayerId}`);
+  if (!res.success || !res.data) {
+    body.innerHTML = '<div class="empty-state"><div class="empty-emoji">😔</div><div class="empty-title">기도를 찾을 수 없어요</div></div>';
+    return;
+  }
+  _currentPrayer = res.data;
+  const p = res.data;
+  const isOwner = currentUser && p.user_id === currentUser.id;
+
+  if (isOwner) document.getElementById('pd-owner-actions').style.display = 'flex';
+
+  const statusMap = {
+    praying:  { label:'🙏 기도중',   color:'var(--primary)',  bg:'var(--primary-light)' },
+    answered: { label:'✅ 응답받음', color:'#10B981',          bg:'#ECFDF5' },
+    grateful: { label:'🙌 감사',     color:'#F59E0B',          bg:'#FFF7ED' },
+  };
+  const st = statusMap[p.status] || statusMap.praying;
+  const scopeMap = { public:'🌐 전체', friends:'👥 지인', community:'⛪ 공동체', private:'🔒 비공개' };
+  const catEmoji = { '건강':'💊','가정':'🏠','진로':'🎯','영적':'✝️','사업':'💼' };
+
+  const comments = (p.comments || []).map(c => `
+    <div style="display:flex;gap:10px;padding:12px;background:var(--surface);border-radius:12px;margin-bottom:8px;border:1px solid var(--border);">
+      <div class="prayer-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">${c.user?.nickname?.[0] || '?'}</div>
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);">${c.user?.nickname || '익명'}</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-top:3px;line-height:1.5;">${c.content}</div>
+      </div>
+    </div>`).join('');
+
+  body.innerHTML = `
+    <div style="padding:16px;">
+      <!-- 기도 카드 -->
+      <div class="card" style="padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+          <div class="prayer-avatar">${p.user?.profile_image_url ? `<img src="${p.user.profile_image_url}">` : (p.user?.nickname?.[0] || '?')}</div>
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:700;">${p.user?.nickname || '익명'}</div>
+            ${p.user?.church_name ? `<div style="font-size:12px;color:var(--text-sub);">${p.user.church_name}</div>` : ''}
+          </div>
+          <div style="background:${st.bg};color:${st.color};font-size:12px;font-weight:700;padding:5px 12px;border-radius:50%;cursor:${isOwner?'pointer':'default'};"
+               onclick="${isOwner ? 'pdChangeStatus()' : ''}">${st.label}</div>
+        </div>
+        <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:10px;">${p.title}</div>
+        <div style="font-size:15px;color:var(--text-sub);line-height:1.7;margin-bottom:16px;">${p.content}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${p.category ? `<span class="tag tag-category">${catEmoji[p.category]||'🙏'} ${p.category}</span>` : ''}
+          <span class="tag" style="background:#f1f5f9;color:var(--text-sub);">${scopeMap[p.scope]||'🌐 전체'}</span>
+        </div>
+      </div>
+      <!-- 함께 기도 버튼 -->
+      <button id="pd-pray-btn" onclick="pdToggleParticipation()"
+        style="width:100%;padding:14px;border-radius:50px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:20px;
+               background:${p.is_participated ? 'var(--primary-light)' : 'var(--primary)'};
+               color:${p.is_participated ? 'var(--primary)' : '#fff'};">
+        ${p.is_participated ? `함께 기도했습니다 🙏 (${p.prayer_count||0})` : `🙏 함께 기도하기 (${p.prayer_count||0})`}
+      </button>
+      <!-- 댓글 -->
+      <div style="font-size:16px;font-weight:700;margin-bottom:12px;">댓글 <span style="color:var(--primary);">${(p.comments||[]).length}</span></div>
+      <div id="pd-comments">
+        ${comments || '<div style="text-align:center;padding:20px;color:var(--text-sub);font-size:14px;">첫 번째 댓글을 남겨보세요 💬</div>'}
+      </div>
+    </div>`;
+}
+
+async function pdToggleParticipation() {
+  if (!token) { showToast('로그인이 필요합니다'); return; }
+  if (!_currentPrayerId) return;
+  const btn = document.getElementById('pd-pray-btn');
+  btn.disabled = true; btn.textContent = '처리 중...';
+  const isParticipated = _currentPrayer?.is_participated;
+  const res = isParticipated
+    ? await api('DELETE', `/prayers/${_currentPrayerId}/participate`)
+    : await api('POST',   `/prayers/${_currentPrayerId}/participate`);
+  if (res.success) {
+    showToast(isParticipated ? '기도 참여가 취소되었습니다' : '함께 기도했습니다 🙏');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '오류가 발생했습니다');
+    btn.disabled = false;
+  }
+}
+
+async function pdSubmitComment() {
+  if (!token) { showToast('로그인이 필요합니다'); return; }
+  const input = document.getElementById('pd-comment-input');
+  const content = input.value.trim();
+  if (!content) return;
+  const res = await api('POST', `/prayers/${_currentPrayerId}/comments`, { content });
+  if (res.success) {
+    input.value = '';
+    showToast('댓글이 등록되었습니다 💬');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '댓글 등록 실패');
+  }
+}
+
+function pdChangeStatus() {
+  if (!_currentPrayerId) return;
+  const statuses = [
+    { value:'praying',  label:'🙏 기도중' },
+    { value:'answered', label:'✅ 응답받음' },
+    { value:'grateful', label:'🙌 감사' },
+  ];
+  // 바텀시트 스타일 모달
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9000;display:flex;align-items:flex-end;';
+  const sheet = document.createElement('div');
+  sheet.style.cssText = 'width:100%;max-width:430px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;padding:16px 0 32px;';
+  sheet.innerHTML = `
+    <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px;"></div>
+    <div style="font-size:16px;font-weight:700;text-align:center;padding:0 20px 12px;">기도 상태 변경</div>
+    ${statuses.map(s => `
+      <div onclick="pdUpdateStatus('${s.value}',this.closest('.overlay-root'))"
+        style="padding:16px 24px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:15px;font-weight:600;border-bottom:1px solid var(--border);">
+        <span>${s.label}</span>
+        ${_currentPrayer?.status === s.value ? '<span style="color:var(--primary);">✓</span>' : ''}
+      </div>`).join('')}
+    <div style="padding:16px 20px 0;">
+      <button onclick="this.closest('.overlay-root').remove()" class="btn btn-outline">취소</button>
+    </div>`;
+  overlay.classList.add('overlay-root');
+  overlay.appendChild(sheet);
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+async function pdUpdateStatus(status, overlayEl) {
+  if (overlayEl) overlayEl.remove();
+  const res = await api('PUT', `/prayers/${_currentPrayerId}`, { status });
+  if (res.success) {
+    const labels = { praying:'기도중', answered:'응답받음 🎉', grateful:'감사 🙌' };
+    showToast(`"${labels[status]}"으로 변경되었습니다`);
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '상태 변경 실패');
+  }
+}
+
+function pdEdit() {
+  if (!_currentPrayer) return;
+  const p = _currentPrayer;
+  document.getElementById('pe-title').value = p.title || '';
+  document.getElementById('pe-content').value = p.content || '';
+  document.getElementById('pe-scope').value = p.scope || 'public';
+  // 카테고리 칩 선택
+  document.querySelectorAll('#pe-category-chips .filter-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.textContent.includes(p.category || '기타'));
+  });
+  window._peCategory = p.category || '기타';
+  goPage('prayer-edit');
+}
+
+function pdDelete() {
+  if (!_currentPrayer) return;
+  const prayerCount = _currentPrayer.prayer_count || 0;
+  const warning = prayerCount > 0
+    ? `\n⚠️ ${prayerCount}명이 함께 기도하고 있습니다.` : '';
+  if (confirm(`이 기도를 삭제하시겠습니까?${warning}`)) {
+    pdConfirmDelete();
+  }
+}
+
+async function pdConfirmDelete() {
+  const res = await api('DELETE', `/prayers/${_currentPrayerId}`);
+  if (res.success) {
+    showToast('기도가 삭제되었습니다');
+    goBack();
+    // 목록 새로고침
+    setTimeout(() => { loadPrayers(); loadHome(); }, 300);
+  } else {
+    showToast(res.message || '삭제에 실패했습니다');
+  }
+}
+
+/* ============================================================
+   기도 수정 (prayer-edit)
+============================================================ */
+window._peCategory = '기타';
+
+function peSelectCategory(el, cat) {
+  document.querySelectorAll('#pe-category-chips .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  window._peCategory = cat;
+}
+
+async function peSubmit() {
+  const title = document.getElementById('pe-title').value.trim();
+  const content = document.getElementById('pe-content').value.trim();
+  const scope = document.getElementById('pe-scope').value;
+  if (!title) { showToast('제목을 입력해주세요'); return; }
+  if (!content) { showToast('내용을 입력해주세요'); return; }
+
+  const res = await api('PUT', `/prayers/${_currentPrayerId}`, {
+    title, content,
+    category: window._peCategory,
+    scope
+  });
+  if (res.success) {
+    showToast('기도가 수정되었습니다 ✏️');
+    goBack();
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '수정에 실패했습니다');
+  }
+}
+
+/* ============================================================
+   내 기도 목록 (my-prayers)
+============================================================ */
+let _myPrayerStatus = 'all';
+
+async function loadMyPrayers() {
+  const list = document.getElementById('my-prayers-list');
+  list.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+  let url = `/prayers?scope=mine&limit=30`;
+  if (_myPrayerStatus !== 'all') url += `&status=${_myPrayerStatus}`;
+  const res = await api('GET', url);
+  const prayers = res.data?.prayers || res.data?.data || [];
+  if (prayers.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-emoji">🙏</div>
+        <div class="empty-title">기도가 없어요</div>
+        <div class="empty-sub">첫 번째 기도를 작성해보세요</div>
+        <button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;padding:10px 24px;" onclick="goPage('prayer-create')">기도 작성하기</button>
+      </div>`;
+  } else {
+    list.innerHTML = prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:40px;"></div>';
+  }
+}
+
+function myPrayerFilter(el, status) {
+  document.querySelectorAll('#page-my-prayers .filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  _myPrayerStatus = status;
+  loadMyPrayers();
+}
+
+/* ============================================================
    상세 통계 (대시보드)
 ============================================================ */
 async function loadDashboard() {
@@ -1448,261 +1721,14 @@ async function submitPrayer() {
   }
 }
 
-/* ============================================================
-   기도 상세보기
-============================================================ */
-let currentPrayerId = null;
-
-async function openPrayerDetail(prayerId) {
-  currentPrayerId = prayerId;
-  goPage('prayer-detail');
-  const body = document.getElementById('prayer-detail-body');
-  const actions = document.getElementById('prayer-detail-actions');
-  body.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  actions.innerHTML = '';
-
-  const res = await api('GET', `/prayers/${prayerId}`);
-  if (!res.success || !res.data) {
-    body.innerHTML = '<div class="empty-state"><div class="empty-emoji">😔</div><div class="empty-title">기도를 불러올 수 없어요</div></div>';
-    return;
-  }
-  const p = res.data;
-  const isOwner = currentUser && p.user_id === currentUser.id;
-
-  // 상단 액션 버튼 (내 기도만)
-  if (isOwner) {
-    actions.innerHTML = `
-      <button onclick="openStatusChange('${prayerId}')" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px;" title="상태변경">🔄</button>
-      <button onclick="openPrayerEdit('${prayerId}')" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px;" title="수정">✏️</button>
-      <button onclick="confirmDeletePrayer('${prayerId}')" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px;" title="삭제">🗑️</button>`;
-  }
-
-  const statusMap = {
-    praying:  { label: '🙏 기도중',   color: '#00AAFF', bg: '#E6F6FF' },
-    answered: { label: '✅ 응답받음', color: '#10B981', bg: '#ECFDF5' },
-    grateful: { label: '🙌 감사',    color: '#F59E0B', bg: '#FFF7ED' },
-  };
-  const s = statusMap[p.status] || statusMap.praying;
-  const scopeLabel = { public:'🌐 전체공개', friends:'👥 지인공개', community:'⛪ 공동체', private:'🔒 비공개' };
-  const catEmoji = { 건강:'💊', 가정:'🏠', 진로:'🎯', 영적:'✝️', 사업:'💼', 기타:'🙏' };
-
-  const nick = p.user?.nickname || '익명';
-  const initials = nick[0] || '?';
-  const comments = p.comments || [];
-
-  body.innerHTML = `
-    <!-- 기도 카드 -->
-    <div class="card" style="padding:20px;margin-bottom:12px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div class="prayer-avatar">${p.user?.profile_image_url ? `<img src="${p.user.profile_image_url}">` : initials}</div>
-        <div style="flex:1;">
-          <div style="font-size:14px;font-weight:700;color:var(--text);">${nick}</div>
-          ${p.user?.church_name ? `<div style="font-size:12px;color:var(--text-sub);">${p.user.church_name}</div>` : ''}
-        </div>
-        <div style="background:${s.bg};color:${s.color};font-size:12px;font-weight:700;padding:5px 12px;border-radius:50px;cursor:${isOwner?'pointer':'default'};"
-             ${isOwner ? `onclick="openStatusChange('${prayerId}')"` : ''}>
-          ${s.label}
-        </div>
-      </div>
-      <div style="height:1px;background:var(--border);margin-bottom:16px;"></div>
-      <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:12px;">${p.title}</div>
-      <div style="font-size:15px;color:var(--text-sub);line-height:1.7;margin-bottom:16px;">${p.content}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;">
-        ${p.category ? `<span class="tag tag-category">${catEmoji[p.category]||'🙏'} ${p.category}</span>` : ''}
-        <span style="background:#f3f4f6;color:var(--text-sub);font-size:11px;font-weight:600;padding:3px 10px;border-radius:50px;">${scopeLabel[p.scope]||'🌐 전체공개'}</span>
-      </div>
-    </div>
-    <!-- 함께 기도 버튼 -->
-    <button id="participate-btn-${prayerId}" onclick="participatePrayer('${prayerId}', this)"
-      style="width:100%;padding:14px;border-radius:50px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:16px;
-             background:${p.is_participated?'var(--primary-light)':'var(--primary)'};
-             color:${p.is_participated?'var(--primary)':'#fff'};">
-      ${p.is_participated ? `함께 기도했습니다 (${p.prayer_count||0})` : `🙏 함께 기도하기 (${p.prayer_count||0})`}
-    </button>
-    <!-- 댓글 -->
-    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:12px;">댓글 <span style="color:var(--primary);">${comments.length}</span></div>
-    <div id="comment-list">
-      ${comments.length === 0
-        ? '<div style="text-align:center;padding:20px;color:var(--text-light);font-size:14px;">첫 번째 댓글을 남겨보세요 💬</div>'
-        : comments.map(c => `
-          <div style="background:var(--surface);border-radius:12px;padding:14px;margin-bottom:8px;border:1px solid var(--border);">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-              <div class="prayer-avatar" style="width:28px;height:28px;font-size:12px;">${c.user?.nickname?.[0]||'?'}</div>
-              <span style="font-size:13px;font-weight:600;">${c.user?.nickname||'익명'}</span>
-            </div>
-            <div style="font-size:13px;color:var(--text-sub);line-height:1.6;padding-left:36px;">${c.content}</div>
-          </div>`).join('')
-      }
-    </div>`;
-}
 
 /* ============================================================
-   상태 변경 (바텀시트)
+   기도 카드 렌더링 (공통)
 ============================================================ */
-function openStatusChange(prayerId) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:1000;display:flex;align-items:flex-end;';
-  overlay.innerHTML = `
-    <div style="width:100%;max-width:430px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;padding:20px;padding-bottom:32px;">
-      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;"></div>
-      <div style="font-size:16px;font-weight:700;text-align:center;margin-bottom:16px;">기도 상태 변경</div>
-      ${[
-        {v:'praying',  l:'🙏 기도중',   c:'#00AAFF'},
-        {v:'answered', l:'✅ 응답받음', c:'#10B981'},
-        {v:'grateful', l:'🙌 감사',    c:'#F59E0B'},
-      ].map(s => `
-        <div onclick="updatePrayerStatus('${prayerId}','${s.v}',this.closest('[style*=fixed]'))"
-          style="padding:16px;border-radius:12px;margin-bottom:8px;cursor:pointer;border:1.5px solid var(--border);
-                 display:flex;align-items:center;justify-content:space-between;">
-          <span style="font-size:15px;font-weight:600;color:${s.c};">${s.l}</span>
-        </div>`).join('')}
-      <button onclick="this.closest('[style*=fixed]').remove()"
-        style="width:100%;padding:14px;border-radius:50px;background:var(--bg);border:none;font-weight:600;color:var(--text-sub);cursor:pointer;margin-top:4px;">취소</button>
-    </div>`;
-  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
-  document.body.appendChild(overlay);
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-async function updatePrayerStatus(prayerId, status, overlay) {
-  overlay.remove();
-  const labels = { praying:'기도중', answered:'응답받음 🎉', grateful:'감사 🙌' };
-  const res = await api('PUT', `/prayers/${prayerId}`, { status });
-  if (res.success) {
-    showToast(`"${labels[status]}"으로 변경되었습니다`);
-    if (currentPrayerId === prayerId) openPrayerDetail(prayerId);
-  } else {
-    showToast('상태 변경에 실패했습니다');
-  }
-}
-
-/* ============================================================
-   기도 수정
-============================================================ */
-let editingPrayerId = null;
-
-async function openPrayerEdit(prayerId) {
-  editingPrayerId = prayerId;
-  goPage('prayer-edit');
-  document.getElementById('pe-title').value = '';
-  document.getElementById('pe-content').value = '';
-
-  const res = await api('GET', `/prayers/${prayerId}`);
-  if (!res.success || !res.data) { showToast('기도를 불러올 수 없습니다'); goBack(); return; }
-  const p = res.data;
-  document.getElementById('pe-title').value = p.title || '';
-  document.getElementById('pe-content').value = p.content || '';
-  document.getElementById('pe-scope').value = p.scope || 'public';
-  // 카테고리 선택
-  document.querySelectorAll('#pe-category-wrap .filter-chip').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.cat === (p.category || '기타'));
-  });
-}
-
-function selectEditCategory(el, cat) {
-  document.querySelectorAll('#pe-category-wrap .filter-chip').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-}
-
-async function submitPrayerEdit() {
-  if (!editingPrayerId) return;
-  const title = document.getElementById('pe-title').value.trim();
-  const content = document.getElementById('pe-content').value.trim();
-  const scope = document.getElementById('pe-scope').value;
-  const activecat = document.querySelector('#pe-category-wrap .filter-chip.active');
-  const category = activecat ? activecat.dataset.cat : '기타';
-  if (!title) { showToast('제목을 입력해주세요'); return; }
-  if (!content) { showToast('내용을 입력해주세요'); return; }
-
-  const btn = document.getElementById('prayer-edit-save-btn');
-  if (btn) { btn.textContent = '저장 중...'; btn.disabled = true; }
-  const res = await api('PUT', `/prayers/${editingPrayerId}`, { title, content, category, scope });
-  if (btn) { btn.textContent = '저장'; btn.disabled = false; }
-
-  if (res.success) {
-    showToast('기도가 수정되었습니다 ✏️');
-    goBack();
-    if (currentPrayerId === editingPrayerId) openPrayerDetail(editingPrayerId);
-  } else {
-    showToast(res.message || '수정에 실패했습니다');
-  }
-}
-
-/* ============================================================
-   기도 삭제
-============================================================ */
-function confirmDeletePrayer(prayerId) {
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;';
-  overlay.innerHTML = `
-    <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:380px;">
-      <div style="font-size:18px;font-weight:800;margin-bottom:12px;">기도 삭제</div>
-      <div style="font-size:14px;color:var(--text-sub);margin-bottom:20px;line-height:1.6;">
-        이 기도를 삭제하시겠습니까?<br>
-        <span style="color:var(--danger);font-size:13px;">⚠️ 삭제 후 복구할 수 없습니다</span>
-      </div>
-      <div style="display:flex;gap:10px;">
-        <button onclick="this.closest('[style*=fixed]').remove()"
-          style="flex:1;padding:13px;border-radius:50px;background:var(--bg);border:none;font-weight:600;cursor:pointer;">취소</button>
-        <button onclick="deletePrayer('${prayerId}',this.closest('[style*=fixed]'))"
-          style="flex:1;padding:13px;border-radius:50px;background:var(--danger);color:#fff;border:none;font-weight:700;cursor:pointer;">삭제</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-}
-
-async function deletePrayer(prayerId, overlay) {
-  overlay.remove();
-  const res = await api('DELETE', `/prayers/${prayerId}`);
-  if (res.success) {
-    showToast('기도가 삭제되었습니다');
-    goBack();
-    loadPrayers();
-    loadHome();
-  } else {
-    showToast(res.message || '삭제에 실패했습니다');
-  }
-}
-
-/* ============================================================
-   댓글 작성
-============================================================ */
-async function submitComment() {
-  if (!currentPrayerId) return;
-  if (!token) { showToast('로그인이 필요합니다'); return; }
-  const input = document.getElementById('comment-input');
-  const content = input.value.trim();
-  if (!content) return;
-  input.value = '';
-  const res = await api('POST', `/prayers/${currentPrayerId}/comments`, { content });
-  if (res.success) {
-    showToast('댓글이 등록되었습니다 💬');
-    openPrayerDetail(currentPrayerId);
-  } else {
-    showToast(res.message || '댓글 등록 실패');
-  }
-}
-
-/* ============================================================
-   기도 참여
-============================================================ */
-async function participatePrayer(prayerId, btn) {
-  if (!token) { showToast('로그인이 필요합니다'); goPage('login'); return; }
-  const res = await api('POST', `/prayers/${prayerId}/participate`);
-  if (res.success) {
-    btn.classList.add('active');
-    const countEl = btn.querySelector('.pray-count');
-    if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
-    showToast('함께 기도했습니다 🙏');
-  } else if (res.error?.code === 'ALREADY_PARTICIPATED') {
-    showToast('이미 함께 기도하셨습니다');
-  } else {
-    showToast(res.message || '오류가 발생했습니다');
-  }
-}
-
-/* ============================================================
-   기도 카드 렌더링
-============================================================ */
 function renderPrayerCard(p) {
   const nick = p.user?.nickname || p.nickname || '익명';
   const initials = nick[0] || '?';
@@ -1714,14 +1740,14 @@ function renderPrayerCard(p) {
   };
   const [statusLabel, statusClass] = statusMap[p.status] || ['기도중 🙏', 'tag-praying'];
   const avatarHtml = img
-    ? `<img src="${img}" alt="${nick}" onerror="this.parentElement.textContent='${initials}'">`
+    ? `<img src="${img}" alt="${escHtml(nick)}" onerror="this.parentElement.textContent='${initials}'">`
     : initials;
   return `
   <div class="prayer-card" onclick="openPrayerDetail('${p.id}')" style="cursor:pointer;">
     <div class="prayer-card-header">
       <div class="prayer-avatar">${avatarHtml}</div>
       <div style="flex:1;">
-        <div class="prayer-user-name">${nick}</div>
+        <div class="prayer-user-name">${escHtml(nick)}</div>
         <div class="prayer-time">${timeAgo(p.created_at)}</div>
       </div>
     </div>
@@ -1733,7 +1759,7 @@ function renderPrayerCard(p) {
     </div>
     <div class="prayer-footer">
       <button class="prayer-action ${p.is_participated ? 'active' : ''}"
-        onclick="event.stopPropagation();participatePrayer('${p.id}',this)">
+        onclick="event.stopPropagation();prCardParticipate('${p.id}',this)">
         🙏 <span class="pray-count">${p.prayer_count || 0}</span>
       </button>
       <span class="prayer-action">💬 ${p.comment_count || 0}</span>
@@ -1741,14 +1767,21 @@ function renderPrayerCard(p) {
   </div>`;
 }
 
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+async function prCardParticipate(prayerId, btn) {
+  if (!token) { showToast('로그인이 필요합니다'); goPage('login'); return; }
+  const isActive = btn.classList.contains('active');
+  const countEl = btn.querySelector('.pray-count');
+  const res = await api(isActive ? 'DELETE' : 'POST', `/prayers/${prayerId}/participate`);
+  if (res.success) {
+    btn.classList.toggle('active');
+    if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + (isActive ? -1 : 1);
+    showToast(isActive ? '기도 참여를 취소했습니다' : '함께 기도했습니다 🙏');
+  } else if (res.error?.code === 'ALREADY_PARTICIPATED') {
+    showToast('이미 함께 기도하셨습니다');
+  } else {
+    showToast(res.message || '오류가 발생했습니다');
+  }
 }
-
-/* ============================================================
-   알림 화면 진입 override
-============================================================ */
-const _origGoPage = goPage;
 
 /* ============================================================
    초기화
@@ -1772,7 +1805,7 @@ window.addEventListener('load', async () => {
   }
 });
 
-// goPage override - 알림/편집 페이지 진입 시 처리
+// goPage override - 프로필 수정 페이지 진입 시 폼 자동 채우기
 const origGoPageImpl = goPage;
 window.goPage = function(id) {
   origGoPageImpl(id);
