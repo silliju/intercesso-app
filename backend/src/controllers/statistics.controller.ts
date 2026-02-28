@@ -7,12 +7,69 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
   try {
     const userId = req.user!.userId;
 
-    // 사용자 통계
+    // user_statistics 테이블에서 통계 조회
     const { data: stats } = await supabaseAdmin
       .from('user_statistics')
       .select('*')
       .eq('user_id', userId)
       .single();
+
+    // user_statistics가 없거나 비어있으면 prayers 테이블에서 직접 계산
+    let totalPrayers = stats?.total_prayers ?? 0;
+    let answeredPrayers = stats?.answered_prayers ?? 0;
+    let totalParticipations = stats?.total_participations ?? 0;
+    let streakDays = stats?.streak_days ?? 0;
+
+    if (!stats) {
+      // 내 기도 총 수
+      const { count: myPrayerCount } = await supabaseAdmin
+        .from('prayers')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      totalPrayers = myPrayerCount ?? 0;
+
+      // 응답받은 기도 수
+      const { count: answeredCount } = await supabaseAdmin
+        .from('prayers')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'answered');
+      answeredPrayers = answeredCount ?? 0;
+
+      // 내가 함께 기도한 횟수 (prayer_participations)
+      const { count: participCount } = await supabaseAdmin
+        .from('prayer_participations')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId);
+      totalParticipations = participCount ?? 0;
+
+      // 연속 기도 일수 계산 (최근 기도 날짜 기준)
+      const { data: recentPrayerDates } = await supabaseAdmin
+        .from('prayers')
+        .select('created_at')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(30);
+
+      if (recentPrayerDates && recentPrayerDates.length > 0) {
+        const dates = recentPrayerDates.map((p: any) => p.created_at.split('T')[0]);
+        const uniqueDates = [...new Set(dates)].sort().reverse();
+        let streak = 0;
+        const today = new Date().toISOString().split('T')[0];
+        let checkDate = today;
+        for (const d of uniqueDates) {
+          if (d === checkDate) {
+            streak++;
+            const prev = new Date(checkDate);
+            prev.setDate(prev.getDate() - 1);
+            checkDate = prev.toISOString().split('T')[0];
+          } else {
+            break;
+          }
+        }
+        streakDays = streak;
+      }
+    }
 
     // 최근 기도 (5개)
     const { data: recentPrayers } = await supabaseAdmin
@@ -44,20 +101,23 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
     const groups = (groupMemberships || []).map((m: any) => m.group);
 
     // 내 기도 응답률 계산
-    const totalPrayers = stats?.total_prayers || 0;
-    const answeredPrayers = stats?.answered_prayers || 0;
     const answerRate = totalPrayers > 0 ? Math.round((answeredPrayers / totalPrayers) * 100) : 0;
 
     sendSuccess(res, {
       stats: {
-        ...stats,
+        total_prayers: totalPrayers,
+        answered_prayers: answeredPrayers,
+        total_participations: totalParticipations,
+        streak_days: streakDays,
         answer_rate: answerRate,
+        ...(stats || {}),
       },
       recent_prayers: recentPrayers || [],
       covenant_prayers: covenantPrayers || [],
       groups,
     });
-  } catch {
+  } catch (err) {
+    console.error('getDashboard error:', err);
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
 };

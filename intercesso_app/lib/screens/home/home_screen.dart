@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/prayer_provider.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/statistics_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   Map<String, dynamic>? _dashboardData;
   bool _isLoading = true;
+  final StatisticsService _statisticsService = StatisticsService();
 
   @override
   void initState() {
@@ -25,20 +27,48 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _loadDashboard() async {
-    await Future.delayed(const Duration(milliseconds: 500));
     if (!mounted) return;
-    setState(() {
-      _dashboardData = {
-        'stats': {
-          'total_prayers': 12,
-          'answered_prayers': 4,
-          'streak_days': 7,
-          'total_participations': 28,
-          'answer_rate': 33,
-        },
-      };
-      _isLoading = false;
-    });
+    setState(() => _isLoading = true);
+    try {
+      // 실제 API에서 통계 데이터 로드
+      final data = await _statisticsService.getDashboard();
+      if (!mounted) return;
+      if (data['success'] == true && data['data'] != null) {
+        final apiStats = data['data']['stats'] as Map<String, dynamic>? ?? {};
+        setState(() {
+          _dashboardData = {
+            'stats': {
+              'total_prayers': apiStats['total_prayers'] ?? 0,
+              'answered_prayers': apiStats['answered_prayers'] ?? 0,
+              'streak_days': apiStats['streak_days'] ?? 0,
+              'total_participations': apiStats['total_participations'] ?? 0,
+              'answer_rate': apiStats['answer_rate'] ?? 0,
+            },
+          };
+          _isLoading = false;
+        });
+      } else {
+        // API 실패 시 0으로 초기화
+        setState(() {
+          _dashboardData = {
+            'stats': {
+              'total_prayers': 0,
+              'answered_prayers': 0,
+              'streak_days': 0,
+              'total_participations': 0,
+              'answer_rate': 0,
+            },
+          };
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _dashboardData = {'stats': {'total_prayers': 0, 'answered_prayers': 0, 'streak_days': 0, 'total_participations': 0, 'answer_rate': 0}};
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _loadPrayers() async {

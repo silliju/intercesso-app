@@ -6,17 +6,16 @@
 <title>Intercesso - 함께 기도하는 공동체</title>
 <style>
 /* ============================================================
-   Intercesso 앱과 동일한 디자인 (Flutter AppTheme 기준)
-   primary: #00AAFF  background: #F5F5F5  surface: #FFFFFF
-   textPrimary: #1A1A2E  textSecondary: #6B7280  border: #E8ECEF
+   Intercesso - Flutter AppTheme 기준
+   primary: #00AAFF  bg: #F5F5F5  surface: #FFFFFF
+   text: #1A1A2E  textSub: #6B7280  border: #E8ECEF
 ============================================================ */
-* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 :root {
   --primary: #00AAFF;
   --primary-dark: #0088DD;
   --primary-light: #E6F6FF;
-  --secondary: #00C9A7;
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
@@ -26,21 +25,18 @@
   --text-sub: #6B7280;
   --text-light: #ADB5BD;
   --border: #E8ECEF;
-  --shadow: 0 2px 12px rgba(0,0,0,0.06);
   --card-shadow: 0 2px 12px rgba(0,0,0,0.06);
 }
 
 html, body {
   height: 100%;
-  background: #e0e0e0;
+  background: #d0d0d0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  min-height: 100vh;
 }
 
-/* 앱 컨테이너 - 모바일 앱처럼 보이도록 */
 #app-container {
   width: 100%;
   max-width: 430px;
@@ -50,159 +46,67 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 0 40px rgba(0,0,0,0.15);
 }
 
-/* 페이지 */
-.page {
-  display: none;
-  flex-direction: column;
-  height: 100vh;
-  overflow: hidden;
-  background: var(--bg);
-}
+.page { display: none; flex-direction: column; height: 100vh; overflow: hidden; background: var(--bg); }
 .page.active { display: flex; }
+.scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.scroll-body::-webkit-scrollbar { display: none; }
 
-/* 스크롤 영역 */
-.scroll-body {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* ── 공통 버튼 ── */
-.btn {
-  width: 100%;
-  padding: 15px 24px;
-  border-radius: 50px;
-  border: none;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: opacity 0.2s;
-  font-family: inherit;
-}
-.btn:active { opacity: 0.85; }
+/* ── 버튼 ── */
+.btn { width: 100%; padding: 15px 24px; border-radius: 50px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; transition: opacity 0.2s; font-family: inherit; }
+.btn:active { opacity: 0.8; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
 .btn-primary { background: var(--primary); color: #fff; box-shadow: 0 4px 14px rgba(0,170,255,0.3); }
 .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
 .btn-ghost { background: transparent; color: var(--text-sub); border: none; font-weight: 500; }
-.btn-white { background: #fff; color: var(--primary); border: 1.5px solid var(--border); }
 .btn-sm { padding: 8px 18px; font-size: 13px; }
-.btn-kakao { background: #FEE500; color: #191919; border: none; }
+.btn-danger { background: var(--danger); color: #fff; }
 
 /* ── 카드 ── */
-.card {
-  background: var(--surface);
-  border-radius: 16px;
-  box-shadow: var(--card-shadow);
-}
+.card { background: var(--surface); border-radius: 16px; box-shadow: var(--card-shadow); }
 
-/* ── 폼 입력 ── */
+/* ── 폼 ── */
 .form-group { display: flex; flex-direction: column; gap: 8px; }
 .form-label { font-size: 14px; font-weight: 600; color: var(--text); }
 .input-wrap { position: relative; }
-.input-wrap .icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 16px; pointer-events: none; }
-.input-wrap .suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); cursor: pointer; font-size: 16px; }
-.form-input {
-  width: 100%;
-  padding: 14px 16px;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-size: 15px;
-  font-family: inherit;
-  background: var(--surface);
-  color: var(--text);
-  outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-}
+.input-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); font-size: 16px; pointer-events: none; }
+.input-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: var(--text-light); cursor: pointer; font-size: 16px; }
+.form-input { width: 100%; padding: 14px 16px; border: 1.5px solid var(--border); border-radius: 12px; font-size: 15px; font-family: inherit; background: var(--surface); color: var(--text); outline: none; transition: border 0.2s; }
 .form-input.has-icon { padding-left: 42px; }
 .form-input.has-suffix { padding-right: 42px; }
 .form-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,170,255,0.1); }
 .form-input::placeholder { color: var(--text-light); }
-.form-input.error { border-color: var(--danger); }
+textarea.form-input { resize: none; }
 
-/* ── 에러 메시지 ── */
-.error-box {
-  background: #FEF2F2;
-  border: 1px solid #FCA5A5;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--danger);
-  display: none;
-}
+/* ── 에러박스 ── */
+.error-box { background: #FEF2F2; border: 1px solid #FCA5A5; border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--danger); display: none; }
 .error-box.show { display: block; }
 
 /* ── 구분선 ── */
-.divider-row {
-  display: flex; align-items: center; gap: 12px;
-  color: var(--text-sub); font-size: 12px;
-}
-.divider-row::before, .divider-row::after {
-  content: ''; flex: 1; height: 1px; background: var(--border);
-}
+.divider-row { display: flex; align-items: center; gap: 12px; color: var(--text-sub); font-size: 12px; }
+.divider-row::before, .divider-row::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
 /* ── 소셜 버튼 ── */
-.social-btn {
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  width: 100%; padding: 15px 24px;
-  border-radius: 50px; border: none;
-  font-size: 15px; font-weight: 600;
-  cursor: pointer; font-family: inherit;
-  transition: opacity 0.2s;
-}
-.social-btn:active { opacity: 0.85; }
+.social-btn { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 15px 24px; border-radius: 50px; border: none; font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit; transition: opacity 0.2s; }
+.social-btn:active { opacity: 0.8; }
 .social-btn-google { background: #fff; color: var(--text); border: 1.5px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
 .social-btn-kakao { background: #FEE500; color: #191919; }
 
 /* ── 앱바 ── */
-.app-bar {
-  background: var(--surface);
-  padding: 12px 20px;
-  display: flex; align-items: center;
-  border-bottom: 1px solid var(--border);
-  min-height: 56px;
-  flex-shrink: 0;
-}
+.app-bar { background: var(--surface); padding: 12px 20px; display: flex; align-items: center; border-bottom: 1px solid var(--border); min-height: 56px; flex-shrink: 0; }
 .app-bar-title { font-size: 18px; font-weight: 700; color: var(--text); flex: 1; text-align: center; }
-.app-bar-back { background: none; border: none; cursor: pointer; color: var(--text); font-size: 20px; padding: 4px; margin-right: 4px; }
+.app-bar-back { background: none; border: none; cursor: pointer; color: var(--text); font-size: 22px; padding: 4px 8px 4px 0; }
 .app-bar-action { background: none; border: none; cursor: pointer; color: var(--text); font-size: 20px; padding: 4px; }
 
 /* ── 하단 탭바 ── */
-.tab-bar {
-  height: 72px;
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-shrink: 0;
-  box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
-}
-.tab-item {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 3px; cursor: pointer; border: none;
-  background: none; color: var(--text-light);
-  font-size: 11px; font-weight: 500; font-family: inherit;
-  transition: color 0.2s; padding-bottom: 4px;
-}
+.tab-bar { height: 72px; background: var(--surface); border-top: 1px solid var(--border); display: flex; flex-shrink: 0; box-shadow: 0 -2px 12px rgba(0,0,0,0.06); }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: none; color: var(--text-light); font-size: 11px; font-weight: 500; font-family: inherit; transition: color 0.2s; padding-bottom: 4px; }
 .tab-item.active { color: var(--primary); font-weight: 700; }
 .tab-icon { font-size: 22px; }
-.tab-badge-wrap { position: relative; }
-.tab-badge { position: absolute; top: -4px; right: -8px; background: var(--danger); color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
 
-/* ── 홈 배너 ── */
-.home-banner {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
-  border-radius: 16px;
-  padding: 20px;
-  color: #fff;
-  margin: 16px 16px 8px;
-}
-.home-banner-title { font-size: 18px; font-weight: 800; line-height: 1.4; }
-.home-banner-sub { font-size: 13px; opacity: 0.85; margin-top: 4px; }
-
-/* ── 통계 카드 ── */
+/* ── 통계 ── */
 .stat-row { display: flex; align-items: center; justify-content: space-around; }
 .stat-item { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .stat-value { font-size: 18px; font-weight: 800; color: var(--primary); }
@@ -210,24 +114,13 @@ html, body {
 .stat-divider { width: 1px; height: 32px; background: var(--border); }
 
 /* ── 섹션 헤더 ── */
-.section-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 16px 8px;
-}
+.section-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 8px; }
 .section-title { font-size: 17px; font-weight: 700; color: var(--text); }
 .section-more { font-size: 13px; color: var(--primary); font-weight: 600; cursor: pointer; background: none; border: none; font-family: inherit; }
 
 /* ── 기도 카드 ── */
-.prayer-card {
-  background: var(--surface);
-  border-radius: 16px;
-  padding: 16px;
-  margin: 0 16px 12px;
-  box-shadow: var(--card-shadow);
-  cursor: pointer;
-  transition: box-shadow 0.2s;
-}
-.prayer-card:active { box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.prayer-card { background: var(--surface); border-radius: 16px; padding: 16px; margin: 0 16px 12px; box-shadow: var(--card-shadow); cursor: pointer; }
+.prayer-card:active { opacity: 0.9; }
 .prayer-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
 .prayer-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--primary); flex-shrink: 0; overflow: hidden; }
 .prayer-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -238,166 +131,114 @@ html, body {
 .prayer-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
 .tag { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 50px; }
 .tag-category { background: var(--primary-light); color: var(--primary); }
-.tag-status-praying { background: #EFF6FF; color: #3B82F6; }
-.tag-status-answered { background: #ECFDF5; color: #10B981; }
-.tag-status-grateful { background: #FFF7ED; color: #F59E0B; }
-.prayer-footer { display: flex; align-items: center; gap: 12px; }
-.prayer-action { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-sub); background: none; border: none; cursor: pointer; font-family: inherit; padding: 4px 0; }
-.prayer-action.active { color: var(--primary); }
+.tag-praying { background: #EFF6FF; color: #3B82F6; }
+.tag-answered { background: #ECFDF5; color: #10B981; }
+.tag-grateful { background: #FFF7ED; color: #F59E0B; }
+.prayer-footer { display: flex; align-items: center; gap: 16px; }
+.prayer-action { display: flex; align-items: center; gap: 4px; font-size: 13px; color: var(--text-sub); background: none; border: none; cursor: pointer; font-family: inherit; padding: 4px 0; }
+.prayer-action.active { color: var(--primary); font-weight: 700; }
 
-/* ── 빈 상태 ── */
-.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; gap: 12px; }
+/* ── 빈 상태 / 로딩 ── */
+.empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; gap: 12px; text-align: center; }
 .empty-emoji { font-size: 56px; }
 .empty-title { font-size: 17px; font-weight: 700; color: var(--text); }
-.empty-sub { font-size: 14px; color: var(--text-sub); text-align: center; }
-
-/* ── 로딩 ── */
+.empty-sub { font-size: 14px; color: var(--text-sub); line-height: 1.6; }
 .loading-state { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 24px; gap: 16px; }
 .spinner { width: 36px; height: 36px; border: 3px solid var(--primary-light); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── 프로필 ── */
-.profile-avatar { width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--primary); overflow: hidden; }
-.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--primary); overflow: hidden; }
+.profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
 .menu-item { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; }
 .menu-item:active { background: var(--bg); }
 .menu-icon-wrap { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
-.menu-text { flex: 1; font-size: 15px; font-weight: 600; color: var(--text); }
-.menu-arrow { color: var(--text-light); font-size: 16px; }
+.menu-item-text { flex: 1; font-size: 15px; font-weight: 600; color: var(--text); }
+.menu-item-arrow { color: var(--text-light); font-size: 18px; }
+.menu-divider { height: 1px; background: var(--border); margin-left: 68px; }
 
-/* ── 탭바 필터 ── */
+/* ── 탭 네비게이션 ── */
+.tab-nav { background: var(--surface); display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-nav-item { flex-shrink: 0; padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
+.tab-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
+
+/* ── 카테고리 필터 ── */
 .filter-bar { background: var(--surface); padding: 10px 0; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
 .filter-bar::-webkit-scrollbar { display: none; }
 .filter-chip { display: inline-flex; align-items: center; padding: 7px 16px; border-radius: 50px; font-size: 13px; font-weight: 600; cursor: pointer; margin-left: 8px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-sub); transition: all 0.2s; white-space: nowrap; }
 .filter-chip.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .filter-chip:last-child { margin-right: 8px; }
 
-/* ── 탭 네비게이션 (기도/중보 등) ── */
-.tab-nav { background: var(--surface); display: flex; border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
-.tab-nav::-webkit-scrollbar { display: none; }
-.tab-nav-item { flex-shrink: 0; padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--text-light); cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; background: none; border-top: none; border-left: none; border-right: none; font-family: inherit; }
-.tab-nav-item.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 700; }
-
 /* ── 그룹 카드 ── */
 .group-card { background: var(--surface); border-radius: 16px; padding: 16px; margin: 0 16px 12px; box-shadow: var(--card-shadow); cursor: pointer; }
-.group-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
-.group-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.group-card:active { opacity: 0.9; }
 
 /* ── 알림 ── */
-.notif-item { padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.notif-item { padding: 16px; border-bottom: 1px solid var(--border); cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
 .notif-item:active { background: var(--bg); }
-.notif-item.unread { background: var(--primary-light); }
+.notif-item.unread { background: #F0F9FF; }
+.notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); flex-shrink: 0; margin-top: 5px; }
 
 /* ── 토스트 ── */
-#toast {
-  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
-  background: rgba(26,26,46,0.9); color: #fff;
-  padding: 12px 20px; border-radius: 50px;
-  font-size: 14px; font-weight: 600;
-  opacity: 0; transition: opacity 0.3s;
-  pointer-events: none; z-index: 9999;
-  white-space: nowrap;
-}
+#toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: rgba(26,26,46,0.92); color: #fff; padding: 12px 22px; border-radius: 50px; font-size: 14px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 9999; white-space: nowrap; max-width: 340px; text-align: center; }
 #toast.show { opacity: 1; }
 
-/* ── 플로팅 버튼 ── */
-.fab {
-  position: fixed; bottom: 90px; right: 20px;
-  width: 56px; height: 56px; border-radius: 50%;
-  background: var(--primary); color: #fff;
-  border: none; font-size: 24px;
-  box-shadow: 0 4px 16px rgba(0,170,255,0.4);
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  z-index: 100; transition: transform 0.2s;
-}
-.fab:active { transform: scale(0.95); }
+/* ── FAB ── */
+.fab { position: fixed; bottom: 90px; right: calc(50vw - 215px); width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 26px; box-shadow: 0 4px 16px rgba(0,170,255,0.4); cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 100; transition: transform 0.2s; }
+.fab.show { display: flex; }
+.fab:active { transform: scale(0.92); }
 
 /* ── 온보딩 ── */
-.ob-page-view { flex: 1; overflow: hidden; position: relative; }
 .ob-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 32px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
 .ob-slide.active { opacity: 1; pointer-events: auto; }
-.ob-preview-card { width: 100%; background: var(--surface); border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; flex: 1; max-height: 280px; }
-.ob-footer { padding: 0 24px 40px; display: flex; flex-direction: column; gap: 12px; }
-.ob-dots { display: flex; justify-content: center; gap: 8px; margin-bottom: 28px; }
 .ob-dot { width: 8px; height: 8px; border-radius: 4px; background: var(--border); transition: all 0.3s; }
 .ob-dot.active { width: 24px; background: var(--primary); }
-
-/* 스크롤바 숨기기 */
-.scroll-body::-webkit-scrollbar { display: none; }
+.ob-preview { width: 100%; background: var(--surface); border-radius: 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px 20px; flex: 1; max-height: 280px; }
 </style>
 </head>
 <body>
 <div id="app-container">
 
-<!-- ====================================================
-     온보딩 화면
-==================================================== -->
+<!-- ====================================================  온보딩  ==================================================== -->
 <div class="page active" id="page-onboarding">
-  <!-- 건너뛰기 -->
   <div style="display:flex;justify-content:flex-end;padding:16px 20px 0;">
     <button class="btn-ghost btn" style="width:auto;padding:8px 16px;font-size:14px;" onclick="goPage('login')">건너뛰기</button>
   </div>
-  <!-- 슬라이드 -->
-  <div class="ob-page-view" id="ob-view">
+  <div style="flex:1;overflow:hidden;position:relative;" id="ob-view">
     <div class="ob-slide active" id="ob-0">
-      <div style="font-size:28px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:48px;">
-        <span style="color:var(--primary);">기도를</span> 나눠보세요
-      </div>
-      <div class="ob-preview-card">
-        <div style="font-size:72px;">🙏</div>
-        <div style="font-size:15px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">개인 기도 제목을 공유하고<br>함께 기도하는 공동체를 만들어보세요</div>
-      </div>
+      <div style="font-size:26px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:40px;"><span style="color:var(--primary);">기도를</span> 나눠보세요</div>
+      <div class="ob-preview"><div style="font-size:72px;">🙏</div><div style="font-size:14px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">개인 기도 제목을 공유하고<br>함께 기도하는 공동체를 만들어보세요</div></div>
     </div>
     <div class="ob-slide" id="ob-1">
-      <div style="font-size:28px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:48px;">
-        <span style="color:var(--primary);">함께</span> 중보기도해요
-      </div>
-      <div class="ob-preview-card">
-        <div style="font-size:72px;">👥</div>
-        <div style="font-size:15px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">친구, 가족, 교회 공동체와<br>중보기도의 힘을 경험해보세요</div>
-      </div>
+      <div style="font-size:26px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:40px;"><span style="color:var(--primary);">함께</span> 중보기도해요</div>
+      <div class="ob-preview"><div style="font-size:72px;">👥</div><div style="font-size:14px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">친구, 가족, 교회 공동체와<br>중보기도의 힘을 경험해보세요</div></div>
     </div>
     <div class="ob-slide" id="ob-2">
-      <div style="font-size:28px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:48px;">
-        <span style="color:var(--primary);">응답을</span> 기록하세요
-      </div>
-      <div class="ob-preview-card">
-        <div style="font-size:72px;">✅</div>
-        <div style="font-size:15px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">기도 응답을 기록하고 감사를 나누며<br>신앙을 더욱 풍성하게 해보세요</div>
-      </div>
+      <div style="font-size:26px;font-weight:800;color:var(--text);text-align:center;line-height:1.3;margin-bottom:40px;"><span style="color:var(--primary);">응답을</span> 기록하세요</div>
+      <div class="ob-preview"><div style="font-size:72px;">✅</div><div style="font-size:14px;color:var(--text-sub);text-align:center;line-height:1.7;margin-top:16px;">기도 응답을 기록하고 감사를 나누며<br>신앙을 더욱 풍성하게 해보세요</div></div>
     </div>
   </div>
-  <!-- 하단 -->
-  <div class="ob-footer">
-    <div class="ob-dots" id="ob-dots">
-      <div class="ob-dot active"></div>
-      <div class="ob-dot"></div>
-      <div class="ob-dot"></div>
+  <div style="padding:0 24px 40px;display:flex;flex-direction:column;gap:12px;">
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;" id="ob-dots">
+      <div class="ob-dot active"></div><div class="ob-dot"></div><div class="ob-dot"></div>
     </div>
     <button class="btn btn-primary" id="ob-btn-next" onclick="obNext()">다음</button>
     <button class="btn btn-outline" id="ob-btn-signup" style="display:none;" onclick="goPage('signup')">회원가입</button>
   </div>
 </div>
 
-<!-- ====================================================
-     로그인 화면
-==================================================== -->
+<!-- ====================================================  로그인  ==================================================== -->
 <div class="page" id="page-login">
-  <!-- 앱바 -->
   <div class="app-bar" style="border-bottom:none;background:var(--bg);">
     <button class="app-bar-back" onclick="goPage('onboarding')">‹</button>
-    <div class="app-bar-title" style="text-align:left;font-size:16px;color:var(--text-sub);font-weight:500;"></div>
+    <div style="flex:1;"></div>
   </div>
-  <!-- 본문 -->
   <div class="scroll-body" style="padding:0 24px;">
     <div style="margin-bottom:32px;">
-      <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1.3;">
-        <span style="color:var(--primary);">로그인</span>하고<br>기도를 나눠보세요
-      </div>
+      <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1.3;"><span style="color:var(--primary);">로그인</span>하고<br>기도를 나눠보세요</div>
       <div style="font-size:13px;color:var(--text-sub);margin-top:8px;">함께 기도하는 공동체에 오신 것을 환영합니다</div>
     </div>
-
-    <!-- 소셜 로그인 -->
     <button class="social-btn social-btn-google" onclick="doGoogleLogin()">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
       구글로 계속하기
@@ -408,170 +249,105 @@ html, body {
       카카오로 계속하기
     </button>
     <div style="height:24px;"></div>
-
-    <!-- 구분선 -->
     <div class="divider-row" style="margin-bottom:24px;">또는 이메일로 로그인</div>
-
-    <!-- 이메일 폼 카드 -->
     <div class="card" style="padding:24px;">
       <div class="error-box" id="login-error" style="margin-bottom:16px;"></div>
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">이메일</label>
         <div class="input-wrap">
-          <span class="icon">✉️</span>
-          <input class="form-input has-icon" id="login-email" type="email" placeholder="example@email.com">
+          <span class="input-icon">✉️</span>
+          <input class="form-input has-icon" id="login-email" type="email" placeholder="example@email.com" onkeydown="if(event.key==='Enter')doLogin()">
         </div>
       </div>
       <div class="form-group">
         <label class="form-label">비밀번호</label>
         <div class="input-wrap">
-          <span class="icon">🔒</span>
-          <input class="form-input has-icon has-suffix" id="login-pw" type="password" placeholder="비밀번호를 입력하세요">
-          <span class="suffix" onclick="togglePw('login-pw',this)">👁️</span>
+          <span class="input-icon">🔒</span>
+          <input class="form-input has-icon has-suffix" id="login-pw" type="password" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter')doLogin()">
+          <span class="input-suffix" onclick="togglePw('login-pw',this)">👁️</span>
         </div>
       </div>
     </div>
     <div style="height:16px;"></div>
-
-    <!-- 로그인 버튼 -->
     <button class="btn btn-primary" id="login-btn" onclick="doLogin()">로그인</button>
     <div style="height:20px;"></div>
-
-    <!-- 회원가입 링크 -->
-    <div style="text-align:center;font-size:14px;color:var(--text-sub);">
-      아직 계정이 없으신가요? <span onclick="goPage('signup')" style="color:var(--primary);font-weight:700;cursor:pointer;">회원가입</span>
-    </div>
+    <div style="text-align:center;font-size:14px;color:var(--text-sub);">아직 계정이 없으신가요? <span onclick="goPage('signup')" style="color:var(--primary);font-weight:700;cursor:pointer;">회원가입</span></div>
     <div style="height:40px;"></div>
   </div>
 </div>
 
-<!-- ====================================================
-     회원가입 화면
-==================================================== -->
+<!-- ====================================================  회원가입  ==================================================== -->
 <div class="page" id="page-signup">
-  <!-- 앱바 -->
   <div class="app-bar" style="background:var(--bg);border-bottom:none;">
     <button class="app-bar-back" onclick="goPage('login')">‹</button>
     <div class="app-bar-title">회원가입</div>
-    <div style="width:28px;"></div>
+    <div style="width:36px;"></div>
   </div>
-  <!-- 본문 -->
   <div class="scroll-body" style="padding:0 24px;">
     <div style="margin-bottom:28px;margin-top:16px;">
-      <div style="font-size:26px;font-weight:800;color:var(--text);line-height:1.3;">
-        계정을 <span style="color:var(--primary);">만들어</span><br>기도를 시작해보세요
-      </div>
+      <div style="font-size:24px;font-weight:800;color:var(--text);line-height:1.3;">계정을 <span style="color:var(--primary);">만들어</span><br>기도를 시작해보세요</div>
     </div>
-
-    <!-- 폼 카드 -->
     <div class="card" style="padding:24px;">
       <div class="error-box" id="signup-error" style="margin-bottom:16px;"></div>
-
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">이메일</label>
-        <div class="input-wrap">
-          <span class="icon">✉️</span>
-          <input class="form-input has-icon" id="su-email" type="email" placeholder="example@email.com">
-        </div>
+        <div class="input-wrap"><span class="input-icon">✉️</span><input class="form-input has-icon" id="su-email" type="email" placeholder="example@email.com"></div>
       </div>
-
       <div class="form-group" style="margin-bottom:20px;">
-        <label class="form-label">비밀번호</label>
-        <div class="input-wrap">
-          <span class="icon">🔒</span>
-          <input class="form-input has-icon has-suffix" id="su-pw" type="password" placeholder="6자 이상 입력하세요">
-          <span class="suffix" onclick="togglePw('su-pw',this)">👁️</span>
-        </div>
+        <label class="form-label">비밀번호 <span style="font-size:11px;color:var(--text-sub);font-weight:400;">(6자 이상)</span></label>
+        <div class="input-wrap"><span class="input-icon">🔒</span><input class="form-input has-icon has-suffix" id="su-pw" type="password" placeholder="6자 이상 입력하세요"><span class="input-suffix" onclick="togglePw('su-pw',this)">👁️</span></div>
       </div>
-
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">닉네임</label>
-        <div class="input-wrap">
-          <span class="icon">👤</span>
-          <input class="form-input has-icon" id="su-nick" type="text" placeholder="앱에서 표시될 이름을 입력하세요">
-        </div>
+        <div class="input-wrap"><span class="input-icon">👤</span><input class="form-input has-icon" id="su-nick" type="text" placeholder="앱에서 표시될 이름"></div>
       </div>
-
       <div class="form-group">
-        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-          <label class="form-label" style="margin:0;">교회명</label>
-          <span style="font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:6px;padding:2px 8px;">선택</span>
-        </div>
-        <div class="input-wrap">
-          <span class="icon">⛪</span>
-          <input class="form-input has-icon" id="su-church" type="text" placeholder="출석 교회 이름 (선택사항)">
-        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><label class="form-label" style="margin:0;">교회명</label><span style="font-size:11px;font-weight:600;color:var(--primary);background:var(--primary-light);border-radius:6px;padding:2px 8px;">선택</span></div>
+        <div class="input-wrap"><span class="input-icon">⛪</span><input class="form-input has-icon" id="su-church" type="text" placeholder="출석 교회 이름 (선택사항)"></div>
       </div>
     </div>
     <div style="height:16px;"></div>
-
-    <!-- 가입 완료 버튼 -->
     <button class="btn btn-primary" id="signup-btn" onclick="doSignup()">가입 완료</button>
     <div style="height:16px;"></div>
-
-    <!-- 로그인 링크 -->
-    <div style="text-align:center;font-size:14px;color:var(--text-sub);">
-      이미 계정이 있으신가요? <span onclick="goPage('login')" style="color:var(--primary);font-weight:700;cursor:pointer;">로그인</span>
-    </div>
+    <div style="text-align:center;font-size:14px;color:var(--text-sub);">이미 계정이 있으신가요? <span onclick="goPage('login')" style="color:var(--primary);font-weight:700;cursor:pointer;">로그인</span></div>
     <div style="height:40px;"></div>
   </div>
 </div>
 
-<!-- ====================================================
-     홈 화면
-==================================================== -->
+<!-- ====================================================  홈  ==================================================== -->
 <div class="page" id="page-home">
-  <!-- 앱바 -->
   <div class="app-bar">
     <div style="font-size:22px;font-weight:800;color:var(--primary);">Intercesso</div>
     <div style="flex:1;"></div>
-    <button class="app-bar-action" onclick="goPage('notifications')">
-      <span style="position:relative;">🔔<span id="notif-badge" style="position:absolute;top:-4px;right:-6px;background:var(--danger);color:#fff;border-radius:50%;width:14px;height:14px;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;">3</span></span>
+    <button class="app-bar-action" onclick="goPage('notifications')" id="notif-btn">
+      <span style="position:relative;">🔔<span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-6px;background:var(--danger);color:#fff;border-radius:50%;min-width:14px;height:14px;font-size:9px;display:none;align-items:center;justify-content:center;font-weight:700;padding:0 2px;"></span></span>
     </button>
   </div>
-  <!-- 본문 -->
   <div class="scroll-body" id="home-scroll">
-    <!-- 인사말 + 통계 -->
     <div style="padding:16px 16px 8px;">
       <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1.3;margin-bottom:16px;">
         <span id="home-greeting-name" style="color:var(--primary);">사용자</span>님<br>오늘도 함께 기도해요 🙏
       </div>
-      <!-- 통계 카드 -->
       <div class="card" style="padding:20px;">
         <div class="stat-row" style="margin-bottom:16px;">
-          <div class="stat-item">
-            <span class="stat-value">12</span>
-            <span class="stat-label">내 기도</span>
-          </div>
+          <div class="stat-item"><span class="stat-value" id="stat-total">-</span><span class="stat-label">내 기도</span></div>
           <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-value">4</span>
-            <span class="stat-label">응답받음</span>
-          </div>
+          <div class="stat-item"><span class="stat-value" id="stat-answered">-</span><span class="stat-label">응답받음</span></div>
           <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-value">28</span>
-            <span class="stat-label">함께 기도</span>
-          </div>
+          <div class="stat-item"><span class="stat-value" id="stat-together">-</span><span class="stat-label">함께 기도</span></div>
           <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-value">7일 🔥</span>
-            <span class="stat-label">연속</span>
-          </div>
+          <div class="stat-item"><span class="stat-value" id="stat-streak">-</span><span class="stat-label">연속 🔥</span></div>
         </div>
         <button class="btn btn-outline btn-sm" style="width:100%;height:42px;" onclick="goPage('dashboard')">상세 통계 보기</button>
       </div>
     </div>
-
-    <!-- 최근 기도 목록 -->
     <div class="section-header">
       <span class="section-title">최근 기도 목록</span>
-      <button class="section-more" onclick="goTab('prayers')">전체보기 ></button>
+      <button class="section-more" onclick="goTab('prayers')">전체보기 ›</button>
     </div>
-    <div id="home-prayer-list"></div>
+    <div id="home-prayer-list"><div class="loading-state"><div class="spinner"></div></div></div>
     <div style="height:80px;"></div>
   </div>
-  <!-- 하단 탭 -->
   <div class="tab-bar">
     <button class="tab-item active" onclick="goTab('home')"><span class="tab-icon">🏠</span>홈</button>
     <button class="tab-item" onclick="goTab('prayers')"><span class="tab-icon">🙏</span>기도</button>
@@ -581,22 +357,18 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     기도 목록 화면
-==================================================== -->
+<!-- ====================================================  기도 목록  ==================================================== -->
 <div class="page" id="page-prayers">
   <div class="app-bar">
     <div class="app-bar-title">기도 목록</div>
     <button class="app-bar-action" onclick="goPage('prayer-create')">✏️</button>
   </div>
-  <!-- 탭 네비게이션 -->
   <div class="tab-nav">
-    <button class="tab-nav-item active" onclick="switchPrayerTab(this,'all')">전체 공개</button>
+    <button class="tab-nav-item active" onclick="switchPrayerTab(this,'public')">전체 공개</button>
     <button class="tab-nav-item" onclick="switchPrayerTab(this,'mine')">내 기도</button>
     <button class="tab-nav-item" onclick="switchPrayerTab(this,'friends')">지인 기도</button>
     <button class="tab-nav-item" onclick="switchPrayerTab(this,'praying')">기도중</button>
   </div>
-  <!-- 카테고리 필터 -->
   <div class="filter-bar" id="category-filter">
     <span class="filter-chip active" onclick="filterCategory(this,null)">전체</span>
     <span class="filter-chip" onclick="filterCategory(this,'건강')">건강</span>
@@ -616,12 +388,14 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     중보기도 화면
-==================================================== -->
+<!-- ====================================================  중보기도  ==================================================== -->
 <div class="page" id="page-intercession">
   <div class="app-bar">
     <div class="app-bar-title">중보기도</div>
+  </div>
+  <div class="tab-nav">
+    <button class="tab-nav-item active" onclick="switchIntercessionTab(this,'received')">받은 요청</button>
+    <button class="tab-nav-item" onclick="switchIntercessionTab(this,'sent')">보낸 요청</button>
   </div>
   <div class="scroll-body" id="intercession-list" style="padding-top:8px;"></div>
   <div class="tab-bar">
@@ -633,9 +407,7 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     그룹 화면
-==================================================== -->
+<!-- ====================================================  그룹  ==================================================== -->
 <div class="page" id="page-groups">
   <div class="app-bar">
     <div class="app-bar-title">그룹</div>
@@ -651,89 +423,64 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     프로필(마이페이지) 화면
-==================================================== -->
+<!-- ====================================================  프로필  ==================================================== -->
 <div class="page" id="page-profile">
   <div class="app-bar">
     <div class="app-bar-title">마이페이지</div>
     <button class="app-bar-action" onclick="goPage('edit-profile')">⚙️</button>
   </div>
   <div class="scroll-body">
-    <!-- 프로필 카드 -->
     <div style="padding:16px;">
       <div class="card" style="padding:24px;">
         <div style="display:flex;flex-direction:column;align-items:center;">
-          <div class="profile-avatar" id="profile-avatar-img">
-            <span id="profile-avatar-text">?</span>
-          </div>
+          <div class="profile-avatar-lg" id="profile-avatar-wrap"><span id="profile-avatar-text">?</span></div>
           <div style="height:12px;"></div>
           <div style="font-size:20px;font-weight:800;color:var(--text);" id="profile-name">-</div>
           <div style="font-size:13px;color:var(--text-sub);margin-top:4px;" id="profile-church"></div>
           <div style="height:16px;"></div>
           <div style="width:100%;height:1px;background:var(--border);"></div>
           <div style="height:12px;"></div>
-          <!-- 통계 -->
           <div class="stat-row" style="width:100%;">
-            <div class="stat-item">
-              <span class="stat-value">12</span>
-              <span class="stat-label">내 기도</span>
-            </div>
+            <div class="stat-item"><span class="stat-value" id="profile-stat-prayers">-</span><span class="stat-label">내 기도</span></div>
             <div class="stat-divider"></div>
-            <div class="stat-item">
-              <span class="stat-value">4</span>
-              <span class="stat-label">응답받음</span>
-            </div>
+            <div class="stat-item"><span class="stat-value" id="profile-stat-answered">-</span><span class="stat-label">응답받음</span></div>
             <div class="stat-divider"></div>
-            <div class="stat-item">
-              <span class="stat-value">28</span>
-              <span class="stat-label">함께 기도</span>
-            </div>
+            <div class="stat-item"><span class="stat-value" id="profile-stat-together">-</span><span class="stat-label">함께 기도</span></div>
           </div>
           <div style="height:16px;"></div>
           <button class="btn btn-outline btn-sm" style="width:100%;height:42px;" onclick="goPage('edit-profile')">프로필 수정</button>
         </div>
       </div>
     </div>
-    <!-- 메뉴 카드 -->
     <div style="padding:0 16px;">
       <div class="card">
-        <div class="menu-item" onclick="">
-          <div class="menu-icon-wrap">📖</div>
-          <div class="menu-text">내 기도 목록</div>
-          <div class="menu-arrow">›</div>
+        <div class="menu-item" onclick="switchPrayerTab(null,'mine');goTab('prayers')">
+          <div class="menu-icon-wrap">📖</div><div class="menu-item-text">내 기도 목록</div><div class="menu-item-arrow">›</div>
         </div>
-        <div style="height:1px;background:var(--border);margin-left:64px;"></div>
+        <div class="menu-divider"></div>
         <div class="menu-item" onclick="goPage('dashboard')">
-          <div class="menu-icon-wrap">📊</div>
-          <div class="menu-text">기도 통계</div>
-          <div class="menu-arrow">›</div>
+          <div class="menu-icon-wrap">📊</div><div class="menu-item-text">기도 통계</div><div class="menu-item-arrow">›</div>
         </div>
-        <div style="height:1px;background:var(--border);margin-left:64px;"></div>
+        <div class="menu-divider"></div>
         <div class="menu-item" onclick="goTab('groups')">
-          <div class="menu-icon-wrap">👥</div>
-          <div class="menu-text">내 그룹</div>
-          <div class="menu-arrow">›</div>
+          <div class="menu-icon-wrap">👥</div><div class="menu-item-text">내 그룹</div><div class="menu-item-arrow">›</div>
         </div>
-        <div style="height:1px;background:var(--border);margin-left:64px;"></div>
+        <div class="menu-divider"></div>
         <div class="menu-item" onclick="goPage('notifications')">
-          <div class="menu-icon-wrap">🔔</div>
-          <div class="menu-text">알림 설정</div>
-          <div class="menu-arrow">›</div>
+          <div class="menu-icon-wrap">🔔</div><div class="menu-item-text">알림</div><div class="menu-item-arrow">›</div>
         </div>
       </div>
     </div>
     <div style="height:12px;"></div>
-    <!-- 로그아웃 카드 -->
     <div style="padding:0 16px;">
       <div class="card">
         <div class="menu-item" onclick="confirmLogout()">
           <div class="menu-icon-wrap" style="background:#FEF2F2;">🚪</div>
-          <div class="menu-text" style="color:var(--danger);">로그아웃</div>
+          <div class="menu-item-text" style="color:var(--danger);">로그아웃</div>
         </div>
       </div>
     </div>
-    <div style="height:24px;text-align:center;padding-top:12px;">
+    <div style="padding:16px;text-align:center;">
       <span style="font-size:12px;color:var(--text-light);">Intercesso v1.0.0</span>
     </div>
     <div style="height:80px;"></div>
@@ -747,43 +494,35 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     기도 작성 화면
-==================================================== -->
+<!-- ====================================================  기도 작성  ==================================================== -->
 <div class="page" id="page-prayer-create">
   <div class="app-bar">
-    <button class="app-bar-back" onclick="history.back(); goTab('prayers')">‹</button>
+    <button class="app-bar-back" onclick="goTab('prayers')">‹</button>
     <div class="app-bar-title">기도 작성</div>
-    <div style="width:28px;"></div>
+    <div style="width:36px;"></div>
   </div>
-  <div class="scroll-body" style="padding:16px 24px;">
-    <div class="card" style="padding:24px;">
+  <div class="scroll-body" style="padding:16px;">
+    <div class="card" style="padding:20px;">
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">제목 *</label>
         <input class="form-input" id="pc-title" type="text" placeholder="기도 제목을 입력하세요">
       </div>
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">내용 *</label>
-        <textarea class="form-input" id="pc-content" placeholder="기도 내용을 자세히 적어주세요" rows="5" style="resize:none;"></textarea>
+        <textarea class="form-input" id="pc-content" placeholder="기도 내용을 자세히 적어주세요" rows="5"></textarea>
       </div>
       <div class="form-group" style="margin-bottom:20px;">
         <label class="form-label">카테고리</label>
         <select class="form-input" id="pc-category">
-          <option value="건강">건강</option>
-          <option value="가정">가정</option>
-          <option value="진로">진로</option>
-          <option value="영적">영적</option>
-          <option value="사업">사업</option>
-          <option value="기타">기타</option>
+          <option value="건강">건강</option><option value="가정">가정</option><option value="진로">진로</option>
+          <option value="영적">영적</option><option value="사업">사업</option><option value="기타" selected>기타</option>
         </select>
       </div>
       <div class="form-group">
         <label class="form-label">공개 범위</label>
         <select class="form-input" id="pc-scope">
-          <option value="public">전체 공개</option>
-          <option value="friends">지인 공개</option>
-          <option value="community">공동체</option>
-          <option value="private">비공개</option>
+          <option value="public">전체 공개</option><option value="friends">지인 공개</option>
+          <option value="community">공동체</option><option value="private">비공개</option>
         </select>
       </div>
     </div>
@@ -793,97 +532,176 @@ html, body {
   </div>
 </div>
 
-<!-- ====================================================
-     알림 화면
-==================================================== -->
+<!-- ====================================================  알림  ==================================================== -->
 <div class="page" id="page-notifications">
   <div class="app-bar">
-    <button class="app-bar-back" onclick="goTab('home')">‹</button>
+    <button class="app-bar-back" onclick="goBack()">‹</button>
     <div class="app-bar-title">알림</div>
-    <div style="width:28px;"></div>
+    <button class="app-bar-action" id="notif-read-all-btn" onclick="markAllRead()" style="font-size:13px;color:var(--primary);font-weight:700;display:none;">모두 읽기</button>
   </div>
-  <div class="scroll-body" id="notif-list">
-    <div class="empty-state">
-      <div class="empty-emoji">🔔</div>
-      <div class="empty-title">알림이 없어요</div>
-      <div class="empty-sub">새로운 알림이 오면 여기에 표시됩니다</div>
+  <div class="scroll-body" id="notif-list"></div>
+</div>
+
+<!-- ====================================================  그룹 생성  ==================================================== -->
+<div class="page" id="page-group-create">
+  <div class="app-bar">
+    <button class="app-bar-back" onclick="goTab('groups')">‹</button>
+    <div class="app-bar-title">그룹 만들기</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:16px;">
+    <div class="card" style="padding:20px;">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">그룹 이름 *</label>
+        <input class="form-input" id="gc-name" type="text" placeholder="그룹 이름을 입력하세요">
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">설명</label>
+        <textarea class="form-input" id="gc-desc" placeholder="그룹 소개를 입력하세요" rows="3"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">그룹 유형</label>
+        <select class="form-input" id="gc-type">
+          <option value="general">일반</option><option value="church">교회</option>
+          <option value="cell">셀/구역</option><option value="family">가족</option>
+        </select>
+      </div>
     </div>
+    <div style="height:16px;"></div>
+    <button class="btn btn-primary" onclick="submitGroup()">그룹 만들기</button>
+    <div style="height:40px;"></div>
   </div>
 </div>
 
-<!-- ====================================================
-     토스트
-==================================================== -->
+<!-- ====================================================  프로필 수정  ==================================================== -->
+<div class="page" id="page-edit-profile">
+  <div class="app-bar">
+    <button class="app-bar-back" onclick="goTab('profile')">‹</button>
+    <div class="app-bar-title">프로필 수정</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:16px;">
+    <div class="card" style="padding:20px;">
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">닉네임</label>
+        <div class="input-wrap"><span class="input-icon">👤</span><input class="form-input has-icon" id="ep-nick" type="text" placeholder="닉네임"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">교회명</label>
+        <div class="input-wrap"><span class="input-icon">⛪</span><input class="form-input has-icon" id="ep-church" type="text" placeholder="교회 이름"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">소개</label>
+        <textarea class="form-input" id="ep-bio" placeholder="자기 소개를 입력하세요" rows="3"></textarea>
+      </div>
+    </div>
+    <div style="height:16px;"></div>
+    <button class="btn btn-primary" onclick="submitEditProfile()">저장하기</button>
+    <div style="height:40px;"></div>
+  </div>
+</div>
+
+<!-- ====================================================  토스트  ==================================================== -->
 <div id="toast"></div>
 
+<!-- ====================================================  FAB (기도 작성)  ==================================================== -->
+<button class="fab" id="fab-prayer" onclick="goPage('prayer-create')">✏️</button>
+
 <script>
-// ============================================================
-// 상수 & 상태
-// ============================================================
+/* ============================================================
+   상수 & 전역 상태
+============================================================ */
 const API = 'https://intercesso-backend-production.up.railway.app/api';
 let token = localStorage.getItem('token');
-let currentUser = JSON.parse(localStorage.getItem('user') || 'null');
-let currentPrayerScope = 'all';
+let currentUser = null;
+let currentPrayerScope = 'public';
 let currentCategory = null;
+let currentIntercessionTab = 'received';
 let obPage = 0;
+let pageHistory = [];
 
-// ============================================================
-// 유틸리티
-// ============================================================
-function showToast(msg) {
+/* ============================================================
+   유틸리티
+============================================================ */
+function showToast(msg, duration = 2500) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
 function timeAgo(dateStr) {
+  if (!dateStr) return '';
   const diff = (Date.now() - new Date(dateStr)) / 1000;
   if (diff < 60) return '방금 전';
-  if (diff < 3600) return Math.floor(diff/60) + '분 전';
-  if (diff < 86400) return Math.floor(diff/3600) + '시간 전';
-  if (diff < 2592000) return Math.floor(diff/86400) + '일 전';
-  return Math.floor(diff/2592000) + '개월 전';
+  if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+  if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+  if (diff < 2592000) return Math.floor(diff / 86400) + '일 전';
+  return Math.floor(diff / 2592000) + '개월 전';
 }
 
 async function api(method, path, body) {
   try {
     const res = await fetch(API + path, {
       method,
-      headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {})
+      },
       body: body ? JSON.stringify(body) : undefined,
     });
-    return await res.json();
-  } catch(e) {
+    const data = await res.json();
+    // 401이면 자동 로그아웃
+    if (res.status === 401) {
+      token = null; currentUser = null;
+      localStorage.removeItem('token'); localStorage.removeItem('user');
+    }
+    return data;
+  } catch (e) {
     return { success: false, message: '서버에 연결할 수 없습니다' };
   }
 }
 
 function togglePw(id, el) {
   const inp = document.getElementById(id);
-  if (inp.type === 'password') { inp.type = 'text'; el.textContent = '🙈'; }
-  else { inp.type = 'password'; el.textContent = '👁️'; }
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  el.textContent = inp.type === 'password' ? '👁️' : '🙈';
 }
 
-// ============================================================
-// 페이지 이동
-// ============================================================
+function showLoading(containerId) {
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+}
+
+function showEmpty(containerId, emoji, title, sub = '', actionHtml = '') {
+  const el = document.getElementById(containerId);
+  if (el) el.innerHTML = `<div class="empty-state"><div class="empty-emoji">${emoji}</div><div class="empty-title">${title}</div>${sub ? `<div class="empty-sub">${sub}</div>` : ''}${actionHtml}</div>`;
+}
+
+/* ============================================================
+   네비게이션
+============================================================ */
 function goPage(id) {
+  const current = document.querySelector('.page.active');
+  if (current && current.id !== 'page-' + id) {
+    pageHistory.push(current.id.replace('page-', ''));
+  }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('page-' + id);
   if (page) page.classList.add('active');
+
+  // FAB 표시 제어
+  const fabPages = ['home', 'prayers', 'intercession'];
+  const fab = document.getElementById('fab-prayer');
+  if (fab) fab.classList.toggle('show', fabPages.includes(id) && !!token);
 }
 
 function goTab(id) {
   goPage(id);
-  // 탭 활성화 업데이트
-  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  pageHistory = []; // 탭 전환 시 히스토리 초기화
   document.querySelectorAll('.page.active .tab-item').forEach(t => {
-    if (t.getAttribute('onclick') && t.getAttribute('onclick').includes("'"+id+"'")) {
-      t.classList.add('active');
-    }
+    t.classList.toggle('active', t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'"));
   });
-  // 탭별 데이터 로드
   if (id === 'home') loadHome();
   if (id === 'prayers') loadPrayers();
   if (id === 'intercession') loadIntercession();
@@ -891,16 +709,24 @@ function goTab(id) {
   if (id === 'profile') loadProfile();
 }
 
-// ============================================================
-// 온보딩
-// ============================================================
+function goBack() {
+  if (pageHistory.length > 0) {
+    const prev = pageHistory.pop();
+    goPage(prev);
+  } else {
+    goTab('home');
+  }
+}
+
+/* ============================================================
+   온보딩
+============================================================ */
 function obNext() {
   if (obPage < 2) {
     document.getElementById('ob-' + obPage).classList.remove('active');
     obPage++;
     document.getElementById('ob-' + obPage).classList.add('active');
-    // 도트 업데이트
-    document.querySelectorAll('.ob-dot').forEach((d,i) => d.classList.toggle('active', i === obPage));
+    document.querySelectorAll('.ob-dot').forEach((d, i) => d.classList.toggle('active', i === obPage));
     if (obPage === 2) {
       document.getElementById('ob-btn-next').textContent = '로그인하기';
       document.getElementById('ob-btn-next').onclick = () => goPage('login');
@@ -911,41 +737,49 @@ function obNext() {
   }
 }
 
-// ============================================================
-// 인증 - 로그인
-// ============================================================
+/* ============================================================
+   인증 - 공통: 로그인 성공 후 최신 user 정보 재조회
+============================================================ */
+async function afterLogin(loginToken) {
+  token = loginToken;
+  localStorage.setItem('token', token);
+  const meRes = await api('GET', '/users/me');
+  if (meRes.success && meRes.data) {
+    currentUser = meRes.data;
+  }
+  if (currentUser) {
+    localStorage.setItem('user', JSON.stringify(currentUser));
+  }
+  loadUnreadCount();
+  goTab('home');
+}
+
+/* ============================================================
+   인증 - 이메일 로그인
+============================================================ */
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pw = document.getElementById('login-pw').value;
   const err = document.getElementById('login-error');
   err.classList.remove('show');
-
   if (!email || !pw) { err.textContent = '이메일과 비밀번호를 입력해주세요'; err.classList.add('show'); return; }
   if (!email.includes('@')) { err.textContent = '올바른 이메일 형식을 입력해주세요'; err.classList.add('show'); return; }
-
   const btn = document.getElementById('login-btn');
   btn.textContent = '로그인 중...'; btn.disabled = true;
-
   const res = await api('POST', '/auth/login', { email, password: pw });
-
   btn.textContent = '로그인'; btn.disabled = false;
-
   if (res.success && res.data) {
-    token = res.data.token;
-    currentUser = res.data.user;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(currentUser));
     showToast('로그인 성공! 환영합니다 🙏');
-    goTab('home');
+    await afterLogin(res.data.token);
   } else {
     err.textContent = res.message || '이메일 또는 비밀번호를 확인해주세요';
     err.classList.add('show');
   }
 }
 
-// ============================================================
-// 인증 - 회원가입
-// ============================================================
+/* ============================================================
+   인증 - 회원가입
+============================================================ */
 async function doSignup() {
   const email = document.getElementById('su-email').value.trim();
   const pw = document.getElementById('su-pw').value;
@@ -953,45 +787,35 @@ async function doSignup() {
   const church = document.getElementById('su-church').value.trim();
   const err = document.getElementById('signup-error');
   err.classList.remove('show');
-
   if (!email || !pw || !nick) { err.textContent = '이메일, 비밀번호, 닉네임은 필수입니다'; err.classList.add('show'); return; }
   if (!email.includes('@')) { err.textContent = '올바른 이메일 형식을 입력해주세요'; err.classList.add('show'); return; }
   if (pw.length < 6) { err.textContent = '비밀번호는 6자 이상이어야 합니다'; err.classList.add('show'); return; }
   if (nick.length < 2) { err.textContent = '닉네임은 2자 이상이어야 합니다'; err.classList.add('show'); return; }
-
   const btn = document.getElementById('signup-btn');
   btn.textContent = '처리 중...'; btn.disabled = true;
-
   const res = await api('POST', '/auth/signup', { email, password: pw, nickname: nick, church_name: church || undefined });
-
   btn.textContent = '가입 완료'; btn.disabled = false;
-
   if (res.success && res.data) {
-    token = res.data.token;
-    currentUser = res.data.user;
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(currentUser));
     showToast('회원가입 완료! 환영합니다 🎉');
-    goTab('home');
+    await afterLogin(res.data.token);
   } else {
     err.textContent = res.message || '회원가입에 실패했습니다';
     err.classList.add('show');
   }
 }
 
-// ============================================================
-// 소셜 로그인 - 구글
-// ============================================================
+/* ============================================================
+   소셜 로그인 - 구글
+============================================================ */
 function doGoogleLogin() {
   const GOOGLE_CLIENT_ID = '777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com';
-  const currentRedirectUri = window.location.origin + '/';
-  const redirectUri = encodeURIComponent(currentRedirectUri);
+  const redirectUri = encodeURIComponent(window.location.origin + '/');
   const scope = encodeURIComponent('openid email profile');
   const url = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${redirectUri}&response_type=token&scope=${scope}&prompt=select_account`;
   const popup = window.open(url, 'googleLogin', 'width=500,height=600,left=200,top=100');
   const timer = setInterval(async () => {
     try {
-      if (popup.closed) { clearInterval(timer); return; }
+      if (!popup || popup.closed) { clearInterval(timer); return; }
       const hash = popup.location.hash;
       if (hash && hash.includes('access_token')) {
         clearInterval(timer); popup.close();
@@ -1001,20 +825,22 @@ function doGoogleLogin() {
         const userInfo = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: { Authorization: 'Bearer ' + accessToken }
         }).then(r => r.json());
-        const res = await api('POST', '/auth/social/google', { access_token: accessToken, email: userInfo.email, nickname: userInfo.name, profile_image_url: userInfo.picture });
+        const res = await api('POST', '/auth/social/google', {
+          access_token: accessToken, email: userInfo.email,
+          nickname: userInfo.name, profile_image_url: userInfo.picture
+        });
         if (res.success && res.data) {
-          token = res.data.token; currentUser = res.data.user;
-          localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(currentUser));
-          showToast('구글 로그인 성공! 🎉'); goTab('home');
+          showToast('구글 로그인 성공! 🎉');
+          await afterLogin(res.data.token);
         } else { showToast('구글 로그인 실패: ' + (res.message || '오류')); }
       }
-    } catch(e) {}
+    } catch (e) {}
   }, 500);
 }
 
-// ============================================================
-// 소셜 로그인 - 카카오
-// ============================================================
+/* ============================================================
+   소셜 로그인 - 카카오
+============================================================ */
 function doKakaoLogin() {
   const KAKAO_APP_KEY = '3853e9c9f28e388a2f4dc4cffed572b4';
   const currentRedirectUri = window.location.origin + '/';
@@ -1023,7 +849,7 @@ function doKakaoLogin() {
   const popup = window.open(url, 'kakaoLogin', 'width=500,height=600,left=200,top=100');
   const timer = setInterval(async () => {
     try {
-      if (popup.closed) { clearInterval(timer); return; }
+      if (!popup || popup.closed) { clearInterval(timer); return; }
       const href = popup.location.href;
       if (href && href.includes('code=')) {
         clearInterval(timer); popup.close();
@@ -1031,74 +857,138 @@ function doKakaoLogin() {
         showToast('카카오 인증 중...');
         const res = await api('POST', '/auth/social/kakao', { code, redirect_uri: currentRedirectUri });
         if (res.success && res.data) {
-          token = res.data.token; currentUser = res.data.user;
-          localStorage.setItem('token', token); localStorage.setItem('user', JSON.stringify(currentUser));
-          showToast('카카오 로그인 성공! 🎉'); goTab('home');
+          showToast('카카오 로그인 성공! 🎉');
+          await afterLogin(res.data.token);
         } else { showToast('카카오 로그인 실패: ' + (res.message || '오류')); }
       }
-    } catch(e) {}
+    } catch (e) {}
   }, 500);
 }
 
-// ============================================================
-// 로그아웃
-// ============================================================
+/* ============================================================
+   로그아웃
+============================================================ */
 function confirmLogout() {
   if (confirm('정말 로그아웃 하시겠습니까?')) {
+    api('POST', '/auth/logout');
     token = null; currentUser = null;
     localStorage.removeItem('token'); localStorage.removeItem('user');
+    document.getElementById('fab-prayer').classList.remove('show');
     showToast('로그아웃 되었습니다');
     goPage('onboarding');
   }
 }
 
-// ============================================================
-// 홈 데이터 로드
-// ============================================================
-function loadHome() {
+/* ============================================================
+   홈
+============================================================ */
+async function loadHome() {
+  if (!token) return;
+  // 항상 최신 user 정보 재조회
+  const meRes = await api('GET', '/users/me');
+  if (meRes.success && meRes.data) {
+    currentUser = meRes.data;
+    localStorage.setItem('user', JSON.stringify(currentUser));
+  }
   if (!currentUser) return;
   document.getElementById('home-greeting-name').textContent = currentUser.nickname || '사용자';
+  loadStats();
   loadHomePrayers();
+  loadUnreadCount();
 }
 
-async function loadHomePrayers() {
-  const list = document.getElementById('home-prayer-list');
-  list.innerHTML = '<div class="loading-state"><div class="spinner"></div><span style="color:var(--text-sub);font-size:14px;">기도 목록을 불러오는 중...</span></div>';
-  const res = await api('GET', '/prayers?scope=public&limit=5');
-  if (res.success && res.data && res.data.prayers) {
-    if (res.data.prayers.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">🙏</div><div class="empty-title">아직 기도가 없어요</div><div class="empty-sub">첫 번째 기도를 작성해보세요</div></div>';
-    } else {
-      list.innerHTML = res.data.prayers.map(p => renderPrayerCard(p)).join('');
-    }
+async function loadStats() {
+  const res = await api('GET', '/statistics/dashboard');
+  if (res.success && res.data && res.data.stats) {
+    const s = res.data.stats;
+    document.getElementById('stat-total').textContent = s.total_prayers ?? 0;
+    document.getElementById('stat-answered').textContent = s.answered_prayers ?? 0;
+    document.getElementById('stat-together').textContent = s.total_participations ?? 0;
+    document.getElementById('stat-streak').textContent = (s.streak_days ?? 0) + '일';
   } else {
-    list.innerHTML = renderDummyPrayers();
+    ['stat-total','stat-answered','stat-together','stat-streak'].forEach(id => {
+      document.getElementById(id).textContent = '0';
+    });
+    document.getElementById('stat-streak').textContent = '0일';
   }
 }
 
-// ============================================================
-// 기도 목록
-// ============================================================
-async function loadPrayers() {
-  const list = document.getElementById('prayers-list');
-  list.innerHTML = '<div class="loading-state"><div class="spinner"></div><span style="color:var(--text-sub);font-size:14px;">기도 목록을 불러오는 중...</span></div>';
-  let url = `/prayers?scope=${currentPrayerScope === 'all' ? 'public' : currentPrayerScope}&limit=20`;
-  if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
-  const res = await api('GET', url);
-  if (res.success && res.data && res.data.prayers) {
-    if (res.data.prayers.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">🙏</div><div class="empty-title">기도가 없어요</div><div class="empty-sub">첫 번째 기도를 작성해보세요</div></div>';
+async function loadHomePrayers() {
+  showLoading('home-prayer-list');
+  const res = await api('GET', '/prayers?scope=public&limit=5');
+  const list = document.getElementById('home-prayer-list');
+  // API 응답: { data: [...] } (배열 직접) 또는 { data: { prayers: [...] } }
+  const prayers = extractPrayers(res);
+  if (prayers === null) {
+    showEmpty('home-prayer-list', '🙏', '아직 기도가 없어요', '첫 번째 기도를 작성해보세요');
+  } else if (prayers.length === 0) {
+    showEmpty('home-prayer-list', '🙏', '아직 기도가 없어요', '첫 번째 기도를 작성해보세요');
+  } else {
+    list.innerHTML = prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:8px;"></div>';
+  }
+}
+
+// 기도 배열 추출 (API 응답 구조 다양성 처리)
+function extractPrayers(res) {
+  if (!res.success) return null;
+  if (Array.isArray(res.data)) return res.data;
+  if (res.data && Array.isArray(res.data.prayers)) return res.data.prayers;
+  if (res.data && Array.isArray(res.data)) return res.data;
+  return [];
+}
+
+/* ============================================================
+   알림 뱃지
+============================================================ */
+async function loadUnreadCount() {
+  if (!token) return;
+  const res = await api('GET', '/notifications/unread-count');
+  const badge = document.getElementById('notif-badge');
+  if (res.success && res.data) {
+    const count = res.data.unread_count || 0;
+    if (count > 0) {
+      badge.textContent = count > 99 ? '99+' : count;
+      badge.style.display = 'flex';
     } else {
-      list.innerHTML = res.data.prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
+      badge.style.display = 'none';
     }
   } else {
-    list.innerHTML = renderDummyPrayers() + '<div style="height:80px;"></div>';
+    badge.style.display = 'none';
+  }
+}
+
+/* ============================================================
+   기도 목록
+============================================================ */
+async function loadPrayers() {
+  showLoading('prayers-list');
+  let url = `/prayers?limit=20`;
+  if (currentPrayerScope === 'mine') {
+    url += '&scope=mine';
+  } else if (currentPrayerScope === 'praying') {
+    url += '&status=praying&scope=public';
+  } else if (currentPrayerScope === 'friends') {
+    url += '&scope=friends';
+  } else {
+    url += '&scope=public';
+  }
+  if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
+  const res = await api('GET', url);
+  const prayers = extractPrayers(res);
+  if (!prayers || prayers.length === 0) {
+    showEmpty('prayers-list', '🙏', '기도가 없어요', '첫 번째 기도를 작성해보세요',
+      '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'prayer-create\')">기도 작성하기</button>');
+  } else {
+    document.getElementById('prayers-list').innerHTML =
+      prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
   }
 }
 
 function switchPrayerTab(el, scope) {
-  document.querySelectorAll('#page-prayers .tab-nav-item').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  if (el) {
+    document.querySelectorAll('#page-prayers .tab-nav-item').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
   currentPrayerScope = scope;
   loadPrayers();
 }
@@ -1110,108 +1000,231 @@ function filterCategory(el, cat) {
   loadPrayers();
 }
 
-// ============================================================
-// 중보기도
-// ============================================================
+/* ============================================================
+   중보기도
+============================================================ */
 async function loadIntercession() {
-  const list = document.getElementById('intercession-list');
-  list.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  const res = await api('GET', '/intercession');
-  if (res.success && res.data) {
-    list.innerHTML = (res.data.length === 0)
-      ? '<div class="empty-state"><div class="empty-emoji">💌</div><div class="empty-title">중보기도 요청이 없어요</div><div class="empty-sub">다른 사람의 기도를 함께 나눠보세요</div></div>'
-      : res.data.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
+  showLoading('intercession-list');
+  const endpoint = currentIntercessionTab === 'received'
+    ? '/intercessions/received'
+    : '/intercessions/sent';
+  const res = await api('GET', endpoint);
+  const items = extractPrayers(res);
+  if (!items || items.length === 0) {
+    const msg = currentIntercessionTab === 'received'
+      ? '받은 중보기도 요청이 없어요'
+      : '보낸 중보기도 요청이 없어요';
+    showEmpty('intercession-list', '💌', msg, '다른 사람의 기도를 위해\n함께 기도해보세요');
   } else {
-    list.innerHTML = '<div class="empty-state"><div class="empty-emoji">💌</div><div class="empty-title">중보기도 요청이 없어요</div></div>';
+    document.getElementById('intercession-list').innerHTML =
+      items.map(r => renderIntercessionCard(r)).join('') + '<div style="height:80px;"></div>';
   }
 }
 
-// ============================================================
-// 그룹
-// ============================================================
-async function loadGroups() {
-  const list = document.getElementById('groups-list');
-  list.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
-  const res = await api('GET', '/groups');
-  if (res.success && res.data && res.data.groups) {
-    if (res.data.groups.length === 0) {
-      list.innerHTML = '<div class="empty-state"><div class="empty-emoji">👥</div><div class="empty-title">그룹이 없어요</div><div class="empty-sub">새 그룹을 만들어보세요</div><button class="btn btn-primary btn-sm" style="width:auto;margin-top:8px;" onclick="goPage(\'group-create\')">그룹 만들기</button></div>';
-    } else {
-      list.innerHTML = res.data.groups.map(g => `
-        <div class="group-card">
-          <div class="group-card-header">
-            <div class="group-icon">${g.type==='church'?'⛪':g.type==='cell'?'🏠':g.type==='family'?'👨‍👩‍👧':'👥'}</div>
-            <div>
-              <div style="font-size:16px;font-weight:700;color:var(--text);">${g.name}</div>
-              <div style="font-size:12px;color:var(--text-sub);">${g.member_count||0}명 · ${g.prayer_count||0}개 기도</div>
-            </div>
-          </div>
-          ${g.description ? `<div style="font-size:13px;color:var(--text-sub);line-height:1.6;">${g.description}</div>` : ''}
-        </div>`).join('') + '<div style="height:80px;"></div>';
-    }
-  } else {
-    list.innerHTML = '<div class="empty-state"><div class="empty-emoji">👥</div><div class="empty-title">그룹이 없어요</div></div>';
-  }
+function switchIntercessionTab(el, tab) {
+  document.querySelectorAll('#page-intercession .tab-nav-item').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  currentIntercessionTab = tab;
+  loadIntercession();
 }
 
-// ============================================================
-// 프로필
-// ============================================================
-function loadProfile() {
-  if (!currentUser) return;
-  const nick = currentUser.nickname || '?';
-  document.getElementById('profile-name').textContent = nick;
-  document.getElementById('profile-avatar-text').textContent = nick[0];
-  if (currentUser.church_name) {
-    document.getElementById('profile-church').textContent = '⛪ ' + currentUser.church_name;
-  }
-  if (currentUser.profile_image_url) {
-    document.getElementById('profile-avatar-img').innerHTML = `<img src="${currentUser.profile_image_url}" alt="${nick}">`;
-  }
-}
-
-// ============================================================
-// 기도 렌더링
-// ============================================================
-function renderPrayerCard(p) {
-  const nick = p.user?.nickname || '익명';
-  const initials = nick[0] || '?';
-  const statusMap = { praying: ['기도중 🙏','tag-status-praying'], answered: ['응답받음 ✅','tag-status-answered'], grateful: ['감사 🙌','tag-status-grateful'] };
-  const [statusLabel, statusClass] = statusMap[p.status] || ['기도중 🙏','tag-status-praying'];
+function renderIntercessionCard(r) {
+  const prayer = r.prayer || {};
+  const requester = r.requester || r.recipient || {};
+  const nick = requester.nickname || '익명';
+  const statusLabel = r.status === 'accepted' ? '수락됨' : r.status === 'rejected' ? '거절됨' : '대기중';
+  const statusColor = r.status === 'accepted' ? 'var(--success)' : r.status === 'rejected' ? 'var(--danger)' : 'var(--warning)';
   return `
-  <div class="prayer-card" onclick="">
+  <div class="prayer-card">
     <div class="prayer-card-header">
-      <div class="prayer-avatar">${p.user?.profile_image_url ? `<img src="${p.user.profile_image_url}">` : initials}</div>
+      <div class="prayer-avatar">${nick[0] || '?'}</div>
       <div>
         <div class="prayer-user-name">${nick}</div>
-        <div class="prayer-time">${timeAgo(p.created_at)}</div>
+        <div class="prayer-time">${timeAgo(r.created_at)}</div>
       </div>
+      <div style="margin-left:auto;font-size:12px;font-weight:700;color:${statusColor};">${statusLabel}</div>
     </div>
-    <div class="prayer-title">${p.title}</div>
-    <div class="prayer-content">${p.content || ''}</div>
-    <div class="prayer-tags">
-      ${p.category ? `<span class="tag tag-category">${p.category}</span>` : ''}
-      <span class="tag ${statusClass}">${statusLabel}</span>
-    </div>
-    <div class="prayer-footer">
-      <button class="prayer-action ${p.is_participated?'active':''}" onclick="event.stopPropagation()">🙏 ${p.prayer_count||0}</button>
-      <button class="prayer-action" onclick="event.stopPropagation()">💬 ${p.comment_count||0}</button>
-    </div>
+    <div class="prayer-title">${prayer.title || '(기도 제목 없음)'}</div>
+    ${r.message ? `<div class="prayer-content">${r.message}</div>` : ''}
+    ${r.status === 'pending' && currentIntercessionTab === 'received' ? `
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button class="btn btn-primary btn-sm" style="flex:1;" onclick="respondIntercession('${r.id}','accepted')">수락</button>
+      <button class="btn btn-outline btn-sm" style="flex:1;" onclick="respondIntercession('${r.id}','rejected')">거절</button>
+    </div>` : ''}
   </div>`;
 }
 
-function renderDummyPrayers() {
-  const dummies = [
-    { id:'d1', title:'취업 준비를 위해 기도해주세요', content:'내년 상반기 취업을 목표로 준비하고 있습니다. 하나님의 인도하심을 구합니다.', category:'진로', status:'praying', user:{nickname:'믿음'}, prayer_count:15, comment_count:3, created_at: new Date(Date.now()-3600000).toISOString() },
-    { id:'d2', title:'어머니 건강 회복을 위해', content:'어머니께서 최근 입원하셨습니다. 빠른 쾌유를 위해 기도 부탁드립니다.', category:'건강', status:'praying', user:{nickname:'소망'}, prayer_count:23, comment_count:5, created_at: new Date(Date.now()-7200000).toISOString() },
-    { id:'d3', title:'우리 가정에 평화가 임하길', content:'요즘 가족 간의 갈등이 있습니다. 화해와 사랑으로 회복되기를 기도합니다.', category:'가정', status:'praying', user:{nickname:'은혜'}, prayer_count:8, comment_count:2, created_at: new Date(Date.now()-86400000).toISOString() },
-  ];
-  return dummies.map(p => renderPrayerCard(p)).join('');
+async function respondIntercession(id, status) {
+  const res = await api('PUT', `/intercessions/${id}/respond`, { status });
+  if (res.success) {
+    showToast(status === 'accepted' ? '중보기도 요청을 수락했습니다 🙏' : '요청을 거절했습니다');
+    loadIntercession();
+  } else {
+    showToast(res.message || '처리 실패');
+  }
 }
 
-// ============================================================
-// 기도 작성
-// ============================================================
+/* ============================================================
+   그룹
+============================================================ */
+async function loadGroups() {
+  showLoading('groups-list');
+  const res = await api('GET', '/groups');
+  // 그룹 API: { data: [] } 직접 배열 또는 { data: { groups: [] } }
+  let groups = [];
+  if (res.success) {
+    if (Array.isArray(res.data)) groups = res.data;
+    else if (res.data && Array.isArray(res.data.groups)) groups = res.data.groups;
+    else if (res.data && Array.isArray(res.data)) groups = res.data;
+  }
+  if (groups.length === 0) {
+    showEmpty('groups-list', '👥', '그룹이 없어요', '새 그룹을 만들어보세요',
+      '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'group-create\')">그룹 만들기</button>');
+  } else {
+    const typeEmoji = { church: '⛪', cell: '🏠', family: '👨‍👩‍👧', general: '👥' };
+    document.getElementById('groups-list').innerHTML =
+      groups.map(g => `
+      <div class="group-card" onclick="">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:48px;height:48px;border-radius:14px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+            ${typeEmoji[g.group_type || g.type] || '👥'}
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:16px;font-weight:700;color:var(--text);">${g.name}</div>
+            <div style="font-size:12px;color:var(--text-sub);margin-top:2px;">${g.member_count || 0}명${g.description ? ' · ' + g.description : ''}</div>
+          </div>
+          <div style="color:var(--text-light);font-size:18px;">›</div>
+        </div>
+      </div>`).join('') + '<div style="height:80px;"></div>';
+  }
+}
+
+async function submitGroup() {
+  if (!token) { showToast('로그인이 필요합니다'); return; }
+  const name = document.getElementById('gc-name').value.trim();
+  const desc = document.getElementById('gc-desc').value.trim();
+  const type = document.getElementById('gc-type').value;
+  if (!name) { showToast('그룹 이름을 입력해주세요'); return; }
+  const res = await api('POST', '/groups', { name, description: desc, group_type: type });
+  if (res.success) {
+    showToast('그룹이 만들어졌습니다 🎉');
+    document.getElementById('gc-name').value = '';
+    document.getElementById('gc-desc').value = '';
+    goTab('groups');
+  } else {
+    showToast(res.message || '그룹 생성 실패');
+  }
+}
+
+/* ============================================================
+   프로필
+============================================================ */
+async function loadProfile() {
+  if (!token) return;
+  const meRes = await api('GET', '/users/me');
+  if (meRes.success && meRes.data) {
+    currentUser = meRes.data;
+    localStorage.setItem('user', JSON.stringify(currentUser));
+  }
+  if (!currentUser) return;
+  const nick = currentUser.nickname || '?';
+  document.getElementById('profile-name').textContent = nick;
+  document.getElementById('profile-avatar-text').textContent = nick[0] || '?';
+  document.getElementById('profile-church').textContent = currentUser.church_name ? '⛪ ' + currentUser.church_name : '';
+  if (currentUser.profile_image_url) {
+    document.getElementById('profile-avatar-wrap').innerHTML = `<img src="${currentUser.profile_image_url}" alt="${nick}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  }
+  // 프로필 수정 폼 pre-fill
+  document.getElementById('ep-nick').value = currentUser.nickname || '';
+  document.getElementById('ep-church').value = currentUser.church_name || '';
+  document.getElementById('ep-bio').value = currentUser.bio || '';
+  // 통계 로드
+  const statsRes = await api('GET', '/statistics/dashboard');
+  if (statsRes.success && statsRes.data && statsRes.data.stats) {
+    const s = statsRes.data.stats;
+    document.getElementById('profile-stat-prayers').textContent = s.total_prayers ?? 0;
+    document.getElementById('profile-stat-answered').textContent = s.answered_prayers ?? 0;
+    document.getElementById('profile-stat-together').textContent = s.total_participations ?? 0;
+  } else {
+    ['profile-stat-prayers','profile-stat-answered','profile-stat-together'].forEach(id => {
+      document.getElementById(id).textContent = '0';
+    });
+  }
+}
+
+async function submitEditProfile() {
+  const nick = document.getElementById('ep-nick').value.trim();
+  const church = document.getElementById('ep-church').value.trim();
+  const bio = document.getElementById('ep-bio').value.trim();
+  if (!nick) { showToast('닉네임을 입력해주세요'); return; }
+  const res = await api('PUT', '/users/me', { nickname: nick, church_name: church || null, bio: bio || null });
+  if (res.success) {
+    currentUser = res.data;
+    localStorage.setItem('user', JSON.stringify(currentUser));
+    showToast('프로필이 저장되었습니다 ✅');
+    goTab('profile');
+  } else {
+    showToast(res.message || '저장 실패');
+  }
+}
+
+/* ============================================================
+   알림
+============================================================ */
+async function loadNotifications() {
+  showLoading('notif-list');
+  const res = await api('GET', '/notifications?limit=30');
+  // 알림 API: sendPaginated → { data: [...], pagination: {...} }
+  let notifs = [];
+  if (res.success) {
+    if (Array.isArray(res.data)) notifs = res.data;
+    else if (res.data && Array.isArray(res.data.notifications)) notifs = res.data.notifications;
+  }
+  const hasUnread = notifs.some(n => !n.is_read);
+  const btn = document.getElementById('notif-read-all-btn');
+  if (btn) btn.style.display = hasUnread ? 'block' : 'none';
+  if (notifs.length === 0) {
+    showEmpty('notif-list', '🔔', '알림이 없어요', '새로운 알림이 오면 여기에 표시됩니다');
+  } else {
+    const typeEmoji = {
+      prayer_participation: '🙏',
+      comment: '💬',
+      intercession_request: '💌',
+      prayer_answered: '✅',
+      group_notification: '👥',
+    };
+    document.getElementById('notif-list').innerHTML = notifs.map(n => `
+      <div class="notif-item ${n.is_read ? '' : 'unread'}" onclick="markRead('${n.id}', this)">
+        <div style="width:44px;height:44px;border-radius:12px;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">
+          ${typeEmoji[n.type] || '🔔'}
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:${n.is_read ? '500' : '700'};color:var(--text);">${n.title || '알림'}</div>
+          ${n.message ? `<div style="font-size:13px;color:var(--text-sub);margin-top:3px;line-height:1.5;">${n.message}</div>` : ''}
+          <div style="font-size:11px;color:var(--text-light);margin-top:4px;">${timeAgo(n.created_at)}</div>
+        </div>
+        ${!n.is_read ? '<div class="notif-dot"></div>' : ''}
+      </div>`).join('');
+  }
+  loadUnreadCount();
+}
+
+async function markRead(id, el) {
+  await api('PUT', `/notifications/${id}/read`);
+  el.classList.remove('unread');
+  el.querySelector('.notif-dot')?.remove();
+  loadUnreadCount();
+}
+
+async function markAllRead() {
+  await api('PUT', '/notifications/read-all');
+  showToast('모든 알림을 읽었습니다');
+  loadNotifications();
+}
+
+/* ============================================================
+   기도 작성
+============================================================ */
 async function submitPrayer() {
   if (!token) { showToast('로그인이 필요합니다'); goPage('login'); return; }
   const title = document.getElementById('pc-title').value.trim();
@@ -1226,20 +1239,111 @@ async function submitPrayer() {
     document.getElementById('pc-content').value = '';
     goTab('prayers');
   } else {
-    showToast(res.message || '기도 등록에 실패했습니다');
+    showToast(res.message || '기도 등록 실패');
   }
 }
 
-// ============================================================
-// 초기화
-// ============================================================
-window.addEventListener('load', () => {
-  if (token && currentUser) {
-    goTab('home');
+/* ============================================================
+   기도 참여
+============================================================ */
+async function participatePrayer(prayerId, btn) {
+  if (!token) { showToast('로그인이 필요합니다'); goPage('login'); return; }
+  const res = await api('POST', `/prayers/${prayerId}/participate`);
+  if (res.success) {
+    btn.classList.add('active');
+    const countEl = btn.querySelector('.pray-count');
+    if (countEl) countEl.textContent = parseInt(countEl.textContent || '0') + 1;
+    showToast('함께 기도했습니다 🙏');
+  } else if (res.error?.code === 'ALREADY_PARTICIPATED') {
+    showToast('이미 함께 기도하셨습니다');
+  } else {
+    showToast(res.message || '오류가 발생했습니다');
+  }
+}
+
+/* ============================================================
+   기도 카드 렌더링
+============================================================ */
+function renderPrayerCard(p) {
+  const nick = p.user?.nickname || p.nickname || '익명';
+  const initials = nick[0] || '?';
+  const img = p.user?.profile_image_url || p.profile_image_url;
+  const statusMap = {
+    praying:  ['기도중 🙏', 'tag-praying'],
+    answered: ['응답받음 ✅', 'tag-answered'],
+    grateful: ['감사 🙌', 'tag-grateful']
+  };
+  const [statusLabel, statusClass] = statusMap[p.status] || ['기도중 🙏', 'tag-praying'];
+  const avatarHtml = img
+    ? `<img src="${img}" alt="${nick}" onerror="this.parentElement.textContent='${initials}'">`
+    : initials;
+  return `
+  <div class="prayer-card">
+    <div class="prayer-card-header">
+      <div class="prayer-avatar">${avatarHtml}</div>
+      <div style="flex:1;">
+        <div class="prayer-user-name">${nick}</div>
+        <div class="prayer-time">${timeAgo(p.created_at)}</div>
+      </div>
+    </div>
+    <div class="prayer-title">${escHtml(p.title || '')}</div>
+    <div class="prayer-content">${escHtml(p.content || '')}</div>
+    <div class="prayer-tags">
+      ${p.category ? `<span class="tag tag-category">${p.category}</span>` : ''}
+      <span class="tag ${statusClass}">${statusLabel}</span>
+    </div>
+    <div class="prayer-footer">
+      <button class="prayer-action ${p.is_participated ? 'active' : ''}"
+        onclick="event.stopPropagation();participatePrayer('${p.id}',this)">
+        🙏 <span class="pray-count">${p.prayer_count || 0}</span>
+      </button>
+      <span class="prayer-action">💬 ${p.comment_count || 0}</span>
+    </div>
+  </div>`;
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ============================================================
+   알림 화면 진입 override
+============================================================ */
+const _origGoPage = goPage;
+
+/* ============================================================
+   초기화
+============================================================ */
+window.addEventListener('load', async () => {
+  if (token) {
+    // 토큰 있으면 최신 user 정보 로드 후 홈으로
+    const meRes = await api('GET', '/users/me');
+    if (meRes.success && meRes.data) {
+      currentUser = meRes.data;
+      localStorage.setItem('user', JSON.stringify(currentUser));
+      goTab('home');
+    } else {
+      // 토큰 만료 등
+      token = null;
+      localStorage.removeItem('token'); localStorage.removeItem('user');
+      goPage('onboarding');
+    }
   } else {
     goPage('onboarding');
   }
 });
+
+// goPage override - 알림 페이지 진입 시 자동 로드
+const origGoPageImpl = goPage;
+window.goPage = function(id) {
+  origGoPageImpl(id);
+  if (id === 'notifications') loadNotifications();
+  if (id === 'edit-profile' && currentUser) {
+    document.getElementById('ep-nick').value = currentUser.nickname || '';
+    document.getElementById('ep-church').value = currentUser.church_name || '';
+    document.getElementById('ep-bio').value = currentUser.bio || '';
+  }
+};
 </script>
 </body>
 </html>
