@@ -143,18 +143,21 @@ class PrayerModel {
 
   String get categoryEmoji {
     switch (category) {
-      case '건강':
-        return '💪';
-      case '가정':
-        return '🏠';
-      case '진로':
-        return '🎯';
-      case '영적':
-        return '✨';
-      case '사업':
-        return '💼';
-      default:
-        return '🙏';
+      case '건강': return '💊';
+      case '가정': return '🏠';
+      case '진로': return '🎯';
+      case '영적': return '✝️';
+      case '사업': return '💼';
+      default: return '🙏';
+    }
+  }
+
+  String get scopeLabel {
+    switch (scope) {
+      case 'friends':   return '👥 지인 공개';
+      case 'community': return '⛪ 공동체';
+      case 'private':   return '🔒 비공개';
+      default:          return '🌐 전체 공개';
     }
   }
 }

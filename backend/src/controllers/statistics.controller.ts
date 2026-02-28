@@ -71,16 +71,25 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       }
     }
 
-    // 최근 기도 (5개)
-    const { data: recentPrayers } = await supabaseAdmin
+    // 최근 기도 (5개) - 댓글 수와 참여 수 포함
+    const { data: recentPrayersRaw } = await supabaseAdmin
       .from('prayers')
-      .select('id, title, status, category, created_at, prayer_count')
+      .select('id, title, status, category, created_at, prayer_count, prayer_participations(count), comments(count)')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
       .limit(5);
 
+    const recentPrayers = (recentPrayersRaw || []).map((p: any) => {
+      const participationCount = Array.isArray(p.prayer_participations)
+        ? (p.prayer_participations[0]?.count ?? p.prayer_count ?? 0)
+        : (p.prayer_count ?? 0);
+      const commentCount = Array.isArray(p.comments) ? (p.comments[0]?.count ?? 0) : 0;
+      const { prayer_participations, comments, ...rest } = p;
+      return { ...rest, prayer_count: participationCount, comment_count: commentCount };
+    });
+
     // 진행 중인 작정기도
-    const { data: covenantPrayers } = await supabaseAdmin
+    const { data: covenantPrayersRaw } = await supabaseAdmin
       .from('prayers')
       .select(`
         id, title, covenant_days, covenant_start_date, created_at,
@@ -90,6 +99,12 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       .eq('is_covenant', true)
       .eq('status', 'praying')
       .limit(3);
+
+    const covenantPrayers = (covenantPrayersRaw || []).map((p: any) => {
+      const checkinCount = Array.isArray(p.covenant_checkins) ? (p.covenant_checkins[0]?.count ?? 0) : 0;
+      const { covenant_checkins, ...rest } = p;
+      return { ...rest, checkin_count: checkinCount };
+    });
 
     // 최근 활동한 그룹
     const { data: groupMemberships } = await supabaseAdmin
@@ -112,8 +127,8 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
         answer_rate: answerRate,
         ...(stats || {}),
       },
-      recent_prayers: recentPrayers || [],
-      covenant_prayers: covenantPrayers || [],
+      recent_prayers: recentPrayers,
+      covenant_prayers: covenantPrayers,
       groups,
     });
   } catch (err) {

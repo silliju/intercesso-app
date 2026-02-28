@@ -21,7 +21,8 @@ export const getPrayers = async (req: AuthRequest, res: Response): Promise<void>
       .select(`
         *,
         user:users(id, nickname, profile_image_url, church_name),
-        prayer_participations(count)
+        prayer_participations(count),
+        comments(count)
       `, { count: 'exact' })
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
@@ -51,7 +52,41 @@ export const getPrayers = async (req: AuthRequest, res: Response): Promise<void>
       return;
     }
 
-    sendPaginated(res, prayers || [], { page, limit, total: count || 0 });
+    // prayer_participations[0].count → prayer_count, comments[0].count → comment_count 로 매핑
+    const mapped = (prayers || []).map((p: any) => {
+      const participationCount = Array.isArray(p.prayer_participations)
+        ? (p.prayer_participations[0]?.count ?? p.prayer_count ?? 0)
+        : (p.prayer_count ?? 0);
+      const commentCount = Array.isArray(p.comments)
+        ? (p.comments[0]?.count ?? 0)
+        : 0;
+      const { prayer_participations, comments, ...rest } = p;
+      return {
+        ...rest,
+        prayer_count: participationCount,
+        comment_count: commentCount,
+      };
+    });
+
+    // 내 기도인 경우 is_participated 추가
+    let result = mapped;
+    if (userId) {
+      const prayerIds = mapped.map((p: any) => p.id);
+      if (prayerIds.length > 0) {
+        const { data: participations } = await supabaseAdmin
+          .from('prayer_participations')
+          .select('prayer_id')
+          .eq('user_id', userId)
+          .in('prayer_id', prayerIds);
+        const participatedSet = new Set((participations || []).map((p: any) => p.prayer_id));
+        result = mapped.map((p: any) => ({
+          ...p,
+          is_participated: participatedSet.has(p.id),
+        }));
+      }
+    }
+
+    sendPaginated(res, result, { page, limit, total: count || 0 });
   } catch {
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
