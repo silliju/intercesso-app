@@ -1,0 +1,49 @@
+# Node.js
+node_modules/
+dist/
+build/
+
+# 환경변수
+.env
+.env.local
+.env.production
+
+# 로그
+logs/
+*.log
+npm-debug.log*
+
+# PM2
+.pm2/
+pids/
+*.pid
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Flutter
+intercesso_app/.dart_tool/
+intercesso_app/.flutter-plugins
+intercesso_app/.flutter-plugins-dependencies
+intercesso_app/.packages
+intercesso_app/build/
+intercesso_app/android/.gradle/
+intercesso_app/android/local.properties
+intercesso_app/ios/Pods/
+intercesso_app/ios/.symlinks/
+intercesso_app/ios/Flutter/Flutter.framework
+intercesso_app/ios/Flutter/Flutter.podspec
+
+# 백업
+*.tar.gz
+*.zip
+*.backup
+
+# APK / PDF (용량이 큰 바이너리 파일)
+*.apk
+*.pdf

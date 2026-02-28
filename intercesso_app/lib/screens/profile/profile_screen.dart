@@ -1,0 +1,229 @@
+import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
+import '../../config/theme.dart';
+import '../../widgets/common_widgets.dart';
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final user = context.watch<AuthProvider>().user;
+
+    return Scaffold(
+      backgroundColor: AppTheme.background,
+      appBar: AppBar(
+        title: const Text('마이페이지'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_outlined),
+            onPressed: () => context.push('/profile/edit'),
+          ),
+        ],
+      ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // 프로필 카드 (보닥 스타일)
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: AppTheme.cardDecoration,
+                child: Column(
+                  children: [
+                    // 프로필 이미지
+                    CircleAvatar(
+                      radius: 40,
+                      backgroundColor: AppTheme.primaryLight,
+                      backgroundImage: user?.profileImageUrl != null
+                          ? NetworkImage(user!.profileImageUrl!)
+                          : null,
+                      child: user?.profileImageUrl == null
+                          ? Text(
+                              user?.nickname.isNotEmpty == true
+                                  ? user!.nickname[0]
+                                  : '?',
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.bold,
+                                color: AppTheme.primary,
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      user?.nickname ?? '',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        color: AppTheme.textPrimary,
+                      ),
+                    ),
+                    if (user?.churchName != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        '⛪ ${user!.churchName}',
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                    if (user?.bio != null) ...[
+                      const SizedBox(height: 6),
+                      Text(
+                        user!.bio!,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    // 통계
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        _buildProfileStat('12', '내 기도'),
+                        Container(
+                            width: 1, height: 32, color: AppTheme.border),
+                        _buildProfileStat('4', '응답받음'),
+                        Container(
+                            width: 1, height: 32, color: AppTheme.border),
+                        _buildProfileStat('28', '함께 기도'),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 42,
+                      child: OutlinedButton(
+                        onPressed: () => context.push('/profile/edit'),
+                        child: const Text('프로필 수정'),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // 메뉴 카드
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: AppTheme.cardDecoration,
+                child: Column(
+                  children: [
+                    MenuItemTile(
+                      icon: Icons.menu_book_outlined,
+                      title: '내 기도 목록',
+                      onTap: () {},
+                    ),
+                    Divider(height: 1, indent: 64, color: AppTheme.border),
+                    MenuItemTile(
+                      icon: Icons.bar_chart_outlined,
+                      title: '기도 통계',
+                      onTap: () => context.push('/dashboard'),
+                    ),
+                    Divider(height: 1, indent: 64, color: AppTheme.border),
+                    MenuItemTile(
+                      icon: Icons.group_outlined,
+                      title: '내 그룹',
+                      onTap: () {},
+                    ),
+                    Divider(height: 1, indent: 64, color: AppTheme.border),
+                    MenuItemTile(
+                      icon: Icons.notifications_outlined,
+                      title: '알림 설정',
+                      onTap: () => context.push('/notifications'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // 로그아웃
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Container(
+                decoration: AppTheme.cardDecoration,
+                child: MenuItemTile(
+                  icon: Icons.logout,
+                  title: '로그아웃',
+                  iconColor: AppTheme.error,
+                  onTap: () => _confirmLogout(context),
+                  trailing: const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              'Intercesso v1.0.0',
+              style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileStat(String value, String label) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w800,
+            color: AppTheme.primary,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            color: AppTheme.textSecondary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _confirmLogout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          '로그아웃',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+        content: const Text('정말 로그아웃 하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<AuthProvider>().logout();
+            },
+            style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+            child: const Text('로그아웃'),
+          ),
+        ],
+      ),
+    );
+  }
+}

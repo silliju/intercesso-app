@@ -1,0 +1,47 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    // Flutter Gradle 플러그인은 Android/Kotlin 플러그인 다음에 적용해야 합니다
+    id "dev.flutter.flutter-gradle-plugin"
+    // 구글 로그인을 위한 Google Services 플러그인
+    id "com.google.gms.google-services"
+}
+
+android {
+    namespace = "com.intercesso.intercesso"
+    compileSdk = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8
+    }
+
+    defaultConfig {
+        // 앱 고유 패키지명 - 카카오/구글 설정과 반드시 일치해야 합니다
+        applicationId = "com.intercesso.intercesso"
+        // 카카오 SDK는 최소 API 21 이상 필요
+        minSdk = 21
+        targetSdk = flutter.targetSdkVersion
+        versionCode = flutter.versionCode
+        versionName = flutter.versionName
+        // 카카오 로그인 콜백 스킴 설정 (네이티브 앱 키 앞에 'kakao' 붙임)
+        manifestPlaceholders += [kakaoNativeAppKey: "3853e9c9f28e388a2f4dc4cffed572b4"]
+    }
+
+    buildTypes {
+        release {
+            // TODO: Add your own signing config for the release build.
+            // Signing with the debug keys for now, so `flutter run --release` works.
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}

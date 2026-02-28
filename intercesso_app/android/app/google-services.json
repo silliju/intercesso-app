@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "777786565733",
+    "project_id": "intercesso-app",
+    "storage_bucket": "intercesso-app.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:777786565733:android:intercesso001",
+        "android_client_info": {
+          "package_name": "com.intercesso.intercesso"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.intercesso.intercesso",
+            "certificate_hash": "0d423bc57d9b4f49346c0db43b3503d3def1413f"
+          }
+        },
+        {
+          "client_id": "777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyIntercesso001"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

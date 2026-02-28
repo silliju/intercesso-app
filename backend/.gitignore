@@ -1,0 +1,18 @@
+# 의존성 폴더 (용량이 크므로 제외)
+node_modules/
+
+# 빌드 결과물
+dist/
+
+# 환경변수 파일 (보안상 절대 올리면 안됨!)
+.env
+.env.local
+.env.production
+
+# 로그 파일
+*.log
+logs/
+
+# OS 파일
+.DS_Store
+Thumbs.db

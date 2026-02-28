@@ -1,0 +1,13 @@
+{
+  "name": "intercesso-webapp",
+  "version": "1.0.0",
+  "description": "Intercesso 웹앱 서버",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "http-proxy-middleware": "^3.0.0"
+  }
+}
