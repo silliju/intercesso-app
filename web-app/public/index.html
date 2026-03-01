@@ -1514,7 +1514,11 @@ async function loadIntercession() {
     return;
   }
 
+  console.log('[loadIntercession] 탭:', currentIntercessionTab, '토큰:', token ? '있음' : '없음', '엔드포인트:', endpoint);
+
   const res = await api('GET', endpoint);
+  console.log('[loadIntercession] 응답:', res ? JSON.stringify(res).substring(0, 200) : 'null');
+
   let items = [];
 
   if (res && res.success) {
@@ -1538,12 +1542,19 @@ async function loadIntercession() {
     // 기타 오류는 빈 목록으로 처리
   }
 
+  console.log('[loadIntercession] 아이템 수:', items.length);
+
   if (!items || items.length === 0) {
     showEmpty('intercession-list', '💌', emptyMsg, emptySubMsg);
     return;
   }
-  document.getElementById('intercession-list').innerHTML =
-    items.map(r => renderIntercessionCard(r)).join('') + '<div style="height:80px;"></div>';
+  try {
+    const html = items.map(r => renderIntercessionCard(r)).join('') + '<div style="height:80px;"></div>';
+    document.getElementById('intercession-list').innerHTML = html;
+  } catch(err) {
+    console.error('[loadIntercession] 렌더링 에러:', err);
+    showEmpty('intercession-list', '⚠️', '목록을 표시할 수 없습니다', err.message);
+  }
 }
 
 function switchIntercessionTab(el, tab) {
@@ -2067,8 +2078,11 @@ async function openPrayerDetail(prayerId) {
   const comments = (p.comments || []).map(c => `
     <div style="display:flex;gap:10px;padding:12px;background:var(--surface);border-radius:12px;margin-bottom:8px;border:1px solid var(--border);">
       <div class="prayer-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">${c.user?.nickname?.[0] || '?'}</div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:var(--text);">${c.user?.nickname || '익명'}</div>
+      <div style="flex:1;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:13px;font-weight:700;color:var(--text);">${c.user?.nickname || '익명'}</span>
+          <span style="font-size:11px;color:var(--text-sub);">${timeAgo(c.created_at)}</span>
+        </div>
         <div style="font-size:13px;color:var(--text-sub);margin-top:3px;line-height:1.5;">${c.content}</div>
       </div>
     </div>`).join('');
@@ -2229,7 +2243,10 @@ function buildAnswerComments(answer) {
     <div style="display:flex;gap:10px;padding:10px 12px;background:#F0FFF4;border-radius:10px;margin-bottom:6px;">
       <div class="prayer-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;background:#D1FAE5;color:#065F46;">${c.user?.nickname?.[0] || '?'}</div>
       <div style="flex:1;">
-        <div style="font-size:12px;font-weight:700;color:#065F46;">${escHtml(c.user?.nickname || '익명')}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;font-weight:700;color:#065F46;">${escHtml(c.user?.nickname || '익명')}</span>
+          <span style="font-size:11px;color:#6B7280;">${timeAgo(c.created_at)}</span>
+        </div>
         <div style="font-size:13px;color:#064E3B;margin-top:2px;line-height:1.5;">${escHtml(c.content)}</div>
       </div>
       ${currentUser && c.user?.id === currentUser.id
@@ -2934,6 +2951,7 @@ async function submitPrayer() {
    기도 카드 렌더링 (공통)
 ============================================================ */
 function escHtml(str) {
+  if (str == null) return '';
   return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
