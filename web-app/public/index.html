@@ -1097,7 +1097,14 @@ function goTab(id) {
   });
   if (id === 'home') loadHome();
   if (id === 'prayers') loadPrayers();
-  if (id === 'intercession') loadIntercession();
+  if (id === 'intercession') {
+    // 중보기도 탭 진입 시 항상 '받은 요청' 탭으로 리셋
+    currentIntercessionTab = 'received';
+    document.querySelectorAll('#page-intercession .tab-nav-item').forEach((t, i) => {
+      t.classList.toggle('active', i === 0);
+    });
+    loadIntercession();
+  }
   if (id === 'groups') loadGroups();
   if (id === 'profile') loadProfile();
 }
