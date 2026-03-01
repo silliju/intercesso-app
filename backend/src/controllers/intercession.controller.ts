@@ -112,6 +112,22 @@ export const createIntercessionRequest = async (req: AuthRequest, res: Response)
       return;
     }
 
+    // ── 중복 요청 방지 (individual: 같은 기도+수신자에게 pending/accepted 요청이 이미 있으면 거부) ──
+    if (target_type === 'individual' && recipient_id) {
+      const { data: existing } = await supabaseAdmin
+        .from('intercession_requests')
+        .select('id, status')
+        .eq('prayer_id', prayer_id)
+        .eq('requester_id', userId)
+        .eq('recipient_id', recipient_id)
+        .in('status', ['pending', 'accepted'])
+        .limit(1);
+      if (existing && existing.length > 0) {
+        sendError(res, '이미 같은 분에게 중보기도 요청을 보냈습니다', 409, 'DUPLICATE_REQUEST');
+        return;
+      }
+    }
+
     // ── 전체공개: recipient_id = requester 자신 (NOT NULL 우회), message에 [PUBLIC] 태그 ──
     const encodedMsg = encodeMessage(target_type, undefined, message);
     const insertData = {

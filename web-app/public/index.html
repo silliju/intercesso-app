@@ -1082,6 +1082,15 @@ function goPage(id, _skipHistory) {
   if (id === 'notifications') loadNotifications();
   if (id === 'my-prayers') loadMyPrayers();
   if (id === 'prayers') loadPrayers();
+  // intercession 탭으로 직접 이동할 때도 (goBack 등) 리셋 후 로드
+  if (id === 'intercession') {
+    if (!token) token = localStorage.getItem('token');
+    currentIntercessionTab = 'received';
+    document.querySelectorAll('#page-intercession .tab-nav-item').forEach((t, i) => {
+      t.classList.toggle('active', i === 0);
+    });
+    loadIntercession();
+  }
 
   // FAB 표시 제어
   const fabPages = ['home', 'prayers', 'intercession'];
@@ -1090,6 +1099,8 @@ function goPage(id, _skipHistory) {
 }
 
 function goTab(id) {
+  // 탭 전환 시 localStorage에서 최신 토큰 재로드
+  if (!token) token = localStorage.getItem('token');
   goPage(id);
   pageHistory = []; // 탭 전환 시 히스토리 초기화
   document.querySelectorAll('.page.active .tab-item').forEach(t => {
@@ -1487,20 +1498,44 @@ async function loadIntercession() {
   } else if (currentIntercessionTab === 'sent') {
     endpoint = '/intercessions/sent';
     emptyMsg = '보낸 중보기도 요청이 없어요';
-    emptySubMsg = '기도 상세 화면에서 🤝 버튼으로 요청을 보내보세요';
+    emptySubMsg = '기도 작성/수정 시 중보기도 요청을 보내보세요';
   } else {
-    // 전체공개: /intercessions/public 전용 엔드포인트 사용
     endpoint = '/intercessions/public';
     emptyMsg = '전체 공개 중보기도 요청이 없어요';
     emptySubMsg = '누군가 전체에게 요청을 보내면 여기에 표시됩니다';
   }
 
+  // 로그인 상태 재확인 (localStorage에서 최신 토큰 로드)
+  if (!token) token = localStorage.getItem('token');
+
+  // 로그인 필요 탭 처리
+  if (!token && currentIntercessionTab !== 'public') {
+    showEmpty('intercession-list', '🔒', '로그인이 필요합니다', '로그인 후 중보기도 요청을 확인하세요');
+    return;
+  }
+
   const res = await api('GET', endpoint);
   let items = [];
-  if (res.success) {
+
+  if (res && res.success) {
+    // sendPaginated: { success, data: [...], pagination }
+    // sendSuccess:   { success, data: [...] }
     const d = res.data;
     if (Array.isArray(d)) items = d;
-    else if (d?.data && Array.isArray(d.data)) items = d.data;
+    else if (d && Array.isArray(d.data)) items = d.data;
+    else if (d && Array.isArray(d.items)) items = d.items;
+    else if (d && typeof d === 'object') {
+      // 혹시 다른 구조라면 첫 번째 배열 값 찾기
+      const arr = Object.values(d).find(v => Array.isArray(v));
+      if (arr) items = arr;
+    }
+  } else if (res && !res.success) {
+    // 인증 오류 등
+    if (res.statusCode === 401 || (res.message && res.message.includes('토큰'))) {
+      showEmpty('intercession-list', '🔒', '로그인이 필요합니다', '다시 로그인해 주세요');
+      return;
+    }
+    // 기타 오류는 빈 목록으로 처리
   }
 
   if (!items || items.length === 0) {
@@ -1744,32 +1779,83 @@ async function sendGroupIntercession(groupId, groupName) {
   }
 }
 
+// 개인 중보기도 요청 - 선택된 사용자 목록
+window._icSelectedUsers = new Map(); // id -> {id, nickname, church_name}
+
 function openPersonalIntercession() {
   const message = document.getElementById('ic-message')?.value?.trim() || '';
   if (window._icOverlay) window._icOverlay.remove();
+  window._icSelectedUsers = new Map(); // 선택 초기화
 
   const overlay = document.createElement('div');
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:1000;display:flex;align-items:flex-end;';
   overlay.innerHTML = `
-    <div style="width:100%;max-width:430px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 32px;">
-      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;"></div>
-      <div style="font-size:16px;font-weight:800;text-align:center;margin-bottom:16px;">👤 개인에게 요청</div>
-      <div style="display:flex;gap:8px;margin-bottom:12px;">
+    <div style="width:100%;max-width:430px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 28px;max-height:85vh;display:flex;flex-direction:column;">
+      <div style="width:40px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px;flex-shrink:0;"></div>
+      <div style="font-size:16px;font-weight:800;text-align:center;margin-bottom:4px;flex-shrink:0;">👤 개인에게 요청</div>
+      <div style="font-size:12px;color:var(--text-sub);text-align:center;margin-bottom:14px;flex-shrink:0;">여러 명을 선택한 후 요청을 보낼 수 있습니다</div>
+      <!-- 선택된 사람 태그 영역 -->
+      <div id="ic-selected-tags" style="display:flex;flex-wrap:wrap;gap:6px;min-height:28px;margin-bottom:10px;flex-shrink:0;"></div>
+      <!-- 검색 -->
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-shrink:0;">
         <input id="ic-search-input" type="text" placeholder="닉네임으로 검색..." oninput="searchUsersForIc(this.value)"
           style="flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:14px;">
         <button onclick="searchUsersForIc(document.getElementById('ic-search-input').value)"
           style="padding:10px 16px;background:var(--primary);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;">검색</button>
       </div>
-      <div id="ic-search-results" style="min-height:60px;max-height:280px;overflow-y:auto;margin-bottom:12px;">
+      <div id="ic-search-results" style="flex:1;overflow-y:auto;margin-bottom:12px;min-height:80px;">
         <div style="text-align:center;padding:20px;color:var(--text-sub);font-size:13px;">닉네임으로 검색하세요</div>
       </div>
-      <button onclick="this.closest('[style*=fixed]').remove()"
-        style="width:100%;padding:13px;border-radius:50px;background:var(--bg);border:none;font-weight:600;color:var(--text-sub);cursor:pointer;">취소</button>
+      <!-- 하단 버튼 -->
+      <div style="display:flex;gap:8px;flex-shrink:0;">
+        <button onclick="this.closest('[style*=fixed]').remove()"
+          style="flex:1;padding:13px;border-radius:50px;background:var(--bg);border:none;font-weight:600;color:var(--text-sub);cursor:pointer;">취소</button>
+        <button id="ic-send-btn" onclick="sendPersonalIntercessionBatch()"
+          style="flex:2;padding:13px;border-radius:50px;background:var(--primary);border:none;font-weight:700;color:#fff;cursor:pointer;opacity:0.4;" disabled>
+          🙏 요청 보내기 (<span id="ic-selected-count">0</span>명)
+        </button>
+      </div>
     </div>`;
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   window._icPersonalMessage = message;
   window._icOverlay = overlay;
   document.body.appendChild(overlay);
+}
+
+function icToggleUser(userId, nickname, churchName) {
+  if (window._icSelectedUsers.has(userId)) {
+    window._icSelectedUsers.delete(userId);
+  } else {
+    window._icSelectedUsers.set(userId, { id: userId, nickname, church_name: churchName });
+  }
+  updateIcSelectedTags();
+  // 검색 결과 UI 갱신 (선택 상태 반영)
+  document.querySelectorAll('[data-ic-uid]').forEach(el => {
+    const uid = el.getAttribute('data-ic-uid');
+    const selected = window._icSelectedUsers.has(uid);
+    el.style.borderColor = selected ? 'var(--primary)' : 'var(--border)';
+    el.style.background = selected ? 'var(--primary-light)' : '#fff';
+    const badge = el.querySelector('.ic-check');
+    if (badge) badge.textContent = selected ? '✅' : '+';
+  });
+}
+
+function updateIcSelectedTags() {
+  const tags = document.getElementById('ic-selected-tags');
+  const countEl = document.getElementById('ic-selected-count');
+  const sendBtn = document.getElementById('ic-send-btn');
+  if (!tags) return;
+  const users = Array.from(window._icSelectedUsers.values());
+  tags.innerHTML = users.map(u => `
+    <div style="display:inline-flex;align-items:center;gap:4px;background:var(--primary-light);color:var(--primary);border-radius:50px;padding:4px 10px;font-size:12px;font-weight:700;">
+      ${escHtml(u.nickname||'')}
+      <span style="cursor:pointer;font-weight:900;" onclick="icToggleUser('${u.id}','${escHtml(u.nickname||'')}','${escHtml(u.church_name||'')}')">×</span>
+    </div>`).join('');
+  if (countEl) countEl.textContent = users.length;
+  if (sendBtn) {
+    sendBtn.disabled = users.length === 0;
+    sendBtn.style.opacity = users.length === 0 ? '0.4' : '1';
+  }
 }
 
 let _icSearchTimer = null;
@@ -1788,20 +1874,60 @@ async function searchUsersForIc(q) {
     if (users.length === 0) {
       container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-sub);font-size:13px;">검색 결과가 없습니다</div>';
     } else {
-      container.innerHTML = users.map(u => `
-        <div style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer;background:#fff;"
-             onclick="sendPersonalIntercession('${u.id}','${escHtml(u.nickname||'')}')">
+      container.innerHTML = users.map(u => {
+        const selected = window._icSelectedUsers.has(u.id);
+        return `
+        <div data-ic-uid="${u.id}" onclick="icToggleUser('${u.id}','${escHtml(u.nickname||'')}','${escHtml(u.church_name||'')}')"
+          style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:2px solid ${selected?'var(--primary)':'var(--border)'};
+                 margin-bottom:8px;cursor:pointer;background:${selected?'var(--primary-light)':'#fff'};transition:all 0.15s;">
           <div class="prayer-avatar" style="width:36px;height:36px;font-size:14px;flex-shrink:0;">${u.nickname?.[0]||'?'}</div>
           <div style="flex:1;">
             <div style="font-size:14px;font-weight:700;">${escHtml(u.nickname||'')}</div>
             ${u.church_name ? `<div style="font-size:12px;color:var(--text-sub);">${escHtml(u.church_name)}</div>` : ''}
           </div>
-          <span style="font-size:13px;color:var(--primary);font-weight:700;">요청 →</span>
-        </div>`).join('');
+          <span class="ic-check" style="font-size:18px;font-weight:900;color:var(--primary);">${selected?'✅':'+'}</span>
+        </div>`;
+      }).join('');
     }
   }, 300);
 }
 
+async function sendPersonalIntercessionBatch() {
+  const users = Array.from(window._icSelectedUsers.values());
+  if (users.length === 0) return;
+  if (window._icOverlay) window._icOverlay.remove();
+  const message = window._icPersonalMessage || '';
+  const prayerId = _currentPrayerId;
+
+  let successCount = 0;
+  let failMessages = [];
+
+  for (const u of users) {
+    const res = await api('POST', '/intercessions', {
+      prayer_id: prayerId,
+      target_type: 'individual',
+      recipient_id: u.id,
+      message,
+    });
+    if (res.success) {
+      successCount++;
+    } else {
+      // 중복 요청 등 오류
+      const errMsg = res.message || '요청 실패';
+      if (!failMessages.includes(errMsg)) failMessages.push(errMsg);
+    }
+  }
+
+  if (successCount > 0 && failMessages.length === 0) {
+    showToast(`${successCount}명에게 중보기도 요청을 보냈습니다 🙏`);
+  } else if (successCount > 0) {
+    showToast(`${successCount}명 성공, ${failMessages[0]}`);
+  } else {
+    showToast(failMessages[0] || '요청 전송에 실패했습니다');
+  }
+}
+
+// 구버전 호환 - 단일 전송 (사용하지 않지만 잔존 호출 대비)
 async function sendPersonalIntercession(recipientId, recipientNick) {
   if (window._icOverlay) window._icOverlay.remove();
   const message = window._icPersonalMessage || '';
