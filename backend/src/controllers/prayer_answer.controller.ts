@@ -46,28 +46,39 @@ export const upsertPrayerAnswer = async (req: AuthRequest, res: Response): Promi
       .update({ status: 'answered', answered_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', prayerId);
 
-    // prayer_answers 테이블 존재 체크 (PGRST205)
+    // prayer_answers 테이블에서 기존 응답 조회 (maybeSingle → 없으면 null, 에러 없음)
     const { data: existing, error: checkError } = await supabaseAdmin
       .from('prayer_answers')
       .select('id')
       .eq('prayer_id', prayerId)
-      .single();
+      .maybeSingle();
 
+    // 테이블 자체가 없는 경우 (PGRST205)
     if (checkError && (checkError.code === 'PGRST205' || checkError.message?.includes('schema cache'))) {
       sendError(res, '기도 응답 기능을 사용하려면 Supabase SQL Editor에서 prayer_answers 테이블을 먼저 생성해주세요.', 503, 'TABLE_MISSING');
+      return;
+    }
+    // 그 외 예기치 않은 조회 오류
+    if (checkError) {
+      console.error('prayer_answers 조회 오류:', checkError);
+      sendError(res, '응답 처리 중 오류가 발생했습니다', 500, 'QUERY_ERROR');
       return;
     }
 
     let answer;
     if (existing) {
-      // 수정
+      // 기존 응답 수정 (upsert)
       const { data, error } = await supabaseAdmin
         .from('prayer_answers')
         .update({ content: content ?? null, scope, updated_at: new Date().toISOString() })
         .eq('id', existing.id)
         .select('*, user:users(id, nickname, profile_image_url)')
         .single();
-      if (error) { sendError(res, '응답 수정 실패', 500, 'UPDATE_ERROR'); return; }
+      if (error) {
+        console.error('응답 수정 오류:', error);
+        sendError(res, '응답 수정 실패', 500, 'UPDATE_ERROR');
+        return;
+      }
       answer = data;
     } else {
       // 신규 등록
@@ -76,7 +87,11 @@ export const upsertPrayerAnswer = async (req: AuthRequest, res: Response): Promi
         .insert({ prayer_id: prayerId, user_id: userId, content: content ?? null, scope })
         .select('*, user:users(id, nickname, profile_image_url)')
         .single();
-      if (error) { sendError(res, '응답 등록 실패', 500, 'INSERT_ERROR'); return; }
+      if (error) {
+        console.error('응답 등록 오류:', error);
+        sendError(res, '응답 등록 실패', 500, 'INSERT_ERROR');
+        return;
+      }
       answer = data;
 
       // 통계 업데이트 (실패해도 무시)
@@ -88,7 +103,7 @@ export const upsertPrayerAnswer = async (req: AuthRequest, res: Response): Promi
       } catch (_) { /* 무시 */ }
     }
 
-    sendSuccess(res, answer, '기도 응답이 등록되었습니다', 201);
+    sendSuccess(res, answer, existing ? '기도 응답이 수정되었습니다' : '기도 응답이 등록되었습니다', 201);
   } catch (err) {
     console.error('upsertPrayerAnswer error:', err);
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');

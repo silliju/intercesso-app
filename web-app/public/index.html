@@ -804,8 +804,8 @@ textarea.form-input { resize: none; }
     <button class="app-bar-back" onclick="goBack()">‹</button>
     <div class="app-bar-title">기도 상세</div>
     <div style="display:flex;gap:4px;align-items:center;">
-      <!-- 중보기도 요청 버튼 (내 기도일 때만 표시) -->
-      <button id="pd-intercession-btn" onclick="openIntercessionRequest()" style="display:none;background:none;border:none;font-size:20px;cursor:pointer;padding:4px;" title="중보기도 요청">🤝</button>
+      <!-- 중보기도 요청 버튼 (숨김 처리) -->
+      <button id="pd-intercession-btn" onclick="openIntercessionRequest()" style="display:none !important;background:none;border:none;font-size:20px;cursor:pointer;padding:4px;" title="중보기도 요청">🤝</button>
       <div id="pd-owner-actions" style="display:none;display:flex;gap:4px;">
         <button class="app-bar-action" onclick="pdChangeStatus()" title="상태변경">🔄</button>
         <button class="app-bar-action" onclick="pdEdit()" title="수정">✏️</button>
@@ -1809,9 +1809,9 @@ async function openPrayerDetail(prayerId) {
   const isOwner = currentUser && p.user_id === currentUser.id;
 
   if (isOwner) document.getElementById('pd-owner-actions').style.display = 'flex';
-  // 내 기도일 때만 중보기도 요청 버튼 표시
+  // 중보기도 요청 버튼 - 항상 숨김
   const intercBtnEl = document.getElementById('pd-intercession-btn');
-  if (intercBtnEl) intercBtnEl.style.display = isOwner ? 'inline-block' : 'none';
+  if (intercBtnEl) intercBtnEl.style.display = 'none';
 
   const statusMap = {
     praying:  { label:'🙏 기도중',   color:'var(--primary)',  bg:'var(--primary-light)' },
@@ -1861,19 +1861,8 @@ async function openPrayerDetail(prayerId) {
       <!-- 기도 응답 섹션 -->
       ${answerSection}
 
-      <!-- 함께 기도 버튼 -->
-      <button id="pd-pray-btn" onclick="pdToggleParticipation()"
-        style="width:100%;padding:14px;border-radius:50px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;
-               background:${p.is_participated ? 'var(--primary-light)' : 'var(--primary)'};
-               color:${p.is_participated ? 'var(--primary)' : '#fff'};">
-        ${p.is_participated ? `함께 기도했습니다 🙏 (${p.prayer_count||0})` : `🙏 함께 기도하기 (${p.prayer_count||0})`}
-      </button>
-      <!-- 중보기도 요청 버튼 (내 기도일 때) -->
-      ${isOwner ? `<button onclick="openIntercessionRequest()"
-        style="width:100%;padding:12px;border-radius:50px;border:2px solid var(--primary);background:transparent;
-               color:var(--primary);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;">
-        🤝 중보기도 요청하기
-      </button>` : ''}
+      <!-- 함께 기도 버튼 (숨김) -->
+      <!-- 중보기도 요청 버튼 (숨김) -->
 
       <!-- 응답 댓글 -->
       ${answerComments}
