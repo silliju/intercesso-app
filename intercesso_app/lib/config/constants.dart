@@ -1,7 +1,7 @@
 // lib/config/constants.dart
 class AppConstants {
   // API 설정 - 실제 배포 시 백엔드 URL로 교체
-  static const String baseUrl = 'https://intercesso-backend-production.up.railway.app/api';
+  static const String baseUrl = 'https://3000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/api';
 
   // ─── 소셜 로그인 키 ───────────────────────────────────────
   // 구글 OAuth 클라이언트 ID (Google Cloud Console에서 발급)
