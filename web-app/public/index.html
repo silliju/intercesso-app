@@ -1067,9 +1067,10 @@ function showEmpty(containerId, emoji, title, sub = '', actionHtml = '') {
 /* ============================================================
    네비게이션
 ============================================================ */
-function goPage(id) {
+function goPage(id, _skipHistory) {
   const current = document.querySelector('.page.active');
-  if (current && current.id !== 'page-' + id) {
+  // _skipHistory=true 일 때(goBack 내부)는 히스토리에 push하지 않음
+  if (!_skipHistory && current && current.id !== 'page-' + id) {
     pageHistory.push(current.id.replace('page-', ''));
   }
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1104,7 +1105,7 @@ function goTab(id) {
 function goBack() {
   if (pageHistory.length > 0) {
     const prev = pageHistory.pop();
-    goPage(prev);
+    goPage(prev, true); // _skipHistory=true: 히스토리에 재push 방지
   } else {
     goTab('home');
   }
@@ -2881,8 +2882,8 @@ window.addEventListener('load', async () => {
 
 // goPage override - 프로필 수정 페이지 진입 시 폼 자동 채우기
 const origGoPageImpl = goPage;
-window.goPage = function(id) {
-  origGoPageImpl(id);
+window.goPage = function(id, _skipHistory) {
+  origGoPageImpl(id, _skipHistory);
   if (id === 'edit-profile' && currentUser) {
     document.getElementById('ep-nick').value = currentUser.nickname || '';
     document.getElementById('ep-church').value = currentUser.church_name || '';
