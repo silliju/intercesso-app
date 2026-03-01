@@ -334,29 +334,49 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     String? recipientId,
   }) async {
     try {
+      Map<String, dynamic> result = {};
       if (type == 'public') {
-        await _intercessionService.sendPublicRequest(
+        result = await _intercessionService.sendPublicRequest(
           prayerId: widget.prayerId,
           message: message,
         );
-        if (mounted) _showSnack('전체에게 중보기도 요청을 보냈습니다 🙏');
+        if (mounted) {
+          if (result['success'] == true) {
+            _showSnack('전체에게 중보기도 요청을 보냈습니다 🙏');
+          } else {
+            _showSnack(result['message'] ?? '전송에 실패했습니다', isError: true);
+          }
+        }
       } else if (type == 'group' && groupId != null) {
-        await _intercessionService.sendGroupRequest(
+        result = await _intercessionService.sendGroupRequest(
           prayerId: widget.prayerId,
           groupId: groupId,
+          groupName: null,
           message: message,
         );
-        if (mounted) _showSnack('그룹에 중보기도 요청을 보냈습니다 🙏');
+        if (mounted) {
+          if (result['success'] == true) {
+            _showSnack('그룹에 중보기도 요청을 보냈습니다 🙏');
+          } else {
+            _showSnack(result['message'] ?? '전송에 실패했습니다', isError: true);
+          }
+        }
       } else if (type == 'individual' && recipientId != null) {
-        await _intercessionService.sendPersonalRequest(
+        result = await _intercessionService.sendPersonalRequest(
           prayerId: widget.prayerId,
           recipientId: recipientId,
           message: message,
         );
-        if (mounted) _showSnack('중보기도 요청을 보냈습니다 🙏');
+        if (mounted) {
+          if (result['success'] == true) {
+            _showSnack('중보기도 요청을 보냈습니다 🙏');
+          } else {
+            _showSnack(result['message'] ?? '전송에 실패했습니다', isError: true);
+          }
+        }
       }
     } catch (e) {
-      if (mounted) _showSnack('요청 전송에 실패했습니다', isError: true);
+      if (mounted) _showSnack('요청 전송에 실패했습니다: $e', isError: true);
     }
   }
 

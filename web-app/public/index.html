@@ -1349,10 +1349,18 @@ async function doIntercessionRequest(targetType, btnEl) {
 
   const prayerId = _currentPrayerId;
   const message = document.getElementById('ic-message')?.value?.trim() || '';
+  const myId = currentUser?.id;
 
-  const body = { prayer_id: prayerId, target_type: targetType, message };
+  // Railway 구버전 호환: /intercessions/request 레거시 엔드포인트 사용
+  // recipient_id 필수이므로 public의 경우 본인 ID 사용
+  const body = { prayer_id: prayerId, recipient_id: myId, message, target_type: targetType };
 
-  const res = await api('POST', '/intercessions', body);
+  // 신버전 엔드포인트 먼저 시도, 실패 시 레거시 엔드포인트 시도
+  let res = await api('POST', '/intercessions', body);
+  if (!res.success && (res.message?.includes('대상자 ID') || res.error?.code === 'VALIDATION_ERROR')) {
+    // 레거시 엔드포인트로 재시도
+    res = await api('POST', '/intercessions/request', { prayer_id: prayerId, recipient_id: myId, message });
+  }
   if (window._icOverlay) window._icOverlay.remove();
 
   if (res.success) {
@@ -1410,12 +1418,21 @@ async function openGroupIntercession() {
 async function sendGroupIntercession(groupId, groupName) {
   if (window._icOverlay) window._icOverlay.remove();
   const message = window._icGroupMessage || '';
-  const res = await api('POST', '/intercessions', {
-    prayer_id: _currentPrayerId,
+  const myId = currentUser?.id;
+  const prayerId = _currentPrayerId;
+
+  // 신버전 먼저 시도 (target_type: group, group_id 포함)
+  let res = await api('POST', '/intercessions', {
+    prayer_id: prayerId,
     target_type: 'group',
     group_id: groupId,
     message,
+    recipient_id: myId,
   });
+  // 구버전 호환: 실패 시 레거시 엔드포인트로 재시도 (recipient_id 필수)
+  if (!res.success && (res.message?.includes('대상자 ID') || res.error?.code === 'VALIDATION_ERROR')) {
+    res = await api('POST', '/intercessions/request', { prayer_id: prayerId, recipient_id: myId, message: `[그룹:${groupName}] ${message}`.trim() });
+  }
   if (res.success) {
     showToast(`"${groupName}" 그룹에 중보기도 요청을 보냈습니다 🙏`);
   } else {
