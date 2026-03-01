@@ -176,6 +176,11 @@ const forgotPassword = async (req, res) => {
         });
         if (error) {
             console.error('비밀번호 재설정 이메일 오류:', error);
+            // rate limit 처리 (Supabase 무료 플랜은 시간당 이메일 발송 횟수 제한)
+            if (error.status === 429 || error.code === 'over_email_send_rate_limit') {
+                (0, response_1.sendError)(res, '이메일 발송 횟수가 초과되었습니다. 1시간 후 다시 시도해주세요.', 429, 'RATE_LIMIT');
+                return;
+            }
             (0, response_1.sendError)(res, '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.', 500, 'EMAIL_ERROR');
             return;
         }
