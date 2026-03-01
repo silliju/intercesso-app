@@ -61,10 +61,7 @@ GoRouter createRouter(AuthProvider authProvider) {
         },
       ),
       GoRoute(path: '/home', builder: (ctx, state) => const MainTabScreen()),
-      GoRoute(
-        path: '/prayer/:id',
-        builder: (ctx, state) => PrayerDetailScreen(prayerId: state.pathParameters['id']!),
-      ),
+      // ⚠️ /prayer/create 반드시 /prayer/:id 보다 먼저 등록해야 충돌 방지
       GoRoute(
         path: '/prayer/create',
         builder: (ctx, state) {
@@ -77,12 +74,17 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (ctx, state) => PrayerEditScreen(prayerId: state.pathParameters['id']!),
       ),
       GoRoute(
-        path: '/group/:id',
-        builder: (ctx, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),
+        path: '/prayer/:id',
+        builder: (ctx, state) => PrayerDetailScreen(prayerId: state.pathParameters['id']!),
       ),
+      // ⚠️ /group/create 반드시 /group/:id 보다 먼저 등록
       GoRoute(
         path: '/group/create',
         builder: (ctx, state) => const CreateGroupScreen(),
+      ),
+      GoRoute(
+        path: '/group/:id',
+        builder: (ctx, state) => GroupDetailScreen(groupId: state.pathParameters['id']!),
       ),
       GoRoute(path: '/profile/edit', builder: (ctx, state) => const EditProfileScreen()),
       GoRoute(path: '/notifications', builder: (ctx, state) => const NotificationsScreen()),

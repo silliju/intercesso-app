@@ -103,10 +103,13 @@ class ProfileScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     SizedBox(
                       width: double.infinity,
-                      height: 42,
+                      height: 48,
                       child: OutlinedButton(
                         onPressed: () => context.push('/profile/edit'),
-                        child: const Text('프로필 수정'),
+                        child: const Text(
+                          '프로필 수정',
+                          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                   ],
