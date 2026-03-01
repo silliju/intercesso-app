@@ -6,6 +6,7 @@ import '../../providers/prayer_provider.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/statistics_service.dart';
+import '../main/main_tab_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -14,24 +15,37 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMixin {
   Map<String, dynamic>? _dashboardData;
   bool _isLoading = true;
+  String? _loadError;
   final StatisticsService _statisticsService = StatisticsService();
+
+  @override
+  bool get wantKeepAlive => false; // 탭 전환 시 항상 새로 로드
 
   @override
   void initState() {
     super.initState();
-    _loadDashboard();
-    _loadPrayers();
+    _loadAll();
+  }
+
+  Future<void> _loadAll() async {
+    debugPrint('[HomeScreen] _loadAll() 시작');
+    await Future.wait([
+      _loadDashboard(),
+      _loadPrayers(),
+    ]);
+    debugPrint('[HomeScreen] _loadAll() 완료');
   }
 
   Future<void> _loadDashboard() async {
     if (!mounted) return;
     setState(() => _isLoading = true);
     try {
-      // 실제 API에서 통계 데이터 로드
+      debugPrint('[HomeScreen] 대시보드 로드 시작');
       final data = await _statisticsService.getDashboard();
+      debugPrint('[HomeScreen] 대시보드 응답: $data');
       if (!mounted) return;
       if (data['success'] == true && data['data'] != null) {
         final apiStats = data['data']['stats'] as Map<String, dynamic>? ?? {};
@@ -48,36 +62,74 @@ class _HomeScreenState extends State<HomeScreen> {
           _isLoading = false;
         });
       } else {
-        // API 실패 시 0으로 초기화
+        if (!mounted) return;
         setState(() {
           _dashboardData = {
             'stats': {
-              'total_prayers': 0,
-              'answered_prayers': 0,
-              'streak_days': 0,
-              'total_participations': 0,
-              'answer_rate': 0,
+              'total_prayers': 0, 'answered_prayers': 0,
+              'streak_days': 0, 'total_participations': 0, 'answer_rate': 0,
             },
           };
           _isLoading = false;
         });
       }
-    } catch (e) {
+    } catch (e, stack) {
+      debugPrint('[HomeScreen] 대시보드 로드 오류: $e\n$stack');
       if (!mounted) return;
       setState(() {
-        _dashboardData = {'stats': {'total_prayers': 0, 'answered_prayers': 0, 'streak_days': 0, 'total_participations': 0, 'answer_rate': 0}};
+        _dashboardData = {
+          'stats': {
+            'total_prayers': 0, 'answered_prayers': 0,
+            'streak_days': 0, 'total_participations': 0, 'answer_rate': 0,
+          },
+        };
         _isLoading = false;
       });
     }
   }
 
   Future<void> _loadPrayers() async {
-    final provider = context.read<PrayerProvider>();
-    await provider.loadPrayers(refresh: true, scope: 'public');
+    if (!mounted) return;
+    try {
+      debugPrint('[HomeScreen] 기도 목록 로드 시작');
+      final provider = context.read<PrayerProvider>();
+      // 공개 기도 목록 먼저 시도
+      await provider.loadPrayers(refresh: true, scope: 'public');
+      debugPrint('[HomeScreen] 공개 기도 목록: ${provider.prayers.length}개');
+
+      // 공개 기도가 없으면 내 기도도 같이 표시
+      if (provider.prayers.isEmpty && mounted) {
+        debugPrint('[HomeScreen] 공개 기도 없음 → 내 기도 로드 시도');
+        await provider.loadPrayers(refresh: true);
+        debugPrint('[HomeScreen] 전체 기도 목록: ${provider.prayers.length}개');
+      }
+    } catch (e, stack) {
+      debugPrint('[HomeScreen] 기도 목록 로드 오류: $e\n$stack');
+      if (mounted) {
+        setState(() => _loadError = e.toString());
+      }
+    }
+  }
+
+  // ─── 기도 탭으로 이동
+  void _goToPrayersTab() {
+    try {
+      final mainState = context.findAncestorStateOfType<MainTabScreenState>();
+      if (mainState != null) {
+        debugPrint('[HomeScreen] 기도 탭으로 전환');
+        mainState.switchToTab(1);
+      } else {
+        debugPrint('[HomeScreen] MainTabScreenState 찾지 못함 → push 사용');
+        context.push('/prayers');
+      }
+    } catch (e) {
+      debugPrint('[HomeScreen] 탭 전환 오류: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final user = context.watch<AuthProvider>().user;
     final prayerProvider = context.watch<PrayerProvider>();
     final stats = _dashboardData?['stats'];
@@ -86,10 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: AppTheme.background,
       body: RefreshIndicator(
         color: AppTheme.primary,
-        onRefresh: () async {
-          await _loadDashboard();
-          await _loadPrayers();
-        },
+        onRefresh: () => _loadAll(),
         child: CustomScrollView(
           slivers: [
             // 앱바
@@ -123,7 +172,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // 타이틀 텍스트 (보닥 스타일)
                     RichText(
                       text: TextSpan(
                         style: const TextStyle(
@@ -142,7 +190,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // 통계 카드 (흰색 카드)
+                    // 통계 카드
                     Container(
                       padding: const EdgeInsets.all(20),
                       decoration: AppTheme.cardDecoration,
@@ -151,30 +199,28 @@ class _HomeScreenState extends State<HomeScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
-                              _buildStatItem(
-                                  '${stats?['total_prayers'] ?? 0}',
-                                  '내 기도'),
+                              _buildStatItem('${stats?['total_prayers'] ?? 0}', '내 기도'),
                               _buildDivider(),
-                              _buildStatItem(
-                                  '${stats?['answered_prayers'] ?? 0}',
-                                  '응답받음'),
+                              _buildStatItem('${stats?['answered_prayers'] ?? 0}', '응답받음'),
                               _buildDivider(),
-                              _buildStatItem(
-                                  '${stats?['total_participations'] ?? 0}',
-                                  '함께 기도'),
+                              _buildStatItem('${stats?['total_participations'] ?? 0}', '함께 기도'),
                               _buildDivider(),
-                              _buildStatItem(
-                                  '${stats?['streak_days'] ?? 0}일 🔥',
-                                  '연속'),
+                              _buildStatItem('${stats?['streak_days'] ?? 0}일 🔥', '연속'),
                             ],
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
-                            height: 42,
+                            height: 48,
                             child: OutlinedButton(
-                              onPressed: () => context.push('/dashboard'),
-                              child: const Text('상세 통계 보기'),
+                              onPressed: () {
+                                debugPrint('[HomeScreen] 상세 통계 버튼 클릭');
+                                context.push('/dashboard');
+                              },
+                              child: const Text(
+                                '상세 통계 보기',
+                                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                              ),
                             ),
                           ),
                         ],
@@ -188,8 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // 섹션 헤더
             SliverToBoxAdapter(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -201,14 +246,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: AppTheme.textPrimary,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () {},
-                      child: const Text(
-                        '전체보기 >',
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: AppTheme.primary,
-                          fontWeight: FontWeight.w600,
+                    // 전체보기 버튼 - GestureDetector로 터치 영역 확장
+                    GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () {
+                        debugPrint('[HomeScreen] 전체보기 탭');
+                        _goToPrayersTab();
+                      },
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        child: const Text(
+                          '전체보기 >',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
@@ -216,6 +269,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+
+            // 에러 상태
+            if (_loadError != null)
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade50,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.red.shade200),
+                    ),
+                    child: Text(
+                      '기도 목록을 불러오지 못했습니다: $_loadError',
+                      style: TextStyle(color: Colors.red.shade700, fontSize: 13),
+                    ),
+                  ),
+                ),
+              ),
 
             // 기도 목록
             if (prayerProvider.isLoading && prayerProvider.prayers.isEmpty)
@@ -226,13 +299,31 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               )
             else if (prayerProvider.prayers.isEmpty)
-              const SliverToBoxAdapter(
+              SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.all(40),
-                  child: EmptyWidget(
-                    emoji: '🙏',
-                    title: '아직 기도가 없어요',
-                    subtitle: '첫 번째 기도를 작성해보세요',
+                  padding: const EdgeInsets.all(40),
+                  child: Column(
+                    children: [
+                      const EmptyWidget(
+                        emoji: '🙏',
+                        title: '아직 기도가 없어요',
+                        subtitle: '첫 번째 기도를 작성해보세요',
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: () {
+                          debugPrint('[HomeScreen] 기도 작성하기 버튼 클릭');
+                          context.push('/prayer/create');
+                        },
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: const Text('기도 작성하기'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primary,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               )
@@ -240,19 +331,18 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    if (index >= prayerProvider.prayers.length) {
-                      return prayerProvider.hasMore
-                          ? const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppTheme.primary,
-                                ),
-                              ),
-                            )
-                          : const SizedBox(height: 80);
+                    // 최대 5개만 홈에서 표시
+                    final displayPrayers = prayerProvider.prayers.take(5).toList();
+                    if (index >= displayPrayers.length) {
+                      return Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
+                        child: OutlinedButton(
+                          onPressed: _goToPrayersTab,
+                          child: const Text('전체 기도 목록 보기'),
+                        ),
+                      );
                     }
-                    final prayer = prayerProvider.prayers[index];
+                    final prayer = displayPrayers[index];
                     return PrayerCard(
                       title: prayer.title,
                       content: prayer.content,
@@ -264,10 +354,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       commentCount: prayer.commentCount,
                       createdAt: prayer.createdAt,
                       isParticipated: prayer.isParticipated,
-                      onTap: () => context.push('/prayer/${prayer.id}'),
+                      onTap: () {
+                        debugPrint('[HomeScreen] 기도 카드 클릭: ${prayer.id}');
+                        context.push('/prayer/${prayer.id}');
+                      },
                     );
                   },
-                  childCount: prayerProvider.prayers.length + 1,
+                  childCount: prayerProvider.prayers.take(5).length + 1,
                 ),
               ),
           ],
@@ -300,10 +393,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildDivider() {
-    return Container(
-      width: 1,
-      height: 32,
-      color: AppTheme.border,
-    );
+    return Container(width: 1, height: 32, color: AppTheme.border);
   }
 }

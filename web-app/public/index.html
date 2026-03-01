@@ -147,8 +147,9 @@ textarea.form-input { resize: none; }
 /* ── 프로필 ── */
 .profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: var(--primary); overflow: hidden; }
 .profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
-.menu-item { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; }
+.menu-item { display: flex; align-items: center; gap: 16px; padding: 16px; cursor: pointer; -webkit-tap-highlight-color: rgba(0,170,255,0.08); user-select: none; -webkit-user-select: none; }
 .menu-item:active { background: var(--bg); }
+.menu-item:hover { background: var(--bg); }
 .menu-icon-wrap { width: 36px; height: 36px; border-radius: 10px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 .menu-item-text { flex: 1; font-size: 15px; font-weight: 600; color: var(--text); }
 .menu-item-arrow { color: var(--text-light); font-size: 18px; }
@@ -455,7 +456,7 @@ textarea.form-input { resize: none; }
     </div>
     <div class="section-header">
       <span class="section-title">최근 기도 목록</span>
-      <button class="section-more" onclick="goTab('prayers')">전체보기 ›</button>
+      <button class="section-more" onclick="console.log('[Home] 전체보기 클릭');goTab('prayers')" ontouchstart="this._t=true" ontouchend="if(this._t){this._t=false;console.log('[Home] 전체보기 터치');goTab('prayers')}">전체보기 ›</button>
     </div>
     <div id="home-prayer-list"><div class="loading-state"><div class="spinner"></div></div></div>
     <div style="height:80px;"></div>
@@ -562,25 +563,25 @@ textarea.form-input { resize: none; }
             <div class="stat-item"><span class="stat-value" id="profile-stat-together">-</span><span class="stat-label">함께 기도</span></div>
           </div>
           <div style="height:16px;"></div>
-          <button class="btn btn-outline btn-sm" style="width:100%;height:42px;" onclick="goPage('edit-profile')">프로필 수정</button>
+          <button class="btn btn-outline btn-sm" style="width:100%;height:48px;font-size:15px;" onclick="console.log('[Profile] 프로필 수정 클릭');goPage('edit-profile')" ontouchstart="console.log('[Profile] 프로필 수정 터치')">프로필 수정</button>
         </div>
       </div>
     </div>
     <div style="padding:0 16px;">
       <div class="card">
-        <div class="menu-item" onclick="switchPrayerTab(null,'mine');goTab('prayers')">
+        <div class="menu-item" onclick="console.log('[Profile] 내 기도 클릭');switchPrayerTab(null,'mine');goTab('prayers')" ontouchstart="this._touched=true" ontouchend="if(this._touched){this._touched=false;console.log('[Profile] 내 기도 터치');switchPrayerTab(null,'mine');goTab('prayers')}">
           <div class="menu-icon-wrap">📖</div><div class="menu-item-text">내 기도 목록</div><div class="menu-item-arrow">›</div>
         </div>
         <div class="menu-divider"></div>
-        <div class="menu-item" onclick="goPage('dashboard')">
+        <div class="menu-item" onclick="console.log('[Profile] 기도 통계 클릭');goPage('dashboard')" ontouchstart="this._touched=true" ontouchend="if(this._touched){this._touched=false;console.log('[Profile] 기도 통계 터치');goPage('dashboard')}">
           <div class="menu-icon-wrap">📊</div><div class="menu-item-text">기도 통계</div><div class="menu-item-arrow">›</div>
         </div>
         <div class="menu-divider"></div>
-        <div class="menu-item" onclick="goTab('groups')">
+        <div class="menu-item" onclick="console.log('[Profile] 내 그룹 클릭');goTab('groups')" ontouchstart="this._touched=true" ontouchend="if(this._touched){this._touched=false;console.log('[Profile] 내 그룹 터치');goTab('groups')}">
           <div class="menu-icon-wrap">👥</div><div class="menu-item-text">내 그룹</div><div class="menu-item-arrow">›</div>
         </div>
         <div class="menu-divider"></div>
-        <div class="menu-item" onclick="goPage('notifications')">
+        <div class="menu-item" onclick="console.log('[Profile] 알림 클릭');goPage('notifications')" ontouchstart="this._touched=true" ontouchend="if(this._touched){this._touched=false;console.log('[Profile] 알림 터치');goPage('notifications')}">
           <div class="menu-icon-wrap">🔔</div><div class="menu-item-text">알림</div><div class="menu-item-arrow">›</div>
         </div>
       </div>
@@ -588,7 +589,7 @@ textarea.form-input { resize: none; }
     <div style="height:12px;"></div>
     <div style="padding:0 16px;">
       <div class="card">
-        <div class="menu-item" onclick="confirmLogout()">
+        <div class="menu-item" onclick="console.log('[Profile] 로그아웃 클릭');confirmLogout()" ontouchstart="this._touched=true" ontouchend="if(this._touched){this._touched=false;confirmLogout()}">
           <div class="menu-icon-wrap" style="background:#FEF2F2;">🚪</div>
           <div class="menu-item-text" style="color:var(--danger);">로그아웃</div>
         </div>
@@ -1325,16 +1326,26 @@ async function loadStats() {
 
 async function loadHomePrayers() {
   showLoading('home-prayer-list');
-  const res = await api('GET', '/prayers?scope=public&limit=5');
-  const list = document.getElementById('home-prayer-list');
-  // API 응답: { data: [...] } (배열 직접) 또는 { data: { prayers: [...] } }
-  const prayers = extractPrayers(res);
-  if (prayers === null) {
-    showEmpty('home-prayer-list', '🙏', '아직 기도가 없어요', '첫 번째 기도를 작성해보세요');
-  } else if (prayers.length === 0) {
-    showEmpty('home-prayer-list', '🙏', '아직 기도가 없어요', '첫 번째 기도를 작성해보세요');
-  } else {
-    list.innerHTML = prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:8px;"></div>';
+  try {
+    const res = await api('GET', '/prayers?scope=public&limit=5');
+    console.log('[Home] loadHomePrayers 응답:', res?.success, '데이터:', res?.data?.length ?? 0);
+    const list = document.getElementById('home-prayer-list');
+    // API 응답: { data: [...] } (배열 직접) 또는 { data: { prayers: [...] } }
+    let prayers = extractPrayers(res);
+    // 공개 기도가 없으면 내 기도로 폴백
+    if (!prayers || prayers.length === 0) {
+      console.log('[Home] 공개 기도 없음, 내 기도로 폴백');
+      const res2 = await api('GET', '/prayers?scope=mine&limit=5');
+      prayers = extractPrayers(res2);
+    }
+    if (!prayers || prayers.length === 0) {
+      showEmpty('home-prayer-list', '🙏', '아직 기도가 없어요', '첫 번째 기도를 작성해보세요');
+    } else {
+      list.innerHTML = prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:8px;"></div>';
+    }
+  } catch(e) {
+    console.error('[Home] loadHomePrayers 오류:', e);
+    showEmpty('home-prayer-list', '😢', '기도 목록을 불러오지 못했습니다', e?.message || '');
   }
 }
 
@@ -1383,14 +1394,21 @@ async function loadPrayers() {
     url += '&scope=public';
   }
   if (currentCategory) url += `&category=${encodeURIComponent(currentCategory)}`;
-  const res = await api('GET', url);
-  const prayers = extractPrayers(res);
-  if (!prayers || prayers.length === 0) {
-    showEmpty('prayers-list', '🙏', '기도가 없어요', '첫 번째 기도를 작성해보세요',
-      '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'prayer-create\')">기도 작성하기</button>');
-  } else {
-    document.getElementById('prayers-list').innerHTML =
-      prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
+  console.log('[Prayers] loadPrayers:', url);
+  try {
+    const res = await api('GET', url);
+    console.log('[Prayers] 응답:', res?.success, '개수:', res?.data?.length ?? 0);
+    const prayers = extractPrayers(res);
+    if (!prayers || prayers.length === 0) {
+      showEmpty('prayers-list', '🙏', '기도가 없어요', '첫 번째 기도를 작성해보세요',
+        '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'prayer-create\')">기도 작성하기</button>');
+    } else {
+      document.getElementById('prayers-list').innerHTML =
+        prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
+    }
+  } catch(e) {
+    console.error('[Prayers] loadPrayers 오류:', e);
+    showEmpty('prayers-list', '😢', '기도 목록을 불러오지 못했습니다', e?.message || '');
   }
 }
 
