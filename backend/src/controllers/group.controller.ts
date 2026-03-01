@@ -352,3 +352,58 @@ export const joinByInviteCode = async (req: AuthRequest, res: Response): Promise
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
 };
+
+export const leaveGroup = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { groupId } = req.params;
+
+    // 그룹 존재 확인
+    const { data: group, error: groupError } = await supabaseAdmin
+      .from('groups')
+      .select('id, creator_id, member_count')
+      .eq('id', groupId)
+      .single();
+
+    if (groupError || !group) {
+      sendError(res, '그룹을 찾을 수 없습니다', 404, 'GROUP_NOT_FOUND');
+      return;
+    }
+
+    // 그룹 생성자는 탈퇴 불가
+    if (group.creator_id === userId) {
+      sendError(res, '그룹 생성자는 탈퇴할 수 없습니다. 그룹을 삭제하거나 관리자를 변경하세요.', 400, 'CREATOR_CANNOT_LEAVE');
+      return;
+    }
+
+    // 멤버 여부 확인
+    const { data: member } = await supabaseAdmin
+      .from('group_members')
+      .select('id')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!member) {
+      sendError(res, '가입하지 않은 그룹입니다', 400, 'NOT_MEMBER');
+      return;
+    }
+
+    // 멤버 삭제
+    await supabaseAdmin
+      .from('group_members')
+      .delete()
+      .eq('group_id', groupId)
+      .eq('user_id', userId);
+
+    // member_count 감소
+    await supabaseAdmin
+      .from('groups')
+      .update({ member_count: Math.max(0, (group.member_count || 1) - 1) })
+      .eq('id', groupId);
+
+    sendSuccess(res, null, '그룹에서 탈퇴했습니다');
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};

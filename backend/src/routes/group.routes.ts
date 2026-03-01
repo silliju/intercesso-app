@@ -11,6 +11,7 @@ router.get('/:groupId', optionalAuth, groupController.getGroupById);
 router.put('/:groupId', authenticate, groupController.updateGroup);
 router.delete('/:groupId', authenticate, groupController.deleteGroup);
 router.post('/:groupId/join', authenticate, groupController.joinGroup);
+router.delete('/:groupId/leave', authenticate, groupController.leaveGroup);
 router.get('/:groupId/members', authenticate, groupController.getGroupMembers);
 router.delete('/:groupId/members/:targetUserId', authenticate, groupController.removeMember);
 

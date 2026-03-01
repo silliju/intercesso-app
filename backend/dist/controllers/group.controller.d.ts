@@ -9,4 +9,5 @@ export declare const joinGroup: (req: AuthRequest, res: Response) => Promise<voi
 export declare const getGroupMembers: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const removeMember: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const joinByInviteCode: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const leaveGroup: (req: AuthRequest, res: Response) => Promise<void>;
 //# sourceMappingURL=group.controller.d.ts.map

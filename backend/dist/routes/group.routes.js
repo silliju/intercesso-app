@@ -44,6 +44,7 @@ router.get('/:groupId', auth_1.optionalAuth, groupController.getGroupById);
 router.put('/:groupId', auth_1.authenticate, groupController.updateGroup);
 router.delete('/:groupId', auth_1.authenticate, groupController.deleteGroup);
 router.post('/:groupId/join', auth_1.authenticate, groupController.joinGroup);
+router.delete('/:groupId/leave', auth_1.authenticate, groupController.leaveGroup);
 router.get('/:groupId/members', auth_1.authenticate, groupController.getGroupMembers);
 router.delete('/:groupId/members/:targetUserId', auth_1.authenticate, groupController.removeMember);
 exports.default = router;

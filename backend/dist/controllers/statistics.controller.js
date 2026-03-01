@@ -9,62 +9,49 @@ const response_1 = require("../utils/response");
 const getDashboard = async (req, res) => {
     try {
         const userId = req.user.userId;
-        // user_statistics 테이블에서 통계 조회
-        const { data: stats } = await supabase_1.default
-            .from('user_statistics')
-            .select('*')
+        // ── 항상 prayers 테이블에서 실시간 계산 (user_statistics 캐시 무시) ──
+        // 내 기도 총 수
+        const { count: myPrayerCount } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const totalPrayers = myPrayerCount ?? 0;
+        // 응답받은 기도 수
+        const { count: answeredCount } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
             .eq('user_id', userId)
-            .single();
-        // user_statistics가 없거나 비어있으면 prayers 테이블에서 직접 계산
-        let totalPrayers = stats?.total_prayers ?? 0;
-        let answeredPrayers = stats?.answered_prayers ?? 0;
-        let totalParticipations = stats?.total_participations ?? 0;
-        let streakDays = stats?.streak_days ?? 0;
-        if (!stats) {
-            // 내 기도 총 수
-            const { count: myPrayerCount } = await supabase_1.default
-                .from('prayers')
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', userId);
-            totalPrayers = myPrayerCount ?? 0;
-            // 응답받은 기도 수
-            const { count: answeredCount } = await supabase_1.default
-                .from('prayers')
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', userId)
-                .eq('status', 'answered');
-            answeredPrayers = answeredCount ?? 0;
-            // 내가 함께 기도한 횟수 (prayer_participations)
-            const { count: participCount } = await supabase_1.default
-                .from('prayer_participations')
-                .select('id', { count: 'exact', head: true })
-                .eq('user_id', userId);
-            totalParticipations = participCount ?? 0;
-            // 연속 기도 일수 계산 (최근 기도 날짜 기준)
-            const { data: recentPrayerDates } = await supabase_1.default
-                .from('prayers')
-                .select('created_at')
-                .eq('user_id', userId)
-                .order('created_at', { ascending: false })
-                .limit(30);
-            if (recentPrayerDates && recentPrayerDates.length > 0) {
-                const dates = recentPrayerDates.map((p) => p.created_at.split('T')[0]);
-                const uniqueDates = [...new Set(dates)].sort().reverse();
-                let streak = 0;
-                const today = new Date().toISOString().split('T')[0];
-                let checkDate = today;
-                for (const d of uniqueDates) {
-                    if (d === checkDate) {
-                        streak++;
-                        const prev = new Date(checkDate);
-                        prev.setDate(prev.getDate() - 1);
-                        checkDate = prev.toISOString().split('T')[0];
-                    }
-                    else {
-                        break;
-                    }
+            .eq('status', 'answered');
+        const answeredPrayers = answeredCount ?? 0;
+        // 내가 함께 기도한 횟수
+        const { count: participCount } = await supabase_1.default
+            .from('prayer_participations')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const totalParticipations = participCount ?? 0;
+        // 연속 기도 일수 계산
+        const { data: recentPrayerDates } = await supabase_1.default
+            .from('prayers')
+            .select('created_at')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(30);
+        let streakDays = 0;
+        if (recentPrayerDates && recentPrayerDates.length > 0) {
+            const dates = recentPrayerDates.map((p) => p.created_at.split('T')[0]);
+            const uniqueDates = [...new Set(dates)].sort().reverse();
+            const today = new Date().toISOString().split('T')[0];
+            let checkDate = today;
+            for (const d of uniqueDates) {
+                if (d === checkDate) {
+                    streakDays++;
+                    const prev = new Date(checkDate);
+                    prev.setDate(prev.getDate() - 1);
+                    checkDate = prev.toISOString().split('T')[0];
                 }
-                streakDays = streak;
+                else {
+                    break;
+                }
             }
         }
         // 최근 기도 (5개) - 댓글 수와 참여 수 포함
@@ -114,7 +101,6 @@ const getDashboard = async (req, res) => {
                 total_participations: totalParticipations,
                 streak_days: streakDays,
                 answer_rate: answerRate,
-                ...(stats || {}),
             },
             recent_prayers: recentPrayers,
             covenant_prayers: covenantPrayers,

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.joinByInviteCode = exports.removeMember = exports.getGroupMembers = exports.joinGroup = exports.deleteGroup = exports.updateGroup = exports.getGroupById = exports.getMyGroups = exports.createGroup = void 0;
+exports.leaveGroup = exports.joinByInviteCode = exports.removeMember = exports.getGroupMembers = exports.joinGroup = exports.deleteGroup = exports.updateGroup = exports.getGroupById = exports.getMyGroups = exports.createGroup = void 0;
 const uuid_1 = require("uuid");
 const supabase_1 = __importDefault(require("../config/supabase"));
 const response_1 = require("../utils/response");
@@ -318,4 +318,52 @@ const joinByInviteCode = async (req, res) => {
     }
 };
 exports.joinByInviteCode = joinByInviteCode;
+const leaveGroup = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { groupId } = req.params;
+        // 그룹 존재 확인
+        const { data: group, error: groupError } = await supabase_1.default
+            .from('groups')
+            .select('id, creator_id, member_count')
+            .eq('id', groupId)
+            .single();
+        if (groupError || !group) {
+            (0, response_1.sendError)(res, '그룹을 찾을 수 없습니다', 404, 'GROUP_NOT_FOUND');
+            return;
+        }
+        // 그룹 생성자는 탈퇴 불가
+        if (group.creator_id === userId) {
+            (0, response_1.sendError)(res, '그룹 생성자는 탈퇴할 수 없습니다. 그룹을 삭제하거나 관리자를 변경하세요.', 400, 'CREATOR_CANNOT_LEAVE');
+            return;
+        }
+        // 멤버 여부 확인
+        const { data: member } = await supabase_1.default
+            .from('group_members')
+            .select('id')
+            .eq('group_id', groupId)
+            .eq('user_id', userId)
+            .single();
+        if (!member) {
+            (0, response_1.sendError)(res, '가입하지 않은 그룹입니다', 400, 'NOT_MEMBER');
+            return;
+        }
+        // 멤버 삭제
+        await supabase_1.default
+            .from('group_members')
+            .delete()
+            .eq('group_id', groupId)
+            .eq('user_id', userId);
+        // member_count 감소
+        await supabase_1.default
+            .from('groups')
+            .update({ member_count: Math.max(0, (group.member_count || 1) - 1) })
+            .eq('id', groupId);
+        (0, response_1.sendSuccess)(res, null, '그룹에서 탈퇴했습니다');
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.leaveGroup = leaveGroup;
 //# sourceMappingURL=group.controller.js.map
