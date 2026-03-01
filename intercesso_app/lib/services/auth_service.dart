@@ -11,7 +11,6 @@ class AuthService {
     required String email,
     required String password,
     required String nickname,
-    String? profileId,
     String? churchName,
     String? denomination,
     String? bio,
@@ -20,7 +19,6 @@ class AuthService {
       'email': email,
       'password': password,
       'nickname': nickname,
-      if (profileId != null && profileId.isNotEmpty) 'profile_id': profileId,
       if (churchName != null) 'church_name': churchName,
       if (denomination != null) 'denomination': denomination,
       if (bio != null) 'bio': bio,
@@ -83,16 +81,10 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
-  // ─────────────────────────────────────────────────────────
-  // 소셜 로그인용 토큰/사용자 저장 메서드
-  // ─────────────────────────────────────────────────────────
-
-  /// 소셜 로그인 후 백엔드에서 받은 JWT 토큰을 저장합니다
   Future<void> saveToken(String token) async {
     await _api.setToken(token);
   }
 
-  /// 소셜 로그인 후 받은 사용자 정보를 로컬에 저장합니다
   Future<void> saveUser(Map<String, dynamic> userData) async {
     await _saveUserData(userData);
   }

@@ -45,12 +45,6 @@ dependencies:
   # 차트
   fl_chart: ^0.68.0
 
-  # 소셜 로그인 - 구글 로그인
-  google_sign_in: ^6.2.1
-
-  # 소셜 로그인 - 카카오 로그인
-  kakao_flutter_sdk_user: ^1.9.1
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

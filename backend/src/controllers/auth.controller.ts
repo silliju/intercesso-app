@@ -11,6 +11,63 @@ import { SignUpBody, LoginBody } from '../types';
 //  전략: 자체 bcrypt 해싱 → users 테이블 직접 저장
 //        Supabase Auth 이메일 발송 rate limit 완전 우회
 // ─────────────────────────────────────────────────────────────
+// profile_id 유효성 검사 (영문소문자, 숫자, 점, 언더스코어, 3~30자)
+const PROFILE_ID_REGEX = /^[a-z0-9_.]{3,30}$/;
+
+// ─────────────────────────────────────────────────────────────
+//  profile_id 중복 체크 API
+//  GET /api/auth/check-profile-id?id=xxx
+// ─────────────────────────────────────────────────────────────
+export const checkProfileId = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const profileId = (req.query.id as string || '').trim().toLowerCase();
+
+    if (!profileId) {
+      sendError(res, 'profile_id를 입력해주세요', 400, 'VALIDATION_ERROR');
+      return;
+    }
+    if (!PROFILE_ID_REGEX.test(profileId)) {
+      sendSuccess(res, { available: false, reason: 'format' }, '영문 소문자, 숫자, 점(.), 언더스코어(_)만 사용 가능하며 3~30자여야 합니다');
+      return;
+    }
+
+    // profile_id 컬럼 존재 여부 확인
+    const hasColumn = await checkProfileIdColumn();
+    if (!hasColumn) {
+      // 컬럼 없으면 사용 가능으로 반환 (DB 마이그레이션 후 활성화)
+      sendSuccess(res, { available: true, note: 'db_migration_pending' }, '사용 가능한 ID입니다');
+      return;
+    }
+
+    const { data: existing } = await supabaseAdmin
+      .from('users')
+      .select('id')
+      .eq('profile_id', profileId)
+      .maybeSingle();
+
+    if (existing) {
+      sendSuccess(res, { available: false, reason: 'duplicate' }, '이미 사용 중인 ID입니다');
+    } else {
+      sendSuccess(res, { available: true }, '사용 가능한 ID입니다');
+    }
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};
+
+// profile_id 컬럼 존재 여부 캐시 (서버 시작 후 한번만 체크)
+let _profileIdColumnExists: boolean | null = null;
+
+async function checkProfileIdColumn(): Promise<boolean> {
+  if (_profileIdColumnExists !== null) return _profileIdColumnExists;
+  const { error } = await supabaseAdmin
+    .from('users')
+    .select('profile_id')
+    .limit(0);
+  _profileIdColumnExists = !error || !error.message.includes('profile_id');
+  return _profileIdColumnExists;
+}
+
 export const signUp = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password, nickname, church_name, denomination, bio } = req.body as SignUpBody;
@@ -24,7 +81,7 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 이메일 중복 확인 (users 테이블)
+    // 이메일 중복 확인
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')
@@ -40,18 +97,20 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
     const hashedPw = await bcrypt.hash(password, 10);
     const userId = uuidv4();
 
-    // users 테이블에 직접 저장 (Supabase Auth 미사용 → 이메일 발송 없음)
+    // users 테이블에 저장
+    const insertData: any = {
+      id: userId,
+      email,
+      nickname,
+      church_name: church_name || null,
+      denomination: denomination || null,
+      bio: bio || null,
+      password_hash: hashedPw,
+    };
+
     const { data: newUser, error: profileError } = await supabaseAdmin
       .from('users')
-      .insert({
-        id: userId,
-        email,
-        nickname,
-        church_name: church_name || null,
-        denomination: denomination || null,
-        bio: bio || null,
-        password_hash: hashedPw,
-      })
+      .insert(insertData)
       .select()
       .single();
 

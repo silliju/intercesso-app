@@ -362,12 +362,18 @@ export const searchUsersForIntercession = async (req: AuthRequest, res: Response
       sendSuccess(res, []);
       return;
     }
-    const { data: users } = await supabaseAdmin
+
+    const { data: users, error: searchError } = await supabaseAdmin
       .from('users')
       .select('id, nickname, profile_image_url, church_name')
       .neq('id', userId)
       .ilike('nickname', `%${q}%`)
       .limit(10);
+
+    if (searchError) {
+      sendSuccess(res, []);
+      return;
+    }
 
     sendSuccess(res, users || []);
   } catch {
