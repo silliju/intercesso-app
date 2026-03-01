@@ -6,6 +6,7 @@ import '../screens/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
+import '../screens/auth/find_account_screen.dart';
 import '../screens/main/main_tab_screen.dart';
 import '../screens/prayer/prayer_detail_screen.dart';
 import '../screens/prayer/create_prayer_screen.dart';
@@ -36,7 +37,8 @@ GoRouter createRouter(AuthProvider authProvider) {
       }
 
       if (!isAuth && !isOnboarding && !isLogin && !isSignup) {
-        return '/login';
+        final isFindAccount = state.matchedLocation == '/find-account';
+        if (!isFindAccount) return '/login';
       }
 
       if (isAuth && (isLogin || isSignup || isOnboarding)) {
@@ -51,6 +53,13 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(path: '/onboarding', builder: (ctx, state) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (ctx, state) => const LoginScreen()),
       GoRoute(path: '/signup', builder: (ctx, state) => const SignupScreen()),
+      GoRoute(
+        path: '/find-account',
+        builder: (ctx, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return FindAccountScreen(showPasswordTab: extra?['showPasswordTab'] == true);
+        },
+      ),
       GoRoute(path: '/home', builder: (ctx, state) => const MainTabScreen()),
       GoRoute(
         path: '/prayer/:id',

@@ -270,8 +270,123 @@ textarea.form-input { resize: none; }
     </div>
     <div style="height:16px;"></div>
     <button class="btn btn-primary" id="login-btn" onclick="doLogin()">로그인</button>
-    <div style="height:20px;"></div>
+    <div style="height:16px;"></div>
+    <div style="text-align:center;font-size:13px;color:var(--text-sub);">
+      <span onclick="goPage('find-account')" style="color:var(--primary);font-weight:600;cursor:pointer;">아이디 찾기</span>
+      <span style="margin:0 8px;color:var(--border);">|</span>
+      <span onclick="goPage('forgot-password')" style="color:var(--primary);font-weight:600;cursor:pointer;">비밀번호 찾기</span>
+    </div>
+    <div style="height:16px;"></div>
     <div style="text-align:center;font-size:14px;color:var(--text-sub);">아직 계정이 없으신가요? <span onclick="goPage('signup')" style="color:var(--primary);font-weight:700;cursor:pointer;">회원가입</span></div>
+    <div style="height:40px;"></div>
+  </div>
+</div>
+
+<!-- ====================================================  아이디 찾기  ==================================================== -->
+<div class="page" id="page-find-account">
+  <div class="app-bar" style="background:var(--bg);border-bottom:none;">
+    <button class="app-bar-back" onclick="goPage('login')">‹</button>
+    <div class="app-bar-title">아이디 찾기</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:0 24px;">
+    <div style="margin-bottom:28px;margin-top:16px;">
+      <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1.4;">닉네임으로<br><span style="color:var(--primary);">이메일을 찾아드릴게요</span></div>
+      <div style="font-size:13px;color:var(--text-sub);margin-top:8px;">가입 시 사용한 닉네임을 입력해주세요</div>
+    </div>
+    <div class="card" style="padding:24px;">
+      <div class="error-box" id="find-acct-error" style="margin-bottom:16px;"></div>
+      <div class="form-group" style="margin-bottom:20px;">
+        <label class="form-label">닉네임</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="form-input has-icon" id="find-acct-nick" type="text" placeholder="가입 시 사용한 닉네임" onkeydown="if(event.key==='Enter')doFindAccount()">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">교회명 <span style="font-size:11px;color:var(--text-sub);font-weight:400;">(선택 - 동명이인 구분)</span></label>
+        <div class="input-wrap">
+          <span class="input-icon">⛪</span>
+          <input class="form-input has-icon" id="find-acct-church" type="text" placeholder="교회명 입력 (선택사항)" onkeydown="if(event.key==='Enter')doFindAccount()">
+        </div>
+      </div>
+    </div>
+    <div style="height:20px;"></div>
+    <button class="btn btn-primary" id="find-acct-btn" onclick="doFindAccount()">이메일 찾기</button>
+
+    <!-- 결과 표시 -->
+    <div id="find-acct-result" style="display:none;margin-top:20px;">
+      <div class="card" style="padding:20px;">
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:12px;">🎉 계정을 찾았습니다</div>
+        <div id="find-acct-result-list"></div>
+        <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);text-align:center;">
+          <span onclick="goPage('login')" style="color:var(--primary);font-weight:700;cursor:pointer;font-size:14px;">로그인하러 가기 →</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+    <div style="text-align:center;font-size:13px;color:var(--text-sub);">
+      비밀번호를 잊으셨나요?
+      <span onclick="goPage('forgot-password')" style="color:var(--primary);font-weight:600;cursor:pointer;">비밀번호 찾기</span>
+    </div>
+    <div style="height:40px;"></div>
+  </div>
+</div>
+
+<!-- ====================================================  비밀번호 찾기  ==================================================== -->
+<div class="page" id="page-forgot-password">
+  <div class="app-bar" style="background:var(--bg);border-bottom:none;">
+    <button class="app-bar-back" onclick="goPage('login')">‹</button>
+    <div class="app-bar-title">비밀번호 찾기</div>
+    <div style="width:36px;"></div>
+  </div>
+  <div class="scroll-body" style="padding:0 24px;">
+    <div style="margin-bottom:28px;margin-top:16px;">
+      <div style="font-size:22px;font-weight:800;color:var(--text);line-height:1.4;">가입한 이메일로<br><span style="color:var(--primary);">재설정 링크를 보내드릴게요</span></div>
+      <div style="font-size:13px;color:var(--text-sub);margin-top:8px;">이메일로 비밀번호 재설정 링크가 발송됩니다</div>
+    </div>
+
+    <!-- 이메일 입력 단계 -->
+    <div id="fp-step-email">
+      <div class="card" style="padding:24px;">
+        <div class="error-box" id="fp-error" style="margin-bottom:16px;"></div>
+        <div class="form-group">
+          <label class="form-label">이메일</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉️</span>
+            <input class="form-input has-icon" id="fp-email" type="email" placeholder="가입 시 사용한 이메일" onkeydown="if(event.key==='Enter')doForgotPassword()">
+          </div>
+        </div>
+      </div>
+      <div style="height:20px;"></div>
+      <button class="btn btn-primary" id="fp-btn" onclick="doForgotPassword()">재설정 이메일 보내기</button>
+    </div>
+
+    <!-- 발송 완료 단계 -->
+    <div id="fp-step-done" style="display:none;">
+      <div class="card" style="padding:24px;text-align:center;">
+        <div style="font-size:48px;margin-bottom:12px;">📬</div>
+        <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:8px;">이메일을 확인해주세요</div>
+        <div id="fp-done-email" style="font-size:13px;color:var(--primary);font-weight:700;margin-bottom:8px;"></div>
+        <div style="font-size:13px;color:var(--text-sub);line-height:1.6;">
+          비밀번호 재설정 링크가 발송되었습니다.<br>
+          이메일의 링크를 클릭하여 새 비밀번호를 설정하세요.<br>
+          <span style="font-size:12px;color:var(--text-light);">스팸함도 확인해주세요.</span>
+        </div>
+        <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+          <button onclick="resetFpForm()" style="background:none;border:none;color:var(--text-sub);font-size:13px;cursor:pointer;">다른 이메일로 재시도</button>
+          <span style="margin:0 8px;color:var(--border);">|</span>
+          <span onclick="goPage('login')" style="color:var(--primary);font-weight:700;cursor:pointer;font-size:13px;">로그인하러 가기 →</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:20px;"></div>
+    <div style="text-align:center;font-size:13px;color:var(--text-sub);">
+      이메일이 기억나지 않나요?
+      <span onclick="goPage('find-account')" style="color:var(--primary);font-weight:600;cursor:pointer;">아이디 찾기</span>
+    </div>
     <div style="height:40px;"></div>
   </div>
 </div>
@@ -971,6 +1086,79 @@ async function doSignup() {
     err.textContent = res.message || '회원가입에 실패했습니다';
     err.classList.add('show');
   }
+}
+
+/* ============================================================
+   아이디 찾기 (닉네임 → 이메일 마스킹)
+============================================================ */
+async function doFindAccount() {
+  const nick = document.getElementById('find-acct-nick').value.trim();
+  const church = document.getElementById('find-acct-church').value.trim();
+  const err = document.getElementById('find-acct-error');
+  err.classList.remove('show');
+  document.getElementById('find-acct-result').style.display = 'none';
+
+  if (!nick) { err.textContent = '닉네임을 입력해주세요'; err.classList.add('show'); return; }
+
+  const btn = document.getElementById('find-acct-btn');
+  btn.textContent = '찾는 중...'; btn.disabled = true;
+
+  const body = { nickname: nick };
+  if (church) body.church_name = church;
+  const res = await api('POST', '/auth/find-email', body);
+
+  btn.textContent = '이메일 찾기'; btn.disabled = false;
+
+  if (res.success && res.data?.users?.length > 0) {
+    const list = res.data.users;
+    document.getElementById('find-acct-result-list').innerHTML = list.map((u, i) => `
+      <div style="padding:12px;background:var(--bg);border-radius:10px;margin-bottom:${i < list.length - 1 ? '8' : '0'}px;">
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:4px;">이메일</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);">✉️ ${u.email}</div>
+        ${u.church_name ? `<div style="font-size:12px;color:var(--text-sub);margin-top:4px;">⛪ ${u.church_name}</div>` : ''}
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">가입일: ${new Date(u.created_at).toLocaleDateString('ko-KR')}</div>
+      </div>
+    `).join('');
+    document.getElementById('find-acct-result').style.display = 'block';
+  } else {
+    err.textContent = res.message || '일치하는 계정을 찾을 수 없습니다';
+    err.classList.add('show');
+  }
+}
+
+/* ============================================================
+   비밀번호 찾기 (이메일로 재설정 링크 발송)
+============================================================ */
+async function doForgotPassword() {
+  const email = document.getElementById('fp-email').value.trim();
+  const err = document.getElementById('fp-error');
+  err.classList.remove('show');
+
+  if (!email) { err.textContent = '이메일을 입력해주세요'; err.classList.add('show'); return; }
+  if (!email.includes('@')) { err.textContent = '올바른 이메일 형식을 입력해주세요'; err.classList.add('show'); return; }
+
+  const btn = document.getElementById('fp-btn');
+  btn.textContent = '전송 중...'; btn.disabled = true;
+
+  const res = await api('POST', '/auth/forgot-password', { email });
+
+  btn.textContent = '재설정 이메일 보내기'; btn.disabled = false;
+
+  if (res.success) {
+    document.getElementById('fp-done-email').textContent = email;
+    document.getElementById('fp-step-email').style.display = 'none';
+    document.getElementById('fp-step-done').style.display = 'block';
+  } else {
+    err.textContent = res.message || '이메일 발송에 실패했습니다';
+    err.classList.add('show');
+  }
+}
+
+function resetFpForm() {
+  document.getElementById('fp-step-email').style.display = 'block';
+  document.getElementById('fp-step-done').style.display = 'none';
+  document.getElementById('fp-email').value = '';
+  document.getElementById('fp-error').classList.remove('show');
 }
 
 /* ============================================================

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.refreshToken = exports.logout = exports.login = exports.signUp = void 0;
+exports.findEmail = exports.forgotPassword = exports.refreshToken = exports.logout = exports.login = exports.signUp = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const uuid_1 = require("uuid");
 const supabase_1 = __importDefault(require("../config/supabase"));
@@ -145,4 +145,89 @@ const refreshToken = async (req, res) => {
     }
 };
 exports.refreshToken = refreshToken;
+/**
+ * 비밀번호 재설정 요청
+ * - 이메일 존재 여부 확인
+ * - Supabase Auth의 resetPasswordForEmail 사용
+ * POST /api/auth/forgot-password
+ * body: { email }
+ */
+const forgotPassword = async (req, res) => {
+    try {
+        const { email } = req.body;
+        if (!email) {
+            (0, response_1.sendError)(res, '이메일을 입력해주세요', 400, 'VALIDATION_ERROR');
+            return;
+        }
+        // 가입된 이메일인지 확인
+        const { data: user } = await supabase_1.default
+            .from('users')
+            .select('id, email')
+            .eq('email', email)
+            .single();
+        if (!user) {
+            // 보안상 존재 여부를 노출하지 않고 성공처럼 응답
+            (0, response_1.sendSuccess)(res, null, '비밀번호 재설정 이메일을 발송했습니다. 이메일을 확인해주세요.');
+            return;
+        }
+        // Supabase Auth 비밀번호 재설정 이메일 발송
+        const { error } = await supabase_1.default.auth.resetPasswordForEmail(email, {
+            redirectTo: `${process.env.FRONTEND_URL || 'https://intercesso.pages.dev'}/reset-password`,
+        });
+        if (error) {
+            console.error('비밀번호 재설정 이메일 오류:', error);
+            (0, response_1.sendError)(res, '이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.', 500, 'EMAIL_ERROR');
+            return;
+        }
+        (0, response_1.sendSuccess)(res, null, '비밀번호 재설정 이메일을 발송했습니다. 이메일을 확인해주세요.');
+    }
+    catch (error) {
+        (0, response_1.sendError)(res, '서버 오류가 발생했습니다', 500, 'SERVER_ERROR');
+    }
+};
+exports.forgotPassword = forgotPassword;
+/**
+ * 닉네임으로 이메일(아이디) 찾기
+ * POST /api/auth/find-email
+ * body: { nickname, church_name? }
+ */
+const findEmail = async (req, res) => {
+    try {
+        const { nickname, church_name } = req.body;
+        if (!nickname) {
+            (0, response_1.sendError)(res, '닉네임을 입력해주세요', 400, 'VALIDATION_ERROR');
+            return;
+        }
+        let query = supabase_1.default
+            .from('users')
+            .select('email, nickname, church_name, created_at')
+            .eq('nickname', nickname);
+        if (church_name) {
+            query = query.eq('church_name', church_name);
+        }
+        const { data: users, error } = await query;
+        if (error || !users || users.length === 0) {
+            (0, response_1.sendError)(res, '일치하는 계정을 찾을 수 없습니다', 404, 'USER_NOT_FOUND');
+            return;
+        }
+        // 이메일 마스킹 처리 (보안: 앞 3자리 + *** + @ + 도메인)
+        const maskedUsers = users.map((u) => {
+            const [local, domain] = u.email.split('@');
+            const masked = local.length > 3
+                ? local.slice(0, 3) + '***'
+                : local[0] + '***';
+            return {
+                email: `${masked}@${domain}`,
+                nickname: u.nickname,
+                church_name: u.church_name,
+                created_at: u.created_at,
+            };
+        });
+        (0, response_1.sendSuccess)(res, { users: maskedUsers }, '계정을 찾았습니다');
+    }
+    catch (error) {
+        (0, response_1.sendError)(res, '서버 오류가 발생했습니다', 500, 'SERVER_ERROR');
+    }
+};
+exports.findEmail = findEmail;
 //# sourceMappingURL=auth.controller.js.map

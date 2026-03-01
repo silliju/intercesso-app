@@ -44,6 +44,9 @@ router.post('/signup', authController.signUp);
 router.post('/login', authController.login);
 router.post('/logout', auth_1.authenticate, authController.logout);
 router.post('/refresh', authController.refreshToken);
+// ─── 아이디/비밀번호 찾기 ──────────────────────────────────
+router.post('/find-email', authController.findEmail); // 닉네임으로 이메일 찾기
+router.post('/forgot-password', authController.forgotPassword); // 비밀번호 재설정 이메일 발송
 // ─── 소셜 로그인 ──────────────────────────────────────────
 // 구글 로그인: Flutter앱에서 구글 id_token을 받아 JWT 발급
 // POST /api/auth/social/google

@@ -274,7 +274,38 @@ class _LoginScreenState extends State<LoginScreen> {
                       : const Text('로그인'),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // ─── 아이디/비밀번호 찾기 링크 ───────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  TextButton(
+                    onPressed: () => context.push('/find-account',
+                        extra: {'showPasswordTab': false}),
+                    style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8)),
+                    child: const Text('아이디 찾기',
+                        style: TextStyle(color: AppTheme.primary,
+                            fontWeight: FontWeight.w600, fontSize: 13)),
+                  ),
+                  Container(
+                    width: 1, height: 12,
+                    color: const Color(0xFFE5E7EB),
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                  ),
+                  TextButton(
+                    onPressed: () => context.push('/find-account',
+                        extra: {'showPasswordTab': true}),
+                    style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 8)),
+                    child: const Text('비밀번호 찾기',
+                        style: TextStyle(color: AppTheme.primary,
+                            fontWeight: FontWeight.w600, fontSize: 13)),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
 
               // ─── 회원가입 링크 ───────────────────────────────
               Row(
