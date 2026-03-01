@@ -422,7 +422,7 @@ textarea.form-input { resize: none; }
       </div>
     </div>
     <div style="height:16px;"></div>
-    <button class="btn btn-primary" id="signup-btn" onclick="doSignup()">가입 완료</button>
+    <button class="btn btn-primary" id="signup-btn" onclick="doSignup()">가입하기</button>
     <div style="height:16px;"></div>
     <div style="text-align:center;font-size:14px;color:var(--text-sub);">이미 계정이 있으신가요? <span onclick="goPage('login')" style="color:var(--primary);font-weight:700;cursor:pointer;">로그인</span></div>
     <div style="height:40px;"></div>
@@ -1079,7 +1079,7 @@ async function doSignup() {
   const btn = document.getElementById('signup-btn');
   btn.textContent = '처리 중...'; btn.disabled = true;
   const res = await api('POST', '/auth/signup', { email, password: pw, nickname: nick, church_name: church || undefined });
-  btn.textContent = '가입 완료'; btn.disabled = false;
+  btn.textContent = '가입하기'; btn.disabled = false;
   if (res.success && res.data) {
     showToast('회원가입 완료! 환영합니다 🎉');
     await afterLogin(res.data.token);

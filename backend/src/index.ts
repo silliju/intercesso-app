@@ -39,6 +39,24 @@ UPDATE intercession_requests SET target_type = 'individual' WHERE target_type IS
       `);
     }
 
+    // users 테이블에 password_hash 컬럼 자동 추가 (자체 인증 지원)
+    const { error: pwError } = await supabaseAdmin
+      .from('users')
+      .select('password_hash')
+      .limit(0);
+
+    if (pwError && pwError.message.includes('password_hash')) {
+      console.log('🔧 users.password_hash 컬럼 추가 시도...');
+      // Supabase REST API로는 DDL 실행 불가 → 안내 출력
+      console.log('⚠️  Supabase Dashboard SQL Editor에서 아래 SQL 실행 필요:');
+      console.log(`
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS password_hash TEXT;
+      `);
+    } else {
+      console.log('✅ users.password_hash 컬럼 확인 완료');
+    }
+
     // prayer_answers 테이블 확인
     const { error: paError } = await supabaseAdmin
       .from('prayer_answers')
