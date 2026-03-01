@@ -46,13 +46,17 @@ app.use(express.static(publicDir));
 // APK 다운로드 직접 처리
 app.get('/intercesso.apk', (req, res) => {
   const apkPath = path.join(publicDir, 'intercesso.apk');
+  if (!fs.existsSync(apkPath)) {
+    res.status(404).json({ success: false, message: 'APK not found' });
+    return;
+  }
   res.setHeader('Content-Disposition', 'attachment; filename="intercesso.apk"');
   res.setHeader('Content-Type', 'application/vnd.android.package-archive');
   res.sendFile(apkPath);
 });
 
-// SPA fallback
-app.use((req, res) => {
+// SPA fallback - 모든 나머지 요청에 index.html 반환
+app.use(function(req, res) {
   res.sendFile(path.join(publicDir, 'index.html'));
 });
 
