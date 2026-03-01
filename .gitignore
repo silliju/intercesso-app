@@ -47,3 +47,5 @@ intercesso_app/ios/Flutter/Flutter.podspec
 # APK / PDF (용량이 큰 바이너리 파일)
 *.apk
 *.pdf
+# Railway 배포용 - dist는 제외하지 않음 (backend/dist는 포함)
+!backend/dist/

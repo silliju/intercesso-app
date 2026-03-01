@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/prayer_service.dart';
+import '../../services/intercession_service.dart';
+import '../../services/group_service.dart';
 import '../../models/models.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -17,6 +19,8 @@ class PrayerDetailScreen extends StatefulWidget {
 
 class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
   final PrayerService _prayerService = PrayerService();
+  final IntercessionService _intercessionService = IntercessionService();
+  final GroupService _groupService = GroupService();
   PrayerModel? _prayer;
   bool _isLoading = true;
   bool _isParticipating = false;
@@ -196,6 +200,290 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     ));
   }
 
+  // ── 중보기도 요청 ──────────────────────────────────────
+  void _openIntercessionRequest() {
+    if (_prayer == null) return;
+    final messageController = TextEditingController();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          left: 20, right: 20, top: 20,
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 24,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40, height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(color: AppTheme.border, borderRadius: BorderRadius.circular(2)),
+            ),
+            const Text('🤝 중보기도 요청하기',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+            const SizedBox(height: 4),
+            const Text('누구에게 중보기도를 요청할까요?',
+                style: TextStyle(fontSize: 13, color: AppTheme.textSecondary)),
+            const SizedBox(height: 16),
+            // 기도 미리보기
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.background,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.border),
+              ),
+              child: Row(
+                children: [
+                  const Text('🙏', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(_prayer!.title,
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+                        maxLines: 1, overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            // 선택지
+            _icOption(ctx, '🌐', '전체 공개 요청', '모든 사용자에게 공개적으로 요청',
+                messageController, 'public'),
+            const SizedBox(height: 8),
+            _icOption(ctx, '👥', '그룹에게 요청', '내 그룹 멤버 전체에게 요청',
+                messageController, 'group'),
+            const SizedBox(height: 8),
+            _icOption(ctx, '👤', '개인에게 요청', '특정 사람을 검색하여 요청',
+                messageController, 'individual'),
+            const SizedBox(height: 12),
+            // 메시지 입력
+            TextField(
+              controller: messageController,
+              decoration: InputDecoration(
+                hintText: '전달 메시지 (선택사항)',
+                filled: true,
+                fillColor: AppTheme.background,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: AppTheme.border),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _icOption(BuildContext ctx, String emoji, String title, String sub,
+      TextEditingController msgCtrl, String type) {
+    return GestureDetector(
+      onTap: () async {
+        Navigator.pop(ctx);
+        if (type == 'group') {
+          await _openGroupPicker(msgCtrl.text.trim());
+        } else if (type == 'individual') {
+          await _openPersonPicker(msgCtrl.text.trim());
+        } else {
+          await _sendIntercessionRequest(type: 'public', message: msgCtrl.text.trim());
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(
+          children: [
+            Text(emoji, style: const TextStyle(fontSize: 24)),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700)),
+                  Text(sub, style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+                ],
+              ),
+            ),
+            const Icon(Icons.chevron_right_rounded, color: AppTheme.textLight),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _sendIntercessionRequest({
+    required String type,
+    String? message,
+    String? groupId,
+    String? recipientId,
+  }) async {
+    try {
+      if (type == 'public') {
+        await _intercessionService.sendPublicRequest(
+          prayerId: widget.prayerId,
+          message: message,
+        );
+        if (mounted) _showSnack('전체에게 중보기도 요청을 보냈습니다 🙏');
+      } else if (type == 'group' && groupId != null) {
+        await _intercessionService.sendGroupRequest(
+          prayerId: widget.prayerId,
+          groupId: groupId,
+          message: message,
+        );
+        if (mounted) _showSnack('그룹에 중보기도 요청을 보냈습니다 🙏');
+      } else if (type == 'individual' && recipientId != null) {
+        await _intercessionService.sendPersonalRequest(
+          prayerId: widget.prayerId,
+          recipientId: recipientId,
+          message: message,
+        );
+        if (mounted) _showSnack('중보기도 요청을 보냈습니다 🙏');
+      }
+    } catch (e) {
+      if (mounted) _showSnack('요청 전송에 실패했습니다', isError: true);
+    }
+  }
+
+  Future<void> _openGroupPicker(String message) async {
+    try {
+      final groups = await _groupService.getMyGroups();
+      if (!mounted) return;
+      if (groups.isEmpty) {
+        _showSnack('속한 그룹이 없습니다. 그룹에 먼저 참여해주세요.');
+        return;
+      }
+      showModalBottomSheet(
+        context: context,
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+        builder: (ctx) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('👥 그룹 선택',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 16),
+              ...groups.map((g) => ListTile(
+                leading: const CircleAvatar(
+                  backgroundColor: AppTheme.primaryLight,
+                  child: Text('⛪', style: TextStyle(fontSize: 16)),
+                ),
+                title: Text(g.name, style: const TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: Text('멤버 ${g.memberCount}명'),
+                onTap: () {
+                  Navigator.pop(ctx);
+                  _sendIntercessionRequest(type: 'group', groupId: g.id, message: message);
+                },
+              )),
+            ],
+          ),
+        ),
+      );
+    } catch (e) {
+      if (mounted) _showSnack('그룹 정보를 불러오지 못했습니다', isError: true);
+    }
+  }
+
+  Future<void> _openPersonPicker(String message) async {
+    final searchCtrl = TextEditingController();
+    List<Map<String, dynamic>> searchResults = [];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setStateModal) => Padding(
+          padding: EdgeInsets.only(
+            left: 20, right: 20, top: 20,
+            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('👤 개인에게 요청',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+              const SizedBox(height: 16),
+              TextField(
+                controller: searchCtrl,
+                decoration: InputDecoration(
+                  hintText: '닉네임으로 검색...',
+                  prefixIcon: const Icon(Icons.search),
+                  filled: true,
+                  fillColor: AppTheme.background,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.border),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                ),
+                onChanged: (q) async {
+                  if (q.trim().isEmpty) {
+                    setStateModal(() => searchResults = []);
+                    return;
+                  }
+                  final results = await _intercessionService.searchUsers(q.trim());
+                  if (ctx.mounted) setStateModal(() => searchResults = results);
+                },
+              ),
+              const SizedBox(height: 12),
+              if (searchResults.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Text('닉네임으로 검색하세요',
+                      style: TextStyle(color: AppTheme.textSecondary)),
+                )
+              else
+                ...searchResults.map((u) => ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: AppTheme.primaryLight,
+                    child: Text(
+                      (u['nickname'] as String? ?? '?')[0],
+                      style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  title: Text(u['nickname'] as String? ?? '익명'),
+                  subtitle: u['church_name'] != null
+                      ? Text(u['church_name'] as String)
+                      : null,
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () {
+                    Navigator.pop(ctx);
+                    _sendIntercessionRequest(
+                      type: 'individual',
+                      recipientId: u['id'] as String,
+                      message: message,
+                    );
+                  },
+                )),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _commentController.dispose();
@@ -358,6 +646,24 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                             ),
                           ),
                         ),
+                        const SizedBox(height: 10),
+                        // 중보기도 요청 버튼 (내 기도일 때만)
+                        if (isOwner)
+                          SizedBox(
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () => _openIntercessionRequest(),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.primary,
+                                side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                                padding: const EdgeInsets.symmetric(vertical: 14),
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                              ),
+                              icon: const Text('🤝', style: TextStyle(fontSize: 18)),
+                              label: const Text('중보기도 요청하기',
+                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                            ),
+                          ),
                         const SizedBox(height: 20),
                         // 댓글 섹션
                         Row(
