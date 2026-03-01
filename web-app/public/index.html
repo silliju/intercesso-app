@@ -188,6 +188,16 @@ textarea.form-input { resize: none; }
 .fab { position: fixed; bottom: 90px; right: calc(50vw - 215px); width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: #fff; border: none; font-size: 26px; box-shadow: 0 4px 16px rgba(0,170,255,0.4); cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 100; transition: transform 0.2s; }
 .fab.show { display: flex; }
 .fab:active { transform: scale(0.92); }
+/* ── 토글 스위치 ── */
+.toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 26px; transition: .3s; }
+.toggle-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: .3s; }
+.toggle-switch input:checked + .toggle-slider { background: var(--primary); }
+.toggle-switch input:checked + .toggle-slider:before { transform: translateX(22px); }
+/* ── 중보기도 타입 버튼 ── */
+.intercession-type-btn { padding: 8px 14px; border-radius: 20px; border: 1.5px solid var(--border); background: var(--surface); color: var(--text-sub); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+.intercession-type-btn.active { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
 
 /* ── 온보딩 ── */
 .ob-slide { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; padding: 20px 32px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
@@ -637,12 +647,63 @@ textarea.form-input { resize: none; }
       </div>
       <div class="form-group">
         <label class="form-label">공개 범위</label>
-        <select class="form-input" id="pc-scope">
+        <select class="form-input" id="pc-scope" onchange="pcOnScopeChange()">
           <option value="public">전체 공개</option><option value="friends">지인 공개</option>
           <option value="community">공동체</option><option value="private">비공개</option>
         </select>
       </div>
     </div>
+
+    <!-- ── 중보기도 요청 섹션 ── -->
+    <div style="height:12px;"></div>
+    <div class="card" style="padding:20px;" id="pc-intercession-card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">🤝 중보기도 요청</div>
+          <div style="font-size:12px;color:var(--text-sub);margin-top:2px;">기도를 올린 후 중보기도를 요청할 수 있어요</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pc-intercession-toggle" onchange="pcToggleIntercession()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <!-- 요청 대상 선택 (토글 ON 시 표시) -->
+      <div id="pc-intercession-detail" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:10px;">요청 대상</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="intercession-type-btn active" id="pc-itype-public" onclick="pcSelectIntercessionType('public')">🌐 전체 공개</button>
+          <button class="intercession-type-btn" id="pc-itype-group" onclick="pcSelectIntercessionType('group')">👥 그룹에게</button>
+          <button class="intercession-type-btn" id="pc-itype-individual" onclick="pcSelectIntercessionType('individual')">👤 개인에게</button>
+        </div>
+
+        <!-- 그룹 선택 -->
+        <div id="pc-igroup-area" style="display:none;margin-bottom:12px;">
+          <select class="form-input" id="pc-igroup-select" style="font-size:14px;">
+            <option value="">그룹을 선택하세요</option>
+          </select>
+        </div>
+
+        <!-- 개인 검색 -->
+        <div id="pc-iuser-area" style="display:none;margin-bottom:12px;">
+          <div style="position:relative;">
+            <input class="form-input" id="pc-iuser-search" type="text" placeholder="닉네임으로 검색..."
+              oninput="pcSearchUser(this.value)" style="font-size:14px;padding-right:36px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);">🔍</span>
+          </div>
+          <div id="pc-iuser-results" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
+          <div id="pc-iuser-selected" style="display:none;margin-top:8px;padding:10px 14px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;font-weight:600;color:var(--primary);" id="pc-iuser-name"></span>
+            <button onclick="pcClearUser()" style="margin-left:auto;background:none;border:none;color:var(--text-sub);font-size:18px;cursor:pointer;">✕</button>
+          </div>
+        </div>
+
+        <!-- 메시지 -->
+        <textarea class="form-input" id="pc-imessage" placeholder="요청 메시지 (선택사항)" rows="2"
+          style="font-size:14px;resize:none;"></textarea>
+      </div>
+    </div>
+
     <div style="height:16px;"></div>
     <button class="btn btn-primary" onclick="submitPrayer()">기도 올리기 🙏</button>
     <div style="height:40px;"></div>
@@ -850,15 +911,61 @@ textarea.form-input { resize: none; }
         <button class="filter-chip active" onclick="peSelectCategory(this,'기타')">🙏 기타</button>
       </div>
     </div>
-    <div class="form-group" style="margin-bottom:28px;">
+    <div class="form-group" style="margin-bottom:20px;">
       <label class="form-label">공개 범위</label>
-      <select class="form-input" id="pe-scope" style="margin-top:4px;">
+      <select class="form-input" id="pe-scope" style="margin-top:4px;" onchange="peOnScopeChange()">
         <option value="public">🌐 전체 공개</option>
         <option value="friends">👥 지인 공개</option>
         <option value="community">⛪ 공동체</option>
         <option value="private">🔒 비공개</option>
       </select>
     </div>
+
+    <!-- ── 중보기도 요청 섹션 ── -->
+    <div class="card" style="padding:20px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);">🤝 중보기도 요청</div>
+          <div style="font-size:12px;color:var(--text-sub);margin-top:2px;">수정 후 중보기도를 새로 요청할 수 있어요</div>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="pe-intercession-toggle" onchange="peToggleIntercession()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+
+      <div id="pe-intercession-detail" style="display:none;margin-top:16px;border-top:1px solid var(--border);padding-top:16px;">
+        <div style="font-size:13px;font-weight:600;color:var(--text-sub);margin-bottom:10px;">요청 대상</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+          <button class="intercession-type-btn active" id="pe-itype-public" onclick="peSelectIntercessionType('public')">🌐 전체 공개</button>
+          <button class="intercession-type-btn" id="pe-itype-group" onclick="peSelectIntercessionType('group')">👥 그룹에게</button>
+          <button class="intercession-type-btn" id="pe-itype-individual" onclick="peSelectIntercessionType('individual')">👤 개인에게</button>
+        </div>
+
+        <div id="pe-igroup-area" style="display:none;margin-bottom:12px;">
+          <select class="form-input" id="pe-igroup-select" style="font-size:14px;">
+            <option value="">그룹을 선택하세요</option>
+          </select>
+        </div>
+
+        <div id="pe-iuser-area" style="display:none;margin-bottom:12px;">
+          <div style="position:relative;">
+            <input class="form-input" id="pe-iuser-search" type="text" placeholder="닉네임으로 검색..."
+              oninput="peSearchUser(this.value)" style="font-size:14px;padding-right:36px;">
+            <span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-sub);">🔍</span>
+          </div>
+          <div id="pe-iuser-results" style="background:var(--surface);border:1px solid var(--border);border-radius:10px;margin-top:4px;display:none;max-height:160px;overflow-y:auto;"></div>
+          <div id="pe-iuser-selected" style="display:none;margin-top:8px;padding:10px 14px;background:var(--primary-light);border-radius:10px;display:flex;align-items:center;gap:8px;">
+            <span style="font-size:14px;font-weight:600;color:var(--primary);" id="pe-iuser-name"></span>
+            <button onclick="peClearUser()" style="margin-left:auto;background:none;border:none;color:var(--text-sub);font-size:18px;cursor:pointer;">✕</button>
+          </div>
+        </div>
+
+        <textarea class="form-input" id="pe-imessage" placeholder="요청 메시지 (선택사항)" rows="2"
+          style="font-size:14px;resize:none;"></textarea>
+      </div>
+    </div>
+
     <button class="btn btn-primary" onclick="peSubmit()">수정 완료 ✏️</button>
   </div>
 </div>
@@ -2287,12 +2394,174 @@ async function peSubmit() {
     scope
   });
   if (res.success) {
+    // 중보기도 요청 처리
+    const intercToggle = document.getElementById('pe-intercession-toggle');
+    if (intercToggle && intercToggle.checked && _currentPrayerId) {
+      await peSendIntercessionRequest(_currentPrayerId);
+    }
     showToast('기도가 수정되었습니다 ✏️');
+    // 중보기도 토글 초기화
+    if (intercToggle) { intercToggle.checked = false; peToggleIntercession(); }
     goBack();
     await openPrayerDetail(_currentPrayerId);
   } else {
     showToast(res.message || '수정에 실패했습니다');
   }
+}
+
+/* ============================================================
+   중보기도 요청 공통 유틸
+============================================================ */
+
+// ── 공통: 그룹 목록 로드 ──
+async function loadIntercessionGroups(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">그룹을 선택하세요</option>';
+  const res = await api('GET', '/groups');
+  let groups = [];
+  if (res.success) {
+    if (Array.isArray(res.data)) groups = res.data;
+    else if (res.data?.groups) groups = res.data.groups;
+  }
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g.id;
+    opt.textContent = g.name;
+    sel.appendChild(opt);
+  });
+}
+
+// ── 공통: 사용자 검색 결과 렌더 ──
+function renderUserSearchResults(results, resultsId, selectedId, nameId, searchId) {
+  const box = document.getElementById(resultsId);
+  if (!box) return;
+  if (!results.length) { box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  box.innerHTML = results.map(u => `
+    <div onclick="selectIntercessionUser('${u.id}','${escHtml(u.nickname)}','${selectedId}','${nameId}','${resultsId}','${searchId}')"
+      style="padding:10px 14px;cursor:pointer;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);">
+      <div class="prayer-avatar" style="width:32px;height:32px;font-size:12px;flex-shrink:0;">${u.nickname[0]||'?'}</div>
+      <div>
+        <div style="font-size:14px;font-weight:600;">${escHtml(u.nickname)}</div>
+        ${u.church_name ? `<div style="font-size:12px;color:var(--text-sub);">${escHtml(u.church_name)}</div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function selectIntercessionUser(id, nick, selectedId, nameId, resultsId, searchId) {
+  window['_intercessionUserId_' + selectedId] = id;
+  document.getElementById(nameId).textContent = nick;
+  const selEl = document.getElementById(selectedId);
+  if (selEl) selEl.style.display = 'flex';
+  const resEl = document.getElementById(resultsId);
+  if (resEl) resEl.style.display = 'none';
+  const srchEl = document.getElementById(searchId);
+  if (srchEl) srchEl.value = '';
+}
+
+// ── 공통: 중보기도 API 호출 ──
+async function sendIntercessionRequest(prayerId, type, groupId, userId, message) {
+  const body = { prayer_id: prayerId, target_type: type, message: message || '' };
+  if (type === 'group') body.group_id = groupId;
+  if (type === 'individual') body.recipient_id = userId;
+  if (type === 'public') body.recipient_id = currentUser?.id; // public은 자기 자신
+  const res = await api('POST', '/intercessions', body);
+  if (res.success) {
+    showToast('중보기도 요청을 보냈습니다 🤝');
+  } else {
+    showToast('중보기도 요청 실패: ' + (res.message || '오류'));
+  }
+}
+
+/* ── 기도 작성 폼 중보기도 컨트롤 ── */
+window._pcIntercessionType = 'public';
+window._pcIntercessionUserId = null;
+
+function pcToggleIntercession() {
+  const on = document.getElementById('pc-intercession-toggle').checked;
+  document.getElementById('pc-intercession-detail').style.display = on ? 'block' : 'none';
+  if (on) {
+    pcSelectIntercessionType('public');
+    loadIntercessionGroups('pc-igroup-select');
+  }
+}
+function pcOnScopeChange() {
+  // 비공개 선택 시 토글 자동 비활성화
+  const scope = document.getElementById('pc-scope').value;
+  const toggle = document.getElementById('pc-intercession-toggle');
+  if (scope === 'private') { toggle.checked = false; pcToggleIntercession(); }
+}
+function pcSelectIntercessionType(type) {
+  window._pcIntercessionType = type;
+  ['public','group','individual'].forEach(t => {
+    document.getElementById('pc-itype-' + t)?.classList.toggle('active', t === type);
+  });
+  document.getElementById('pc-igroup-area').style.display = type === 'group' ? 'block' : 'none';
+  document.getElementById('pc-iuser-area').style.display = type === 'individual' ? 'block' : 'none';
+}
+async function pcSearchUser(q) {
+  if (q.length < 1) { document.getElementById('pc-iuser-results').style.display = 'none'; return; }
+  const res = await api('GET', `/intercessions/search-users?q=${encodeURIComponent(q)}`);
+  renderUserSearchResults(res.data || [], 'pc-iuser-results', 'pc-iuser-selected', 'pc-iuser-name', 'pc-iuser-search');
+}
+function pcClearUser() {
+  window._intercessionUserId_pc_iuser_selected = null;
+  document.getElementById('pc-iuser-selected').style.display = 'none';
+  document.getElementById('pc-iuser-search').value = '';
+}
+async function pcSendIntercessionRequest(prayerId) {
+  const type = window._pcIntercessionType || 'public';
+  const groupId = document.getElementById('pc-igroup-select')?.value;
+  const userId = window._intercessionUserId_pc_iuser_selected;
+  const message = document.getElementById('pc-imessage')?.value.trim();
+  if (type === 'group' && !groupId) { showToast('그룹을 선택해주세요'); return; }
+  if (type === 'individual' && !userId) { showToast('대상자를 선택해주세요'); return; }
+  await sendIntercessionRequest(prayerId, type, groupId, userId, message);
+}
+
+/* ── 기도 수정 폼 중보기도 컨트롤 ── */
+window._peIntercessionType = 'public';
+
+function peToggleIntercession() {
+  const on = document.getElementById('pe-intercession-toggle').checked;
+  document.getElementById('pe-intercession-detail').style.display = on ? 'block' : 'none';
+  if (on) {
+    peSelectIntercessionType('public');
+    loadIntercessionGroups('pe-igroup-select');
+  }
+}
+function peOnScopeChange() {
+  const scope = document.getElementById('pe-scope').value;
+  const toggle = document.getElementById('pe-intercession-toggle');
+  if (scope === 'private') { toggle.checked = false; peToggleIntercession(); }
+}
+function peSelectIntercessionType(type) {
+  window._peIntercessionType = type;
+  ['public','group','individual'].forEach(t => {
+    document.getElementById('pe-itype-' + t)?.classList.toggle('active', t === type);
+  });
+  document.getElementById('pe-igroup-area').style.display = type === 'group' ? 'block' : 'none';
+  document.getElementById('pe-iuser-area').style.display = type === 'individual' ? 'block' : 'none';
+}
+async function peSearchUser(q) {
+  if (q.length < 1) { document.getElementById('pe-iuser-results').style.display = 'none'; return; }
+  const res = await api('GET', `/intercessions/search-users?q=${encodeURIComponent(q)}`);
+  renderUserSearchResults(res.data || [], 'pe-iuser-results', 'pe-iuser-selected', 'pe-iuser-name', 'pe-iuser-search');
+}
+function peClearUser() {
+  window._intercessionUserId_pe_iuser_selected = null;
+  document.getElementById('pe-iuser-selected').style.display = 'none';
+  document.getElementById('pe-iuser-search').value = '';
+}
+async function peSendIntercessionRequest(prayerId) {
+  const type = window._peIntercessionType || 'public';
+  const groupId = document.getElementById('pe-igroup-select')?.value;
+  const userId = window._intercessionUserId_pe_iuser_selected;
+  const message = document.getElementById('pe-imessage')?.value.trim();
+  if (type === 'group' && !groupId) { showToast('그룹을 선택해주세요'); return; }
+  if (type === 'individual' && !userId) { showToast('대상자를 선택해주세요'); return; }
+  await sendIntercessionRequest(prayerId, type, groupId, userId, message);
 }
 
 /* ============================================================
@@ -2507,9 +2776,19 @@ async function submitPrayer() {
   if (!title || !content) { showToast('제목과 내용을 입력해주세요'); return; }
   const res = await api('POST', '/prayers', { title, content, category, scope });
   if (res.success) {
+    const prayerId = res.data?.id || res.data?.prayer?.id;
+
+    // 중보기도 요청 처리
+    const intercToggle = document.getElementById('pc-intercession-toggle');
+    if (intercToggle && intercToggle.checked && prayerId) {
+      await pcSendIntercessionRequest(prayerId);
+    }
+
     showToast('기도가 등록되었습니다 🙏');
     document.getElementById('pc-title').value = '';
     document.getElementById('pc-content').value = '';
+    // 중보기도 토글 초기화
+    if (intercToggle) { intercToggle.checked = false; pcToggleIntercession(); }
     goTab('prayers');
   } else {
     showToast(res.message || '기도 등록 실패');
