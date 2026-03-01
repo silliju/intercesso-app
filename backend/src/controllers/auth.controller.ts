@@ -15,15 +15,15 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // 이메일 중복 확인
+    // 이메일 중복 확인 (users 테이블)
     const { data: existingUser } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('email', email)
-      .single();
+      .maybeSingle();
 
     if (existingUser) {
-      sendError(res, '이미 사용 중인 이메일입니다', 400, 'EMAIL_DUPLICATE');
+      sendError(res, '이미 사용 중인 이메일입니다. 로그인을 시도해보세요.', 400, 'EMAIL_DUPLICATE');
       return;
     }
 
@@ -35,6 +35,15 @@ export const signUp = async (req: Request, res: Response): Promise<void> => {
     });
 
     if (authError || !authData.user) {
+      // 이미 가입된 이메일인 경우 (Supabase Auth에는 있지만 users 테이블에 없는 경우 포함)
+      const alreadyRegistered =
+        authError?.message?.toLowerCase().includes('already been registered') ||
+        authError?.message?.toLowerCase().includes('already registered') ||
+        authError?.message?.toLowerCase().includes('email address is already');
+      if (alreadyRegistered) {
+        sendError(res, '이미 사용 중인 이메일입니다. 로그인을 시도해보세요.', 400, 'EMAIL_DUPLICATE');
+        return;
+      }
       sendError(res, '회원가입 중 오류가 발생했습니다', 500, 'AUTH_ERROR', authError?.message);
       return;
     }
