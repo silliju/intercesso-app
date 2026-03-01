@@ -46,12 +46,17 @@ export const upsertPrayerAnswer = async (req: AuthRequest, res: Response): Promi
       .update({ status: 'answered', answered_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('id', prayerId);
 
-    // prayer_answers upsert (prayer_id UNIQUE 제약)
-    const { data: existing } = await supabaseAdmin
+    // prayer_answers 테이블 존재 체크 (PGRST205)
+    const { data: existing, error: checkError } = await supabaseAdmin
       .from('prayer_answers')
       .select('id')
       .eq('prayer_id', prayerId)
       .single();
+
+    if (checkError && (checkError.code === 'PGRST205' || checkError.message?.includes('schema cache'))) {
+      sendError(res, '기도 응답 기능을 사용하려면 Supabase SQL Editor에서 prayer_answers 테이블을 먼저 생성해주세요.', 503, 'TABLE_MISSING');
+      return;
+    }
 
     let answer;
     if (existing) {
@@ -111,6 +116,12 @@ export const getPrayerAnswer = async (req: AuthRequest, res: Response): Promise<
       `)
       .eq('prayer_id', prayerId)
       .single();
+
+    // 테이블 미생성 에러 (PGRST205)
+    if (error && (error.code === 'PGRST205' || error.message?.includes('schema cache'))) {
+      sendError(res, '기도 응답 기능 테이블이 아직 생성되지 않았습니다', 503, 'TABLE_MISSING');
+      return;
+    }
 
     if (error || !answer) {
       sendSuccess(res, null, '등록된 응답이 없습니다');
