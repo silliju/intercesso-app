@@ -38,6 +38,7 @@ class AuthProvider extends ChangeNotifier {
     required String email,
     required String password,
     required String nickname,
+    String? profileId,
     String? churchName,
     String? denomination,
   }) async {
@@ -50,6 +51,7 @@ class AuthProvider extends ChangeNotifier {
         email: email,
         password: password,
         nickname: nickname,
+        profileId: profileId,
         churchName: churchName,
         denomination: denomination,
       );

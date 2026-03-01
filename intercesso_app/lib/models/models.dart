@@ -3,6 +3,7 @@ class UserModel {
   final String id;
   final String email;
   final String nickname;
+  final String? profileId;
   final String? profileImageUrl;
   final String? churchName;
   final String? denomination;
@@ -14,6 +15,7 @@ class UserModel {
     required this.id,
     required this.email,
     required this.nickname,
+    this.profileId,
     this.profileImageUrl,
     this.churchName,
     this.denomination,
@@ -27,6 +29,7 @@ class UserModel {
       id: json['id'] ?? '',
       email: json['email'] ?? '',
       nickname: json['nickname'] ?? '',
+      profileId: json['profile_id'],
       profileImageUrl: json['profile_image_url'],
       churchName: json['church_name'],
       denomination: json['denomination'],
@@ -40,6 +43,7 @@ class UserModel {
         'id': id,
         'email': email,
         'nickname': nickname,
+        'profile_id': profileId,
         'profile_image_url': profileImageUrl,
         'church_name': churchName,
         'denomination': denomination,
