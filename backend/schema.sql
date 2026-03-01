@@ -250,6 +250,40 @@ CREATE TABLE IF NOT EXISTS public.user_statistics (
 );
 
 -- ============================================================
+-- 15. PRAYER_ANSWERS 테이블 (기도 응답 간증)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.prayer_answers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    prayer_id UUID NOT NULL REFERENCES public.prayers(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    content TEXT,
+    scope VARCHAR(20) DEFAULT 'public' NOT NULL CHECK (scope IN ('public', 'group', 'private')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    UNIQUE(prayer_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_prayer_id ON public.prayer_answers(prayer_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_user_id ON public.prayer_answers(user_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_scope ON public.prayer_answers(scope);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_created_at ON public.prayer_answers(created_at DESC);
+
+-- ============================================================
+-- 16. PRAYER_ANSWER_COMMENTS 테이블 (기도 응답 댓글)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS public.prayer_answer_comments (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    answer_id UUID NOT NULL REFERENCES public.prayer_answers(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_answer_id ON public.prayer_answer_comments(answer_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_user_id ON public.prayer_answer_comments(user_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_created_at ON public.prayer_answer_comments(created_at);
+
+-- ============================================================
 -- RLS (Row Level Security) 정책
 -- ============================================================
 

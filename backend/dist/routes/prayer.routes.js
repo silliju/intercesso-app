@@ -32,10 +32,14 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const prayerController = __importStar(require("../controllers/prayer.controller"));
 const auth_1 = require("../middleware/auth");
+const prayer_answer_routes_1 = __importDefault(require("./prayer_answer.routes"));
 const router = (0, express_1.Router)();
 router.get('/', auth_1.optionalAuth, prayerController.getPrayers);
 router.get('/:prayerId', auth_1.optionalAuth, prayerController.getPrayerById);
@@ -51,5 +55,7 @@ router.delete('/comments/:commentId', auth_1.authenticate, prayerController.dele
 // 작정기도
 router.get('/:prayerId/checkins', auth_1.authenticate, prayerController.getCovenantCheckins);
 router.post('/:prayerId/checkins', auth_1.authenticate, prayerController.checkInCovenant);
+// 기도 응답 (중첩 라우터)
+router.use('/:prayerId/answer', prayer_answer_routes_1.default);
 exports.default = router;
 //# sourceMappingURL=prayer.routes.js.map

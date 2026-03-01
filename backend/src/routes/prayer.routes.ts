@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as prayerController from '../controllers/prayer.controller';
 import { authenticate, optionalAuth } from '../middleware/auth';
+import answerRoutes from './prayer_answer.routes';
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.delete('/comments/:commentId', authenticate, prayerController.deleteComme
 // 작정기도
 router.get('/:prayerId/checkins', authenticate, prayerController.getCovenantCheckins);
 router.post('/:prayerId/checkins', authenticate, prayerController.checkInCovenant);
+
+// 기도 응답 (중첩 라우터)
+router.use('/:prayerId/answer', answerRoutes);
 
 export default router;

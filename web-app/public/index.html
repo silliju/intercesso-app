@@ -1787,13 +1787,19 @@ async function openPrayerDetail(prayerId) {
   body.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
   document.getElementById('pd-owner-actions').style.display = 'none';
 
-  const res = await api('GET', `/prayers/${prayerId}`);
+  // 기도 + 응답 병렬 조회
+  const [res, answerRes] = await Promise.all([
+    api('GET', `/prayers/${prayerId}`),
+    api('GET', `/prayers/${prayerId}/answer`),
+  ]);
+
   if (!res.success || !res.data) {
     body.innerHTML = '<div class="empty-state"><div class="empty-emoji">😔</div><div class="empty-title">기도를 찾을 수 없어요</div></div>';
     return;
   }
   _currentPrayer = res.data;
   const p = res.data;
+  const answer = answerRes.success ? answerRes.data : null;  // null = 응답 없음
   const isOwner = currentUser && p.user_id === currentUser.id;
 
   if (isOwner) document.getElementById('pd-owner-actions').style.display = 'flex';
@@ -1819,6 +1825,12 @@ async function openPrayerDetail(prayerId) {
       </div>
     </div>`).join('');
 
+  // 기도 응답 섹션 HTML
+  const answerSection = buildAnswerSection(answer, isOwner, p.status);
+
+  // 응답 댓글 HTML
+  const answerComments = answer ? buildAnswerComments(answer) : '';
+
   body.innerHTML = `
     <div style="padding:16px;">
       <!-- 기도 카드 -->
@@ -1839,6 +1851,10 @@ async function openPrayerDetail(prayerId) {
           <span class="tag" style="background:#f1f5f9;color:var(--text-sub);">${scopeMap[p.scope]||'🌐 전체'}</span>
         </div>
       </div>
+
+      <!-- 기도 응답 섹션 -->
+      ${answerSection}
+
       <!-- 함께 기도 버튼 -->
       <button id="pd-pray-btn" onclick="pdToggleParticipation()"
         style="width:100%;padding:14px;border-radius:50px;border:none;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:10px;
@@ -1852,7 +1868,11 @@ async function openPrayerDetail(prayerId) {
                color:var(--primary);font-size:14px;font-weight:700;cursor:pointer;margin-bottom:20px;">
         🤝 중보기도 요청하기
       </button>` : ''}
-      <!-- 댓글 -->
+
+      <!-- 응답 댓글 -->
+      ${answerComments}
+
+      <!-- 기도 댓글 -->
       <div style="font-size:16px;font-weight:700;margin-bottom:12px;">댓글 <span style="color:var(--primary);">${(p.comments||[]).length}</span></div>
       <div id="pd-comments">
         ${comments || '<div style="text-align:center;padding:20px;color:var(--text-sub);font-size:14px;">첫 번째 댓글을 남겨보세요 💬</div>'}
@@ -1893,6 +1913,92 @@ async function pdSubmitComment() {
   }
 }
 
+function buildAnswerSection(answer, isOwner, prayerStatus) {
+  const scopeLabels = { public:'🌐 전체 공개', group:'👥 그룹 공개', private:'🔒 비공개' };
+
+  if (answer) {
+    // 응답 있음 - 표시
+    const scopeLabel = scopeLabels[answer.scope] || '🌐 전체 공개';
+    const dateStr = answer.created_at
+      ? new Date(answer.created_at).toLocaleDateString('ko-KR', { year:'numeric', month:'long', day:'numeric' })
+      : '';
+    return `
+      <div id="pd-answer-section" style="background:linear-gradient(135deg,#ECFDF5,#F0FFF4);border:2px solid #10B981;border-radius:16px;padding:20px;margin-bottom:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:22px;">🎉</span>
+            <span style="font-size:16px;font-weight:800;color:#065F46;">기도 응답</span>
+            <span style="font-size:11px;background:#D1FAE5;color:#065F46;padding:2px 8px;border-radius:50px;">${scopeLabel}</span>
+          </div>
+          ${isOwner ? `
+          <div style="display:flex;gap:6px;">
+            <button onclick="openAnswerModal()" style="font-size:12px;color:#10B981;background:none;border:1px solid #10B981;border-radius:8px;padding:4px 10px;cursor:pointer;">수정</button>
+            <button onclick="deleteAnswer()" style="font-size:12px;color:#EF4444;background:none;border:1px solid #EF4444;border-radius:8px;padding:4px 10px;cursor:pointer;">삭제</button>
+          </div>` : ''}
+        </div>
+        ${answer.content
+          ? `<div style="font-size:15px;color:#064E3B;line-height:1.7;margin-bottom:12px;">${escHtml(answer.content)}</div>`
+          : `<div style="font-size:14px;color:#6B7280;font-style:italic;margin-bottom:12px;">응답 내용이 없습니다</div>`
+        }
+        <div style="font-size:12px;color:#6B7280;">${dateStr}</div>
+      </div>`;
+  }
+
+  // 응답 없음
+  if (isOwner && prayerStatus !== 'praying') {
+    // answered/grateful 상태인데 응답 미작성 → 작성 유도
+    return `
+      <div id="pd-answer-section" style="background:#F9FAFB;border:2px dashed #D1D5DB;border-radius:16px;padding:20px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:24px;margin-bottom:8px;">✨</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:6px;">응답 간증을 나눠보세요</div>
+        <div style="font-size:13px;color:var(--text-sub);margin-bottom:14px;">하나님의 응답을 공동체와 함께 나누면 큰 힘이 됩니다</div>
+        <button onclick="openAnswerModal()"
+          style="padding:10px 24px;background:#10B981;color:#fff;border:none;border-radius:50px;font-size:14px;font-weight:700;cursor:pointer;">
+          🎉 응답 간증 작성하기
+        </button>
+      </div>`;
+  }
+
+  if (isOwner) {
+    // 기도중 상태 - 상태 변경 시 자동 안내
+    return '';
+  }
+
+  return ''; // 비소유자 + 응답 없음
+}
+
+function buildAnswerComments(answer) {
+  if (!answer || answer.scope === 'private') return '';
+  const comments = answer.comments || [];
+  const cmtHtml = comments.map(c => `
+    <div style="display:flex;gap:10px;padding:10px 12px;background:#F0FFF4;border-radius:10px;margin-bottom:6px;">
+      <div class="prayer-avatar" style="width:28px;height:28px;font-size:11px;flex-shrink:0;background:#D1FAE5;color:#065F46;">${c.user?.nickname?.[0] || '?'}</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;font-weight:700;color:#065F46;">${escHtml(c.user?.nickname || '익명')}</div>
+        <div style="font-size:13px;color:#064E3B;margin-top:2px;line-height:1.5;">${escHtml(c.content)}</div>
+      </div>
+      ${currentUser && c.user?.id === currentUser.id
+        ? `<button onclick="deleteAnswerComment('${c.id}')" style="font-size:10px;color:#9CA3AF;background:none;border:none;cursor:pointer;align-self:flex-start;padding:2px;">✕</button>`
+        : ''}
+    </div>`).join('');
+
+  return `
+    <div style="background:#ECFDF5;border-radius:16px;padding:16px;margin-bottom:16px;">
+      <div style="font-size:15px;font-weight:700;color:#065F46;margin-bottom:12px;">🙌 응답 댓글 <span style="color:#10B981;">${comments.length}</span></div>
+      <div id="pd-answer-comments">
+        ${cmtHtml || '<div style="font-size:13px;color:#6B7280;text-align:center;padding:10px;">첫 번째 축하 댓글을 남겨보세요!</div>'}
+      </div>
+      ${token ? `
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <input id="pd-answer-comment-input" type="text" placeholder="축하 또는 감사 댓글..." maxlength="200"
+          style="flex:1;border:1px solid #A7F3D0;border-radius:50px;padding:8px 14px;font-size:13px;background:#fff;outline:none;"
+          onkeydown="if(event.key==='Enter')pdSubmitAnswerComment()">
+        <button onclick="pdSubmitAnswerComment()"
+          style="padding:8px 16px;background:#10B981;color:#fff;border:none;border-radius:50px;font-size:13px;font-weight:700;cursor:pointer;">전송</button>
+      </div>` : ''}
+    </div>`;
+}
+
 function pdChangeStatus() {
   if (!_currentPrayerId) return;
   const statuses = [
@@ -1930,8 +2036,135 @@ async function pdUpdateStatus(status, overlayEl) {
     const labels = { praying:'기도중', answered:'응답받음 🎉', grateful:'감사 🙌' };
     showToast(`"${labels[status]}"으로 변경되었습니다`);
     await openPrayerDetail(_currentPrayerId);
+    // answered/grateful로 변경 시 응답 간증 작성 유도
+    if ((status === 'answered' || status === 'grateful') && !_currentPrayer?.answer) {
+      setTimeout(() => openAnswerModal(), 500);
+    }
   } else {
     showToast(res.message || '상태 변경 실패');
+  }
+}
+
+/* ──────────────────────────────────────────────────────
+   기도 응답 관련 함수
+────────────────────────────────────────────────────── */
+function openAnswerModal(existing) {
+  const a = existing || null;
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:9100;display:flex;align-items:flex-end;';
+  overlay.innerHTML = `
+    <div style="width:100%;max-width:430px;margin:0 auto;background:#fff;border-radius:20px 20px 0 0;padding:20px 20px 32px;">
+      <div style="width:40px;height:4px;background:#e0e0e0;border-radius:2px;margin:0 auto 16px;"></div>
+      <div style="font-size:17px;font-weight:800;text-align:center;margin-bottom:6px;">🎉 기도 응답 간증</div>
+      <div style="font-size:13px;color:var(--text-sub);text-align:center;margin-bottom:20px;">하나님의 응답을 공동체와 나눠보세요</div>
+
+      <!-- 응답 내용 -->
+      <div style="margin-bottom:16px;">
+        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:6px;">응답 내용 <span style="color:var(--text-sub);font-weight:400;">(선택)</span></label>
+        <textarea id="answer-content" rows="4" placeholder="어떻게 응답을 받으셨나요? 간증을 나눠주세요..."
+          style="width:100%;border:1px solid var(--border);border-radius:12px;padding:12px;font-size:14px;resize:none;box-sizing:border-box;line-height:1.6;"
+          maxlength="1000">${a?.content ? escHtml(a.content) : ''}</textarea>
+        <div style="font-size:11px;color:var(--text-sub);text-align:right;margin-top:4px;"><span id="answer-char-count">${a?.content?.length || 0}</span>/1000</div>
+      </div>
+
+      <!-- 공개 범위 -->
+      <div style="margin-bottom:20px;">
+        <label style="font-size:13px;font-weight:600;color:var(--text);display:block;margin-bottom:10px;">공개 범위</label>
+        <div style="display:flex;gap:8px;">
+          ${['public','group','private'].map(s => {
+            const info = {
+              public: { label:'🌐 전체 공개', desc:'모든 사용자에게 공개' },
+              group:  { label:'👥 그룹 공개', desc:'내 그룹 멤버에게만' },
+              private:{ label:'🔒 비공개',   desc:'나만 볼 수 있음' },
+            }[s];
+            const sel = (a?.scope || 'public') === s;
+            return `<button onclick="selectAnswerScope(this,'${s}')" data-scope="${s}"
+              style="flex:1;padding:10px 6px;border-radius:12px;border:2px solid ${sel?'#10B981':'var(--border)'};
+                     background:${sel?'#ECFDF5':'#fff'};cursor:pointer;text-align:center;">
+              <div style="font-size:13px;font-weight:700;color:${sel?'#065F46':'var(--text)'};">${info.label}</div>
+              <div style="font-size:10px;color:var(--text-sub);margin-top:2px;">${info.desc}</div>
+            </button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button onclick="this.closest('[style*=fixed]').remove()"
+          style="flex:1;padding:13px;border-radius:50px;background:var(--bg);border:none;font-weight:600;color:var(--text-sub);cursor:pointer;">닫기</button>
+        <button onclick="submitAnswer(this.closest('[style*=fixed]'))"
+          style="flex:2;padding:13px;border-radius:50px;background:#10B981;border:none;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">
+          🙌 간증 공유하기
+        </button>
+      </div>
+    </div>`;
+
+  // 글자 수 카운터
+  overlay.querySelector('#answer-content').addEventListener('input', function() {
+    overlay.querySelector('#answer-char-count').textContent = this.value.length;
+  });
+
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
+function selectAnswerScope(btn, scope) {
+  btn.closest('div').querySelectorAll('button').forEach(b => {
+    const sel = b.dataset.scope === scope;
+    b.style.borderColor = sel ? '#10B981' : 'var(--border)';
+    b.style.background  = sel ? '#ECFDF5' : '#fff';
+    b.querySelector('div').style.color = sel ? '#065F46' : 'var(--text)';
+  });
+}
+
+async function submitAnswer(overlayEl) {
+  const content = document.getElementById('answer-content')?.value?.trim() || '';
+  const scopeBtn = overlayEl?.querySelector('[data-scope][style*="10B981"]') ||
+                   overlayEl?.querySelector('[data-scope="public"]');
+  const scope = scopeBtn?.dataset?.scope || 'public';
+
+  const res = await api('POST', `/prayers/${_currentPrayerId}/answer`, { content: content || null, scope });
+  if (overlayEl) overlayEl.remove();
+  if (res.success) {
+    showToast('응답 간증이 등록되었습니다 🎉');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '등록 실패');
+  }
+}
+
+async function deleteAnswer() {
+  if (!confirm('응답 간증을 삭제하시겠습니까?')) return;
+  const res = await api('DELETE', `/prayers/${_currentPrayerId}/answer`);
+  if (res.success) {
+    showToast('응답이 삭제되었습니다');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '삭제 실패');
+  }
+}
+
+async function pdSubmitAnswerComment() {
+  if (!token) { showToast('로그인이 필요합니다'); return; }
+  const input = document.getElementById('pd-answer-comment-input');
+  const content = input?.value?.trim();
+  if (!content) return;
+  const res = await api('POST', `/prayers/${_currentPrayerId}/answer/comments`, { content });
+  if (res.success) {
+    input.value = '';
+    showToast('댓글이 등록되었습니다 🙌');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '댓글 등록 실패');
+  }
+}
+
+async function deleteAnswerComment(commentId) {
+  const res = await api('DELETE', `/prayers/${_currentPrayerId}/answer/comments/${commentId}`);
+  if (res.success) {
+    showToast('댓글이 삭제되었습니다');
+    await openPrayerDetail(_currentPrayerId);
+  } else {
+    showToast(res.message || '삭제 실패');
   }
 }
 

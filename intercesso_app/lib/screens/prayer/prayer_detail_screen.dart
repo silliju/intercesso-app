@@ -8,6 +8,7 @@ import '../../services/group_service.dart';
 import '../../models/models.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/prayer_answer_section.dart';
 
 class PrayerDetailScreen extends StatefulWidget {
   final String prayerId;
@@ -685,6 +686,13 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                             ),
                           ),
                         const SizedBox(height: 20),
+                        // ── 기도 응답 섹션 ──────────────────────────
+                        PrayerAnswerSection(
+                          prayerId: widget.prayerId,
+                          isOwner: isOwner,
+                          prayerStatus: _prayer!.status,
+                        ),
+                        // ── 댓글 섹션 ───────────────────────────────
                         // 댓글 섹션
                         Row(
                           children: [

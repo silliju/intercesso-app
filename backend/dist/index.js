@@ -16,17 +16,20 @@ const group_routes_1 = __importDefault(require("./routes/group.routes"));
 const intercession_routes_1 = __importDefault(require("./routes/intercession.routes"));
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const statistics_routes_1 = __importDefault(require("./routes/statistics.routes"));
+const prayer_answer_controller_1 = require("./controllers/prayer_answer.controller");
+const auth_1 = require("./middleware/auth");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 // DB 마이그레이션 상태 확인 (로그 출력용)
 async function runMigrations() {
     try {
-        const { error } = await supabase_1.default
+        // intercession_requests target_type 컬럼 확인
+        const { error: icError } = await supabase_1.default
             .from('intercession_requests')
             .select('target_type')
             .limit(0);
-        if (error && error.message.includes('target_type')) {
+        if (icError && icError.message.includes('target_type')) {
             console.log('⚠️  DB 컬럼 부족 - Supabase Dashboard SQL Editor에서 실행 필요:');
             console.log(`
 ALTER TABLE intercession_requests
@@ -35,8 +38,43 @@ ALTER TABLE intercession_requests
 UPDATE intercession_requests SET target_type = 'individual' WHERE target_type IS NULL;
       `);
         }
+        // prayer_answers 테이블 확인
+        const { error: paError } = await supabase_1.default
+            .from('prayer_answers')
+            .select('id')
+            .limit(0);
+        if (paError && (paError.code === '42P01' || paError.message.includes('prayer_answers'))) {
+            console.log('⚠️  prayer_answers 테이블 없음 - Supabase Dashboard SQL Editor에서 실행 필요:');
+            console.log(`
+-- 1. 기도 응답 테이블
+CREATE TABLE IF NOT EXISTS public.prayer_answers (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  prayer_id UUID NOT NULL REFERENCES public.prayers(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  content TEXT,
+  scope VARCHAR(20) DEFAULT 'public' NOT NULL CHECK (scope IN ('public', 'group', 'private')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  UNIQUE(prayer_id)
+);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_prayer_id ON public.prayer_answers(prayer_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_scope ON public.prayer_answers(scope);
+CREATE INDEX IF NOT EXISTS idx_prayer_answers_created_at ON public.prayer_answers(created_at DESC);
+
+-- 2. 응답 댓글 테이블
+CREATE TABLE IF NOT EXISTS public.prayer_answer_comments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  answer_id UUID NOT NULL REFERENCES public.prayer_answers(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  content TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_answer_id ON public.prayer_answer_comments(answer_id);
+CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_created_at ON public.prayer_answer_comments(created_at);
+      `);
+        }
         else {
-            console.log('✅ DB 스키마 확인 완료');
+            console.log('✅ DB 스키마 확인 완료 (prayer_answers, prayer_answer_comments)');
         }
     }
     catch {
@@ -65,6 +103,8 @@ app.use('/api/groups', group_routes_1.default);
 app.use('/api/intercessions', intercession_routes_1.default);
 app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/statistics', statistics_routes_1.default);
+// 기도 응답 피드
+app.get('/api/answers/feed', auth_1.optionalAuth, prayer_answer_controller_1.getAnswerFeed);
 // 404 핸들러
 app.use((req, res) => {
     res.status(404).json({
