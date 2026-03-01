@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
+import supabaseAdmin from './config/supabase';
 
 import authRoutes from './routes/auth.routes';
 import prayerRoutes from './routes/prayer.routes';
@@ -16,6 +17,30 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// DB 마이그레이션 상태 확인 (로그 출력용)
+async function runMigrations() {
+  try {
+    const { error } = await supabaseAdmin
+      .from('intercession_requests')
+      .select('target_type')
+      .limit(0);
+
+    if (error && error.message.includes('target_type')) {
+      console.log('⚠️  DB 컬럼 부족 - Supabase Dashboard SQL Editor에서 실행 필요:');
+      console.log(`
+ALTER TABLE intercession_requests
+  ADD COLUMN IF NOT EXISTS target_type TEXT DEFAULT 'individual',
+  ADD COLUMN IF NOT EXISTS group_id UUID REFERENCES groups(id) ON DELETE SET NULL;
+UPDATE intercession_requests SET target_type = 'individual' WHERE target_type IS NULL;
+      `);
+    } else {
+      console.log('✅ DB 스키마 확인 완료');
+    }
+  } catch {
+    console.log('DB 확인 스킵');
+  }
+}
 
 // 미들웨어
 app.use(helmet());
@@ -67,6 +92,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Intercesso API Server running on port ${PORT}`);
   console.log(`📖 Health check: http://localhost:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  runMigrations();
 });
 
 export default app;
