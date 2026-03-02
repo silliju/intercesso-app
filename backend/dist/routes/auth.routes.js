@@ -40,6 +40,7 @@ const socialAuthController = __importStar(require("../controllers/social_auth.co
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 // ─── 기본 이메일/비밀번호 인증 ────────────────────────────
+router.get('/check-profile-id', authController.checkProfileId); // profile_id 중복 체크
 router.post('/signup', authController.signUp);
 router.post('/login', authController.login);
 router.post('/logout', auth_1.authenticate, authController.logout);

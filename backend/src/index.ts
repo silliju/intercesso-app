@@ -95,6 +95,31 @@ CREATE INDEX IF NOT EXISTS idx_prayer_answer_comments_created_at ON public.praye
     } else {
       console.log('✅ DB 스키마 확인 완료 (prayer_answers, prayer_answer_comments)');
     }
+
+    // users 테이블 profile_id 컬럼 확인
+    const { error: pidError } = await supabaseAdmin
+      .from('users')
+      .select('profile_id')
+      .limit(0);
+
+    if (pidError && pidError.message.includes('profile_id')) {
+      console.log('⚠️  users.profile_id 컬럼 없음 - Supabase Dashboard SQL Editor에서 아래 SQL 실행 필요:');
+      console.log(`
+ALTER TABLE public.users
+  ADD COLUMN IF NOT EXISTS profile_id TEXT;
+
+ALTER TABLE public.users
+  ADD CONSTRAINT IF NOT EXISTS users_profile_id_format
+  CHECK (profile_id IS NULL OR profile_id ~ '^[a-z0-9_.]{3,30}$');
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_users_profile_id
+  ON public.users(profile_id)
+  WHERE profile_id IS NOT NULL;
+      `);
+    } else {
+      console.log('✅ users.profile_id 컬럼 확인 완료');
+    }
+
   } catch {
     console.log('DB 확인 스킵');
   }

@@ -13,28 +13,42 @@ class PrayersScreen extends StatefulWidget {
   State<PrayersScreen> createState() => _PrayersScreenState();
 }
 
+// 탭 인덱스 → scope 매핑
+const _tabScopes = <String?>[null, 'mine', 'friends', 'praying'];
+const _tabLabels = ['전체 공개', '내 기도', '지인 기도', '기도중'];
+
 class _PrayersScreenState extends State<PrayersScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   String? _selectedCategory;
   final ScrollController _scrollController = ScrollController();
 
+  // 현재 선택된 scope (탭에 연동)
+  String? get _currentScope => _tabScopes[_tabController.index];
+
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: _tabScopes.length, vsync: this);
     _scrollController.addListener(_onScroll);
-    _loadPrayers();
+    // 첫 로드: 전체 공개 (index=0, scope=null)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadPrayers(scope: _currentScope);
+    });
   }
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<PrayerProvider>().loadPrayers();
+      context.read<PrayerProvider>().loadPrayers(
+            scope: _currentScope,
+            category: _selectedCategory,
+          );
     }
   }
 
   Future<void> _loadPrayers({String? scope}) async {
+    if (!mounted) return;
     final provider = context.read<PrayerProvider>();
     await provider.loadPrayers(
       refresh: true,
@@ -71,15 +85,12 @@ class _PrayersScreenState extends State<PrayersScreen>
           ),
           unselectedLabelStyle: const TextStyle(fontSize: 14),
           onTap: (index) {
-            final scopes = [null, 'mine', 'friends', 'praying'];
-            _loadPrayers(scope: scopes[index]);
+            // 탭 전환 시 해당 scope로 새로 로드
+            _loadPrayers(scope: _tabScopes[index]);
           },
-          tabs: const [
-            Tab(text: '전체 공개'),
-            Tab(text: '내 기도'),
-            Tab(text: '지인 기도'),
-            Tab(text: '기도중'),
-          ],
+          tabs: _tabLabels
+              .map((label) => Tab(text: label))
+              .toList(),
         ),
       ),
       body: Column(
@@ -108,13 +119,23 @@ class _PrayersScreenState extends State<PrayersScreen>
                     ? EmptyWidget(
                         emoji: '🙏',
                         title: '기도가 없어요',
-                        subtitle: '첫 번째 기도를 작성해보세요',
-                        buttonText: '기도 작성하기',
-                        onButtonTap: () => context.push('/prayer/create'),
+                        subtitle: _currentScope == 'mine'
+                            ? '첫 번째 기도를 작성해보세요'
+                            : _currentScope == 'praying'
+                                ? '함께 기도하는 내역이 없어요'
+                                : _currentScope == 'friends'
+                                    ? '지인이 작성한 기도가 없어요'
+                                    : '첫 번째 기도를 작성해보세요',
+                        buttonText: _currentScope == 'mine' || _currentScope == null
+                            ? '기도 작성하기'
+                            : null,
+                        onButtonTap: _currentScope == 'mine' || _currentScope == null
+                            ? () => context.push('/prayer/create')
+                            : null,
                       )
                     : RefreshIndicator(
                         color: AppTheme.primary,
-                        onRefresh: () => _loadPrayers(),
+                        onRefresh: () => _loadPrayers(scope: _currentScope),
                         child: ListView.builder(
                           controller: _scrollController,
                           padding: const EdgeInsets.only(top: 8, bottom: 80),
@@ -163,7 +184,7 @@ class _PrayersScreenState extends State<PrayersScreen>
       child: GestureDetector(
         onTap: () {
           setState(() => _selectedCategory = value);
-          _loadPrayers();
+          _loadPrayers(scope: _currentScope);
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),

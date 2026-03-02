@@ -7,6 +7,7 @@ import { authenticate } from '../middleware/auth';
 const router = Router();
 
 // ─── 기본 이메일/비밀번호 인증 ────────────────────────────
+router.get('/check-profile-id', authController.checkProfileId); // profile_id 중복 체크
 router.post('/signup', authController.signUp);
 router.post('/login', authController.login);
 router.post('/logout', authenticate, authController.logout);

@@ -41,6 +41,7 @@ html, body {
   width: 100%;
   max-width: 430px;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--bg);
   position: relative;
   overflow: hidden;
@@ -49,7 +50,7 @@ html, body {
   box-shadow: 0 0 40px rgba(0,0,0,0.15);
 }
 
-.page { display: none; flex-direction: column; height: 100dvh; height: 100vh; overflow: hidden; background: var(--bg); }
+.page { display: none; flex-direction: column; height: 100vh; height: 100dvh; overflow: hidden; background: var(--bg); }
 .page.active { display: flex; }
 .scroll-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
 .scroll-body::-webkit-scrollbar { display: none; }
@@ -1016,6 +1017,31 @@ function timeAgo(dateStr) {
   return Math.floor(diff / 2592000) + '개월 전';
 }
 
+let _isRefreshingToken = false;
+
+async function _tryRefreshToken() {
+  if (_isRefreshingToken || !token) return false;
+  _isRefreshingToken = true;
+  try {
+    const res = await fetch(API + '/auth/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify({ token }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const newToken = data?.data?.token;
+      if (newToken) {
+        token = newToken;
+        localStorage.setItem('token', newToken);
+        return true;
+      }
+    }
+    return false;
+  } catch { return false; }
+  finally { _isRefreshingToken = false; }
+}
+
 async function api(method, path, body) {
   try {
     const res = await fetch(API + path, {
@@ -1026,12 +1052,39 @@ async function api(method, path, body) {
       },
       body: body ? JSON.stringify(body) : undefined,
     });
-    const data = await res.json();
-    // 401이면 자동 로그아웃
-    if (res.status === 401) {
-      token = null; currentUser = null;
-      localStorage.removeItem('token'); localStorage.removeItem('user');
+
+    // 401 → 토큰 갱신 후 재시도 (인증 경로 제외)
+    if (res.status === 401 && !path.includes('/auth/') && !_isRefreshingToken) {
+      const refreshed = await _tryRefreshToken();
+      if (refreshed) {
+        const retry = await fetch(API + path, {
+          method,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          },
+          body: body ? JSON.stringify(body) : undefined,
+        });
+        if (retry.status === 401) {
+          // 재시도도 401이면 로그아웃
+          token = null; currentUser = null;
+          localStorage.removeItem('token'); localStorage.removeItem('user');
+          showToast('세션이 만료되었습니다. 다시 로그인해 주세요.');
+          goPage('onboarding');
+          return { success: false, message: '세션이 만료되었습니다' };
+        }
+        return await retry.json();
+      } else {
+        // 갱신 실패 → 로그아웃
+        token = null; currentUser = null;
+        localStorage.removeItem('token'); localStorage.removeItem('user');
+        showToast('세션이 만료되었습니다. 다시 로그인해 주세요.');
+        goPage('onboarding');
+        return { success: false, message: '세션이 만료되었습니다' };
+      }
     }
+
+    const data = await res.json();
     return data;
   } catch (e) {
     return { success: false, message: '서버에 연결할 수 없습니다' };
@@ -1108,7 +1161,11 @@ function goTab(id) {
     t.classList.toggle('active', t.getAttribute('onclick') && t.getAttribute('onclick').includes("'" + id + "'"));
   });
   if (id === 'home') loadHome();
-  if (id === 'prayers') loadPrayers();
+  if (id === 'prayers') {
+    loadPrayers();
+    // 백그라운드에서 다른 탭 카운트도 로드
+    if (token) setTimeout(() => _loadAllPrayerTabCounts(), 500);
+  }
   if (id === 'intercession') {
     // 중보기도 탭 진입 시 항상 '받은 요청' 탭으로 리셋
     currentIntercessionTab = 'received';
@@ -1416,9 +1473,16 @@ async function loadPrayers() {
     const res = await api('GET', url);
     console.log('[Prayers] 응답:', res?.success, '개수:', res?.data?.length ?? 0);
     const prayers = extractPrayers(res);
+    // 현재 탭 카운트 업데이트
+    _updatePrayerTabCount(currentPrayerScope, prayers ? prayers.length : 0, res?.pagination?.total);
     if (!prayers || prayers.length === 0) {
-      showEmpty('prayers-list', '🙏', '기도가 없어요', '첫 번째 기도를 작성해보세요',
-        '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'prayer-create\')">기도 작성하기</button>');
+      const emptyMsg = currentPrayerScope === 'mine' ? '첫 번째 기도를 작성해보세요' :
+                       currentPrayerScope === 'praying' ? '함께 기도하는 내역이 없어요' :
+                       currentPrayerScope === 'friends' ? '지인 기도가 없어요' : '첫 번째 기도를 작성해보세요';
+      const btn = (currentPrayerScope === 'mine' || !currentPrayerScope)
+        ? '<button class="btn btn-primary btn-sm" style="width:auto;margin-top:12px;" onclick="goPage(\'prayer-create\')">기도 작성하기</button>'
+        : '';
+      showEmpty('prayers-list', '🙏', '기도가 없어요', emptyMsg, btn);
     } else {
       document.getElementById('prayers-list').innerHTML =
         prayers.map(p => renderPrayerCard(p)).join('') + '<div style="height:80px;"></div>';
@@ -1429,6 +1493,18 @@ async function loadPrayers() {
   }
 }
 
+function _updatePrayerTabCount(scope, displayCount, total) {
+  const totalCount = total ?? displayCount;
+  if (totalCount === undefined || totalCount === null) return;
+  const scopeToIndex = { public: 0, mine: 1, friends: 2, praying: 3 };
+  const idx = scopeToIndex[scope ?? 'public'] ?? 0;
+  const tabs = document.querySelectorAll('#page-prayers .tab-nav-item');
+  if (tabs[idx]) {
+    const baseLabels = ['전체 공개', '내 기도', '지인 기도', '기도중'];
+    tabs[idx].textContent = totalCount > 0 ? `${baseLabels[idx]} ${totalCount}` : baseLabels[idx];
+  }
+}
+
 function switchPrayerTab(el, scope) {
   if (el) {
     document.querySelectorAll('#page-prayers .tab-nav-item').forEach(t => t.classList.remove('active'));
@@ -1436,6 +1512,20 @@ function switchPrayerTab(el, scope) {
   }
   currentPrayerScope = scope;
   loadPrayers();
+}
+
+// 모든 탭의 카운트를 백그라운드에서 로드
+async function _loadAllPrayerTabCounts() {
+  if (!token) return;
+  const scopes = ['public', 'mine', 'friends', 'praying'];
+  for (const scope of scopes) {
+    try {
+      const res = await api('GET', `/prayers?scope=${scope}&limit=1`);
+      if (res.success && res.pagination) {
+        _updatePrayerTabCount(scope, res.data?.length ?? 0, res.pagination.total);
+      }
+    } catch (_) {}
+  }
 }
 
 function filterCategory(el, cat) {
@@ -3094,6 +3184,31 @@ async function prCardParticipate(prayerId, btn) {
     showToast(res.message || '오류가 발생했습니다');
   }
 }
+
+/* ============================================================
+   WebView 키보드 대응 - 댓글 입력창이 키보드에 가려지지 않도록
+============================================================ */
+(function() {
+  // visualViewport API 지원 시 댓글 입력창 위치 조정
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      const activeEl = document.activeElement;
+      if (activeEl && (activeEl.id === 'pd-comment-input' || activeEl.id === 'pd-answer-comment-input')) {
+        setTimeout(() => activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 100);
+      }
+    });
+  }
+
+  // 입력창 포커스 시 하단 스크롤
+  document.addEventListener('focusin', (e) => {
+    const id = e.target && e.target.id;
+    if (id === 'pd-comment-input' || id === 'pd-answer-comment-input') {
+      setTimeout(() => {
+        e.target.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }, 300);
+    }
+  });
+})();
 
 /* ============================================================
    초기화

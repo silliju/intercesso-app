@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../services/api_service.dart';
 import '../../services/prayer_service.dart';
 import '../../services/intercession_service.dart';
 import '../../services/group_service.dart';
@@ -49,12 +50,30 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     try {
       if (_prayer!.isParticipated) {
         await _prayerService.cancelParticipation(widget.prayerId);
+        if (mounted) _showSnack('기도 참여가 취소되었습니다');
       } else {
         await _prayerService.participatePrayer(widget.prayerId);
+        if (mounted) _showSnack('함께 기도했습니다 🙏');
       }
       await _loadPrayer();
+    } on ApiException catch (e) {
+      debugPrint('[toggleParticipation] ApiException: ${e.message} (status: ${e.statusCode}, code: ${e.errorCode})');
+      if (!mounted) return;
+      // 이미 참여한 경우 (400 + ALREADY_PARTICIPATED)
+      if (e.errorCode == 'ALREADY_PARTICIPATED' || e.statusCode == 400) {
+        _showSnack('이미 함께 기도하셨습니다 🙏');
+        await _loadPrayer();
+      } else if (e.statusCode == 401) {
+        // 토큰 만료/미인증 → 로그인 페이지로
+        _showSnack('로그인이 필요합니다. 다시 로그인해주세요.', isError: true);
+        await Future.delayed(const Duration(seconds: 1));
+        if (mounted) context.go('/login');
+      } else {
+        _showSnack(e.message, isError: true);
+      }
     } catch (e) {
-      if (mounted) _showSnack(e.toString(), isError: true);
+      debugPrint('[toggleParticipation] Error: $e');
+      if (mounted) _showSnack('오류가 발생했습니다', isError: true);
     } finally {
       if (mounted) setState(() => _isParticipating = false);
     }

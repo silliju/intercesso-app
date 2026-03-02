@@ -11,10 +11,11 @@ class MainTabScreen extends StatefulWidget {
   const MainTabScreen({super.key});
 
   @override
-  State<MainTabScreen> createState() => _MainTabScreenState();
+  State<MainTabScreen> createState() => MainTabScreenState();
 }
 
-class _MainTabScreenState extends State<MainTabScreen> {
+// public State 클래스 - HomeScreen에서 탭 전환 접근 가능
+class MainTabScreenState extends State<MainTabScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = [
@@ -24,6 +25,11 @@ class _MainTabScreenState extends State<MainTabScreen> {
     const GroupsScreen(),
     const ProfileScreen(),
   ];
+
+  /// 외부에서 탭을 전환할 때 사용 (예: 홈화면 '전체보기' 버튼)
+  void switchToTab(int index) {
+    setState(() => _currentIndex = index);
+  }
 
   @override
   Widget build(BuildContext context) {

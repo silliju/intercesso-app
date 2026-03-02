@@ -334,12 +334,16 @@ const searchUsersForIntercession = async (req, res) => {
             (0, response_1.sendSuccess)(res, []);
             return;
         }
-        const { data: users } = await supabase_1.default
+        const { data: users, error: searchError } = await supabase_1.default
             .from('users')
             .select('id, nickname, profile_image_url, church_name')
             .neq('id', userId)
             .ilike('nickname', `%${q}%`)
             .limit(10);
+        if (searchError) {
+            (0, response_1.sendSuccess)(res, []);
+            return;
+        }
         (0, response_1.sendSuccess)(res, users || []);
     }
     catch {

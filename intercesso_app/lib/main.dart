@@ -38,67 +38,17 @@ class _AppWithRouter extends StatefulWidget {
 
 class _AppWithRouterState extends State<_AppWithRouter> {
   late final dynamic _router;
-  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
     final authProvider = context.read<AuthProvider>();
     _router = createRouter(authProvider);
-    // authProvider.init()을 await해서 토큰 복원 완료 후 앱 실행
-    _initializeApp(authProvider);
-  }
-
-  Future<void> _initializeApp(AuthProvider authProvider) async {
-    await authProvider.init(); // 토큰 복원 완료까지 대기
-    if (mounted) {
-      setState(() => _initialized = true);
-    }
+    // init()은 SplashScreen에서 호출 - 중복 호출 제거
   }
 
   @override
   Widget build(BuildContext context) {
-    // 초기화 전에는 스플래시 화면 표시
-    if (!_initialized) {
-      return MaterialApp(
-        debugShowCheckedModeBanner: false,
-        home: Scaffold(
-          backgroundColor: AppTheme.primary,
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('🙏', style: TextStyle(fontSize: 64)),
-                const SizedBox(height: 16),
-                const Text(
-                  'Intercesso',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: 1.2,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  '함께 기도하는 공동체',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white.withOpacity(0.8),
-                  ),
-                ),
-                const SizedBox(height: 40),
-                const CircularProgressIndicator(
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                  strokeWidth: 2,
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
     return MaterialApp.router(
       title: 'Intercesso',
       theme: AppTheme.lightTheme,

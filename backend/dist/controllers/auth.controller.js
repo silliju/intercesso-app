@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.forgotPassword = exports.findEmail = exports.refreshToken = exports.logout = exports.login = exports.signUp = void 0;
+exports.forgotPassword = exports.findEmail = exports.refreshToken = exports.logout = exports.login = exports.signUp = exports.checkProfileId = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const uuid_1 = require("uuid");
@@ -14,6 +14,59 @@ const response_1 = require("../utils/response");
 //  전략: 자체 bcrypt 해싱 → users 테이블 직접 저장
 //        Supabase Auth 이메일 발송 rate limit 완전 우회
 // ─────────────────────────────────────────────────────────────
+// profile_id 유효성 검사 (영문소문자, 숫자, 점, 언더스코어, 3~30자)
+const PROFILE_ID_REGEX = /^[a-z0-9_.]{3,30}$/;
+// ─────────────────────────────────────────────────────────────
+//  profile_id 중복 체크 API
+//  GET /api/auth/check-profile-id?id=xxx
+// ─────────────────────────────────────────────────────────────
+const checkProfileId = async (req, res) => {
+    try {
+        const profileId = (req.query.id || '').trim().toLowerCase();
+        if (!profileId) {
+            (0, response_1.sendError)(res, 'profile_id를 입력해주세요', 400, 'VALIDATION_ERROR');
+            return;
+        }
+        if (!PROFILE_ID_REGEX.test(profileId)) {
+            (0, response_1.sendSuccess)(res, { available: false, reason: 'format' }, '영문 소문자, 숫자, 점(.), 언더스코어(_)만 사용 가능하며 3~30자여야 합니다');
+            return;
+        }
+        // profile_id 컬럼 존재 여부 확인
+        const hasColumn = await checkProfileIdColumn();
+        if (!hasColumn) {
+            // 컬럼 없으면 사용 가능으로 반환 (DB 마이그레이션 후 활성화)
+            (0, response_1.sendSuccess)(res, { available: true, note: 'db_migration_pending' }, '사용 가능한 ID입니다');
+            return;
+        }
+        const { data: existing } = await supabase_1.default
+            .from('users')
+            .select('id')
+            .eq('profile_id', profileId)
+            .maybeSingle();
+        if (existing) {
+            (0, response_1.sendSuccess)(res, { available: false, reason: 'duplicate' }, '이미 사용 중인 ID입니다');
+        }
+        else {
+            (0, response_1.sendSuccess)(res, { available: true }, '사용 가능한 ID입니다');
+        }
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.checkProfileId = checkProfileId;
+// profile_id 컬럼 존재 여부 캐시 (서버 시작 후 한번만 체크)
+let _profileIdColumnExists = null;
+async function checkProfileIdColumn() {
+    if (_profileIdColumnExists !== null)
+        return _profileIdColumnExists;
+    const { error } = await supabase_1.default
+        .from('users')
+        .select('profile_id')
+        .limit(0);
+    _profileIdColumnExists = !error || !error.message.includes('profile_id');
+    return _profileIdColumnExists;
+}
 const signUp = async (req, res) => {
     try {
         const { email, password, nickname, church_name, denomination, bio } = req.body;
@@ -25,7 +78,7 @@ const signUp = async (req, res) => {
             (0, response_1.sendError)(res, '비밀번호는 6자 이상이어야 합니다', 400, 'VALIDATION_ERROR');
             return;
         }
-        // 이메일 중복 확인 (users 테이블)
+        // 이메일 중복 확인
         const { data: existingUser } = await supabase_1.default
             .from('users')
             .select('id')
@@ -38,10 +91,8 @@ const signUp = async (req, res) => {
         // 비밀번호 해싱
         const hashedPw = await bcryptjs_1.default.hash(password, 10);
         const userId = (0, uuid_1.v4)();
-        // users 테이블에 직접 저장 (Supabase Auth 미사용 → 이메일 발송 없음)
-        const { data: newUser, error: profileError } = await supabase_1.default
-            .from('users')
-            .insert({
+        // users 테이블에 저장
+        const insertData = {
             id: userId,
             email,
             nickname,
@@ -49,7 +100,10 @@ const signUp = async (req, res) => {
             denomination: denomination || null,
             bio: bio || null,
             password_hash: hashedPw,
-        })
+        };
+        const { data: newUser, error: profileError } = await supabase_1.default
+            .from('users')
+            .insert(insertData)
             .select()
             .single();
         if (profileError) {
