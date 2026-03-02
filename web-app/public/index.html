@@ -1066,6 +1066,17 @@ function goPage(id, _skipHistory) {
   if (id === 'notifications') loadNotifications();
   if (id === 'my-prayers') loadMyPrayers();
   if (id === 'prayers') loadPrayers();
+  // 기도 작성 페이지 진입 시 폼 초기화
+  if (id === 'prayer-create') {
+    document.getElementById('pc-title').value = '';
+    document.getElementById('pc-content').value = '';
+    document.getElementById('pc-scope').value = 'public';
+    document.getElementById('pc-category').value = '기타';
+    const tog = document.getElementById('pc-intercession-toggle');
+    if (tog) { tog.checked = false; pcToggleIntercession(); }
+    window._pcSelectedUsers = new Map();
+    pcUpdateTags && pcUpdateTags();
+  }
   // intercession 탭으로 직접 이동할 때도 (goBack 등) 리셋 후 로드
   if (id === 'intercession') {
     if (!token) token = localStorage.getItem('token');
@@ -2993,9 +3004,11 @@ async function submitPrayer() {
     }
 
     showToast('기도가 등록되었습니다 🙏');
+    // 폼 전체 초기화
     document.getElementById('pc-title').value = '';
     document.getElementById('pc-content').value = '';
-    // 중보기도 토글 초기화
+    document.getElementById('pc-scope').value = 'public';
+    document.getElementById('pc-category').value = '기타';
     if (intercToggle) { intercToggle.checked = false; pcToggleIntercession(); }
     window._pcSelectedUsers = new Map();
     goTab('prayers');
