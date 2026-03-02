@@ -698,49 +698,53 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        // 기도 참여 버튼
-                        SizedBox(
-                          width: double.infinity,
-                          child: ElevatedButton.icon(
-                            onPressed: _isParticipating ? null : _toggleParticipation,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _prayer!.isParticipated ? AppTheme.primaryLight : AppTheme.primary,
-                              foregroundColor: _prayer!.isParticipated ? AppTheme.primary : Colors.white,
-                              elevation: 0,
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-                            ),
-                            icon: _isParticipating
-                                ? const SizedBox(width: 16, height: 16,
-                                    child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Text('🙏', style: TextStyle(fontSize: 18)),
-                            label: Text(
-                              _prayer!.isParticipated
-                                  ? '함께 기도했습니다 (${_prayer!.prayerCount})'
-                                  : '함께 기도하기 (${_prayer!.prayerCount})',
-                              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 10),
-                        // 중보기도 요청 버튼 (내 기도일 때만)
-                        if (isOwner)
+                        // 기도 참여 버튼 & 중보기도 요청 버튼
+                        // answered / grateful 상태이면 숨김
+                        if (_prayer!.status == 'praying') ...[
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => _openIntercessionRequest(),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.primary,
-                                side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                            child: ElevatedButton.icon(
+                              onPressed: _isParticipating ? null : _toggleParticipation,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: _prayer!.isParticipated ? AppTheme.primaryLight : AppTheme.primary,
+                                foregroundColor: _prayer!.isParticipated ? AppTheme.primary : Colors.white,
+                                elevation: 0,
                                 padding: const EdgeInsets.symmetric(vertical: 14),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
                               ),
-                              icon: const Text('🤝', style: TextStyle(fontSize: 18)),
-                              label: const Text('중보기도 요청하기',
-                                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                              icon: _isParticipating
+                                  ? const SizedBox(width: 16, height: 16,
+                                      child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Text('🙏', style: TextStyle(fontSize: 18)),
+                              label: Text(
+                                _prayer!.isParticipated
+                                    ? '함께 기도했습니다 (${_prayer!.prayerCount})'
+                                    : '함께 기도하기 (${_prayer!.prayerCount})',
+                                style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+                              ),
                             ),
                           ),
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 10),
+                          // 중보기도 요청 버튼 (내 기도 + 기도중 상태일 때만)
+                          if (isOwner)
+                            SizedBox(
+                              width: double.infinity,
+                              child: OutlinedButton.icon(
+                                onPressed: () => _openIntercessionRequest(),
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: AppTheme.primary,
+                                  side: const BorderSide(color: AppTheme.primary, width: 1.5),
+                                  padding: const EdgeInsets.symmetric(vertical: 14),
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                                ),
+                                icon: const Text('🤝', style: TextStyle(fontSize: 18)),
+                                label: const Text('중보기도 요청하기',
+                                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+                              ),
+                            ),
+                          const SizedBox(height: 10),
+                        ],
+                        const SizedBox(height: 10),
                         // ── 기도 응답 섹션 ──────────────────────────
                         PrayerAnswerSection(
                           prayerId: widget.prayerId,
