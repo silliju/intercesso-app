@@ -350,6 +350,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       userImage: prayer.user?.profileImageUrl,
                       status: prayer.status,
                       category: prayer.category,
+                      scope: prayer.scope,
                       prayerCount: prayer.prayerCount,
                       commentCount: prayer.commentCount,
                       createdAt: prayer.createdAt,

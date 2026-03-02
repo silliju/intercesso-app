@@ -13,6 +13,7 @@ class PrayerCard extends StatelessWidget {
   final int? commentCount;
   final String createdAt;
   final bool isParticipated;
+  final String? scope; // 공개 범위 뱃지 표시용 (null이면 미표시)
   final VoidCallback? onTap;
   final VoidCallback? onPrayTap;
 
@@ -28,9 +29,28 @@ class PrayerCard extends StatelessWidget {
     this.commentCount,
     required this.createdAt,
     this.isParticipated = false,
+    this.scope,
     this.onTap,
     this.onPrayTap,
   });
+
+  String? get _scopeLabel {
+    switch (scope) {
+      case 'friends': return '👥 지인공개';
+      case 'private': return '🔒 비공개';
+      case 'community': return '⛪ 공동체';
+      default: return null; // public은 뱃지 미표시
+    }
+  }
+
+  Color get _scopeColor {
+    switch (scope) {
+      case 'friends': return const Color(0xFF8B5CF6);
+      case 'private': return const Color(0xFF6B7280);
+      case 'community': return const Color(0xFF059669);
+      default: return AppTheme.primary;
+    }
+  }
 
   String get _statusEmoji {
     switch (status) {
@@ -137,6 +157,25 @@ class PrayerCard extends StatelessWidget {
                     ],
                   ),
                 ),
+                // scope 뱃지 (지인공개/비공개/공동체만 표시)
+                if (_scopeLabel != null)
+                  Container(
+                    margin: const EdgeInsets.only(right: 6),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: _scopeColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(50),
+                      border: Border.all(color: _scopeColor.withOpacity(0.3)),
+                    ),
+                    child: Text(
+                      _scopeLabel!,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: _scopeColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
                 // 상태 뱃지
                 Container(
                   padding:
