@@ -29,11 +29,18 @@ export const getPrayers = async (req: AuthRequest, res: Response): Promise<void>
 
     // 공개 범위 필터
     if (userId) {
-      // 내 기도 + 공개 기도
       if (!scope || scope === 'all') {
+        // 전체: 내 기도 + 공개 기도
         query = query.or(`user_id.eq.${userId},scope.eq.public`);
       } else if (scope === 'mine') {
+        // 내 기도만
         query = query.eq('user_id', userId);
+      } else if (scope === 'friends') {
+        // 지인기도: 내가 등록한 friends 기도 + 다른 사람의 friends 기도 모두 포함
+        query = query.eq('scope', 'friends');
+      } else if (scope === 'praying') {
+        // 기도중: 공개 기도 중 status=praying
+        query = query.or(`user_id.eq.${userId},scope.eq.public`).eq('status', 'praying');
       } else {
         query = query.eq('scope', scope);
       }
