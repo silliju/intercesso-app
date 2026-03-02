@@ -27,7 +27,9 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
   bool _isLoading = true;
   bool _isParticipating = false;
   bool _isDeleting = false;
+  String? _loadError;
   final TextEditingController _commentController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -36,11 +38,16 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
   }
 
   Future<void> _loadPrayer() async {
+    if (mounted) setState(() { _isLoading = true; _loadError = null; });
     try {
       final prayer = await _prayerService.getPrayerById(widget.prayerId);
       if (mounted) setState(() { _prayer = prayer; _isLoading = false; });
+    } on ApiException catch (e) {
+      debugPrint('[PrayerDetail] load error: ${e.message} (${e.statusCode})');
+      if (mounted) setState(() { _isLoading = false; _loadError = e.message; });
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      debugPrint('[PrayerDetail] unknown error: $e');
+      if (mounted) setState(() { _isLoading = false; _loadError = '기도를 불러올 수 없습니다'; });
     }
   }
 
@@ -527,12 +534,39 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
   @override
   void dispose() {
     _commentController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     if (_isLoading) return const Scaffold(body: LoadingWidget(message: '기도를 불러오는 중...'));
+    // 에러 상태 - 재시도 버튼 제공
+    if (_loadError != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('기도 상세')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('😔', style: TextStyle(fontSize: 48)),
+                const SizedBox(height: 16),
+                Text(_loadError!, textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 15, color: AppTheme.textSecondary)),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: _loadPrayer,
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('다시 시도'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     if (_prayer == null) {
       return Scaffold(
         appBar: AppBar(),
@@ -545,6 +579,7 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.background,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('기도 상세'),
         actions: [
@@ -585,6 +620,7 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
               children: [
                 Expanded(
                   child: SingleChildScrollView(
+                    controller: _scrollController,
                     padding: const EdgeInsets.all(16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,7 +803,7 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                 Container(
                   padding: EdgeInsets.only(
                     left: 16, right: 8, top: 10,
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 12,
+                    bottom: MediaQuery.of(context).padding.bottom + 12,
                   ),
                   decoration: const BoxDecoration(
                     color: AppTheme.surface,
@@ -778,6 +814,20 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                       Expanded(
                         child: TextField(
                           controller: _commentController,
+                          textInputAction: TextInputAction.send,
+                          onSubmitted: (_) => _submitComment(),
+                          onTap: () {
+                            // 키보드 열릴 때 스크롤을 맨 아래로
+                            Future.delayed(const Duration(milliseconds: 300), () {
+                              if (_scrollController.hasClients) {
+                                _scrollController.animateTo(
+                                  _scrollController.position.maxScrollExtent,
+                                  duration: const Duration(milliseconds: 200),
+                                  curve: Curves.easeOut,
+                                );
+                              }
+                            });
+                          },
                           decoration: InputDecoration(
                             hintText: '격려 메시지를 남겨보세요...',
                             filled: true,
