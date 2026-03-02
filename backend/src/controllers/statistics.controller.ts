@@ -24,12 +24,27 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       .eq('status', 'answered');
     const answeredPrayers = answeredCount ?? 0;
 
+    // 감사 기도 수
+    const { count: gratefulCount } = await supabaseAdmin
+      .from('prayers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'grateful');
+    const gratefulPrayers = gratefulCount ?? 0;
+
     // 내가 함께 기도한 횟수
     const { count: participCount } = await supabaseAdmin
       .from('prayer_participations')
       .select('id', { count: 'exact', head: true })
       .eq('user_id', userId);
     const totalParticipations = participCount ?? 0;
+
+    // 내가 작성한 댓글 수
+    const { count: commentCount } = await supabaseAdmin
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+    const totalComments = commentCount ?? 0;
 
     // 연속 기도 일수 계산
     const { data: recentPrayerDates } = await supabaseAdmin
@@ -108,7 +123,9 @@ export const getDashboard = async (req: AuthRequest, res: Response): Promise<voi
       stats: {
         total_prayers: totalPrayers,
         answered_prayers: answeredPrayers,
+        grateful_prayers: gratefulPrayers,
         total_participations: totalParticipations,
+        total_comments: totalComments,
         streak_days: streakDays,
         answer_rate: answerRate,
       },
