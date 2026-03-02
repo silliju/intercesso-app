@@ -31,6 +31,10 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
   final TextEditingController _commentController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
 
+  // 작정기도 쬬크인 상태
+  List<dynamic> _checkins = [];
+  bool _isCheckingIn = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,7 +45,10 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     if (mounted) setState(() { _isLoading = true; _loadError = null; });
     try {
       final prayer = await _prayerService.getPrayerById(widget.prayerId);
-      if (mounted) setState(() { _prayer = prayer; _isLoading = false; });
+      if (mounted) {
+      setState(() { _prayer = prayer; _isLoading = false; });
+      _loadCheckins(); // 작정기도인 경우 쬬크인 목록 로드
+    }
     } on ApiException catch (e) {
       debugPrint('[PrayerDetail] load error: ${e.message} (${e.statusCode})');
       if (mounted) setState(() { _isLoading = false; _loadError = e.message; });
@@ -95,6 +102,80 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
       await _loadPrayer();
     } catch (e) {
       if (mounted) _showSnack(e.toString(), isError: true);
+    }
+  }
+
+  // 댓글 삭제 (long press 후 확인 다이얼로그)
+  void _confirmDeleteComment(CommentModel comment, String currentUserId) {
+    // 자신의 댓글만 삭제 가능
+    if (comment.userId != currentUserId) return;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('댓글 삭제', style: TextStyle(fontWeight: FontWeight.w700)),
+        content: const Text('이 댓글을 삭제하시겠습니까?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _deleteComment(comment.id);
+            },
+            style: TextButton.styleFrom(foregroundColor: AppTheme.error),
+            child: const Text('삭제', style: TextStyle(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteComment(String commentId) async {
+    try {
+      await _prayerService.deleteComment(commentId);
+      if (mounted) {
+        _showSnack('댓글이 삭제되었습니다');
+        await _loadPrayer();
+      }
+    } catch (e) {
+      if (mounted) _showSnack('삭제에 실패했습니다', isError: true);
+    }
+  }
+
+  // 작정기도 쬬크인
+  Future<void> _loadCheckins() async {
+    if (_prayer == null || !_prayer!.isCovenant) return;
+    try {
+      final list = await _prayerService.getCheckins(widget.prayerId);
+      if (mounted) setState(() => _checkins = list);
+    } catch (_) {}
+  }
+
+  Future<void> _doCheckIn() async {
+    if (_isCheckingIn || _prayer == null) return;
+    setState(() => _isCheckingIn = true);
+    try {
+      // 오늘이 몇 일차인지 계산
+      final startDate = DateTime.tryParse(_prayer!.createdAt);
+      final today = DateTime.now();
+      final day = startDate != null
+          ? today.difference(startDate).inDays + 1
+          : 1;
+      await _prayerService.checkIn(widget.prayerId, day);
+      await _loadCheckins();
+      if (mounted) _showSnack('오늘 기도를 체크했습니다 ✏️');
+    } on ApiException catch (e) {
+      if (mounted) {
+        // 409: 이미 체크인
+        _showSnack(e.statusCode == 409 ? '오늘은 이미 쬬크인했어요 ✅' : e.message);
+      }
+    } catch (e) {
+      if (mounted) _showSnack('체크인에 실패했습니다', isError: true);
+    } finally {
+      if (mounted) setState(() => _isCheckingIn = false);
     }
   }
 
@@ -698,6 +779,8 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                           ),
                         ),
                         const SizedBox(height: 12),
+                        // 작정기도 쬬크인 섬션
+                        if (_prayer!.isCovenant) ...[_buildCovenantSection(isOwner), const SizedBox(height: 12)],
                         // 기도 참여 버튼 & 중보기도 요청 버튼
                         // answered / grateful 상태이면 숨김
                         if (_prayer!.status == 'praying') ...[
@@ -769,35 +852,68 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                                 style: TextStyle(color: AppTheme.textLight))),
                           )
                         else
-                          ...(_prayer!.comments ?? []).map((comment) => Container(
-                            margin: const EdgeInsets.only(bottom: 8),
-                            padding: const EdgeInsets.all(14),
-                            decoration: AppTheme.cardDecoration,
-                            child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CircleAvatar(
-                                  radius: 16,
-                                  backgroundColor: AppTheme.primaryLight,
-                                  child: Text(comment.user?.nickname[0] ?? '?',
-                                      style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                          ...(_prayer!.comments ?? []).map((comment) {
+                            final isMine = comment.userId == currentUserId;
+                            return GestureDetector(
+                              onLongPress: isMine
+                                  ? () => _confirmDeleteComment(comment, currentUserId!)
+                                  : null,
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: isMine
+                                      ? AppTheme.primaryLight.withOpacity(0.4)
+                                      : AppTheme.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppTheme.border),
                                 ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(comment.user?.nickname ?? '익명',
-                                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                                      const SizedBox(height: 4),
-                                      Text(comment.content,
-                                          style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.5)),
-                                    ],
-                                  ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CircleAvatar(
+                                      radius: 16,
+                                      backgroundColor: AppTheme.primaryLight,
+                                      child: Text(comment.user?.nickname[0] ?? '?',
+                                          style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(comment.user?.nickname ?? '익명',
+                                                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                                              if (isMine) ...[const SizedBox(width: 6),
+                                                Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  decoration: BoxDecoration(color: AppTheme.primary.withOpacity(0.1), borderRadius: BorderRadius.circular(50)),
+                                                  child: const Text('나', style: TextStyle(fontSize: 10, color: AppTheme.primary, fontWeight: FontWeight.w700)),
+                                                ),
+                                              ],
+                                            ],
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(comment.content,
+                                              style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary, height: 1.5)),
+                                        ],
+                                      ),
+                                    ),
+                                    // 나의 댓글: 삭제 아이콘
+                                    if (isMine)
+                                      GestureDetector(
+                                        onTap: () => _confirmDeleteComment(comment, currentUserId!),
+                                        child: const Padding(
+                                          padding: EdgeInsets.only(left: 8),
+                                          child: Icon(Icons.delete_outline_rounded, size: 16, color: AppTheme.textLight),
+                                        ),
+                                      ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          )),
+                              ),
+                            );
+                          }).toList(),
                         const SizedBox(height: 80),
                       ],
                     ),
@@ -861,6 +977,83 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(50)),
     child: Text(text, style: TextStyle(fontSize: 12, color: fg, fontWeight: FontWeight.w600)),
   );
+
+  // ── 작정기도 체크인 섹션 ──────────────────────────────────
+  Widget _buildCovenantSection(bool isOwner) {
+    final total = _prayer!.covenantDays ?? 40;
+    final checked = _checkins.length;
+    final progress = total > 0 ? checked / total : 0.0;
+
+    // 오늘 이미 체크인 했는지 확인
+    final today = DateTime.now();
+    final todayStr = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final alreadyChecked = _checkins.any((c) {
+      final d = c['checked_date'] ?? c['created_at'] ?? '';
+      return d.toString().startsWith(todayStr);
+    });
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryLight.withOpacity(0.5),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primary.withOpacity(0.2)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Text('🕯️', style: TextStyle(fontSize: 20)),
+              const SizedBox(width: 8),
+              const Text('작정기도',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
+              const Spacer(),
+              Text('$checked / $total일',
+                  style: const TextStyle(fontSize: 14, color: AppTheme.primary, fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // 프로그레스 바
+          ClipRRect(
+            borderRadius: BorderRadius.circular(50),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              backgroundColor: AppTheme.border,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppTheme.primary),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text('${(progress * 100).toStringAsFixed(0)}% 달성',
+              style: const TextStyle(fontSize: 12, color: AppTheme.textSecondary)),
+          const SizedBox(height: 12),
+          // 체크인 버튼
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: alreadyChecked || _isCheckingIn ? null : _doCheckIn,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: alreadyChecked ? AppTheme.success : AppTheme.primary,
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+              ),
+              icon: _isCheckingIn
+                  ? const SizedBox(width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : Text(alreadyChecked ? '✅' : '✏️', style: const TextStyle(fontSize: 16)),
+              label: Text(
+                alreadyChecked ? '오늘 기도 완료!' : '오늘 기도 체크인',
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
   Color get _statusColor {
     switch (_prayer?.status) {

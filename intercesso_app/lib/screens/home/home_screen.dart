@@ -92,22 +92,12 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     if (!mounted) return;
     try {
       debugPrint('[HomeScreen] 기도 목록 로드 시작');
-      final provider = context.read<PrayerProvider>();
-      // 공개 기도 목록 먼저 시도
-      await provider.loadPrayers(refresh: true, scope: 'public');
-      debugPrint('[HomeScreen] 공개 기도 목록: ${provider.prayers.length}개');
-
-      // 공개 기도가 없으면 내 기도도 같이 표시
-      if (provider.prayers.isEmpty && mounted) {
-        debugPrint('[HomeScreen] 공개 기도 없음 → 내 기도 로드 시도');
-        await provider.loadPrayers(refresh: true);
-        debugPrint('[HomeScreen] 전체 기도 목록: ${provider.prayers.length}개');
-      }
+      // 홈 전용 리스트 사용 (탭 상태와 완전히 독립)
+      await context.read<PrayerProvider>().loadHomePrayers();
+      debugPrint('[HomeScreen] 홈 기도 목록: ${context.read<PrayerProvider>().homePrayers.length}개');
     } catch (e, stack) {
       debugPrint('[HomeScreen] 기도 목록 로드 오류: $e\n$stack');
-      if (mounted) {
-        setState(() => _loadError = e.toString());
-      }
+      if (mounted) setState(() => _loadError = e.toString());
     }
   }
 
@@ -132,6 +122,8 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     super.build(context);
     final user = context.watch<AuthProvider>().user;
     final prayerProvider = context.watch<PrayerProvider>();
+    final homePrayers = prayerProvider.homePrayers;
+    final isHomeLoading = prayerProvider.isHomeLoading;
     final stats = _dashboardData?['stats'];
 
     return Scaffold(
@@ -291,14 +283,14 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
               ),
 
             // 기도 목록
-            if (prayerProvider.isLoading && prayerProvider.prayers.isEmpty)
+            if (isHomeLoading && homePrayers.isEmpty)
               const SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.all(40),
                   child: LoadingWidget(message: '기도 목록을 불러오는 중...'),
                 ),
               )
-            else if (prayerProvider.prayers.isEmpty)
+            else if (homePrayers.isEmpty)
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(40),
@@ -332,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
                     // 최대 5개만 홈에서 표시
-                    final displayPrayers = prayerProvider.prayers.take(5).toList();
+                    final displayPrayers = homePrayers.take(5).toList();
                     if (index >= displayPrayers.length) {
                       return Padding(
                         padding: const EdgeInsets.fromLTRB(16, 8, 16, 80),
@@ -361,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       },
                     );
                   },
-                  childCount: prayerProvider.prayers.take(5).length + 1,
+                  childCount: homePrayers.take(5).length + 1,
                 ),
               ),
           ],

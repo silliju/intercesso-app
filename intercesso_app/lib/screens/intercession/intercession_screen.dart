@@ -69,8 +69,19 @@ class _IntercessionScreenState extends State<IntercessionScreen>
       await _service.respondToRequest(req.id, status: status);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(status == 'accepted' ? '중보기도 요청을 수락했습니다 🙏' : '요청을 거절했습니다'),
-          backgroundColor: status == 'accepted' ? AppTheme.success : AppTheme.textLight,
+          content: Text(status == 'accepted'
+              ? '중보기도 요청을 수락했습니다 🙏'
+              : '요청을 거절했습니다'),
+          backgroundColor:
+              status == 'accepted' ? AppTheme.success : AppTheme.textLight,
+          behavior: SnackBarBehavior.floating,
+          action: status == 'accepted' && req.prayerId.isNotEmpty
+              ? SnackBarAction(
+                  label: '기도 보기',
+                  textColor: Colors.white,
+                  onPressed: () => context.push('/prayer/${req.prayerId}'),
+                )
+              : null,
         ));
         await _loadReceived();
       }

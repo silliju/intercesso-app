@@ -18,11 +18,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   final StatisticsService _statisticsService = StatisticsService();
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
+  String _appVersion = '1.0.0';
 
   @override
   void initState() {
     super.initState();
     _loadStats();
+    _loadVersion();
+  }
+
+  Future<void> _loadVersion() async {
+    // pubspec.yaml 버전을 동적으로 가져오기 (패키지 이름 하드코딩)
+    // package_info_plus가 없으면 pubspec에서 정의한 단순 문자열 반환
+    const version = String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0');
+    if (mounted) setState(() => _appVersion = version.isEmpty ? '1.0.0' : version);
   }
 
   Future<void> _loadStats() async {
@@ -232,7 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Intercesso v1.0.0',
+                'Intercesso v\$_appVersion',
                 style: TextStyle(fontSize: 12, color: AppTheme.textLight),
               ),
               const SizedBox(height: 32),
