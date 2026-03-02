@@ -213,10 +213,10 @@ export const updatePrayer = async (req: AuthRequest, res: Response): Promise<voi
     const { prayerId } = req.params;
     const updates = req.body as UpdatePrayerBody;
 
-    // 소유자 확인
+    // 소유자 확인 (기존 status 도 함께 가져옴)
     const { data: existing } = await supabaseAdmin
       .from('prayers')
-      .select('user_id')
+      .select('user_id, status')
       .eq('id', prayerId)
       .single();
 
@@ -240,6 +240,49 @@ export const updatePrayer = async (req: AuthRequest, res: Response): Promise<voi
     if (error) {
       sendError(res, '기도 수정 실패', 500, 'UPDATE_ERROR');
       return;
+    }
+
+    // ── user_statistics 캐시 업데이트 (상태 변경 시) ──
+    if (updates.status && updates.status !== existing.status) {
+      const prevStatus = existing.status as string;
+      const nextStatus = updates.status as string;
+
+      // 이전 상태 카운트 감소
+      const decrementField: Record<string, string> = {
+        answered: 'answered_prayers',
+        grateful: 'grateful_prayers',
+      };
+      // 다음 상태 카운트 증가
+      const incrementField: Record<string, string> = {
+        answered: 'answered_prayers',
+        grateful: 'grateful_prayers',
+      };
+
+      const { data: stat } = await supabaseAdmin
+        .from('user_statistics')
+        .select('answered_prayers, grateful_prayers')
+        .eq('user_id', userId)
+        .single();
+
+      if (stat) {
+        const patch: Record<string, number> = {};
+        if (decrementField[prevStatus]) {
+          const field = decrementField[prevStatus];
+          patch[field] = Math.max(0, ((stat as any)[field] ?? 0) - 1);
+        }
+        if (incrementField[nextStatus]) {
+          const field = incrementField[nextStatus];
+          // 같은 필드를 이미 patch 했을 수 있으니 현재 값 기준으로 계산
+          const base = patch[field] !== undefined ? patch[field] : ((stat as any)[field] ?? 0);
+          patch[field] = base + 1;
+        }
+        if (Object.keys(patch).length > 0) {
+          await supabaseAdmin
+            .from('user_statistics')
+            .update(patch)
+            .eq('user_id', userId);
+        }
+      }
     }
 
     sendSuccess(res, prayer, '기도가 수정되었습니다');
