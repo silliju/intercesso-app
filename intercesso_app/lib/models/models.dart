@@ -160,6 +160,51 @@ class PrayerModel {
       default:          return '🌐 전체 공개';
     }
   }
+
+  /// 낙관적 업데이트를 위한 copyWith
+  PrayerModel copyWith({
+    String? id,
+    String? userId,
+    String? title,
+    String? content,
+    String? category,
+    String? scope,
+    String? status,
+    String? createdAt,
+    String? updatedAt,
+    String? answeredAt,
+    String? groupId,
+    bool? isCovenant,
+    int? covenantDays,
+    int? viewsCount,
+    int? prayerCount,
+    UserModel? user,
+    List<CommentModel>? comments,
+    bool? isParticipated,
+    int? commentCount,
+  }) {
+    return PrayerModel(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      title: title ?? this.title,
+      content: content ?? this.content,
+      category: category ?? this.category,
+      scope: scope ?? this.scope,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      answeredAt: answeredAt ?? this.answeredAt,
+      groupId: groupId ?? this.groupId,
+      isCovenant: isCovenant ?? this.isCovenant,
+      covenantDays: covenantDays ?? this.covenantDays,
+      viewsCount: viewsCount ?? this.viewsCount,
+      prayerCount: prayerCount ?? this.prayerCount,
+      user: user ?? this.user,
+      comments: comments ?? this.comments,
+      isParticipated: isParticipated ?? this.isParticipated,
+      commentCount: commentCount ?? this.commentCount,
+    );
+  }
 }
 
 // lib/models/comment_model.dart
