@@ -16,6 +16,7 @@ const group_routes_1 = __importDefault(require("./routes/group.routes"));
 const intercession_routes_1 = __importDefault(require("./routes/intercession.routes"));
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const statistics_routes_1 = __importDefault(require("./routes/statistics.routes"));
+const gratitude_routes_1 = __importDefault(require("./routes/gratitude.routes"));
 const prayer_answer_controller_1 = require("./controllers/prayer_answer.controller");
 const auth_1 = require("./middleware/auth");
 dotenv_1.default.config();
@@ -134,6 +135,17 @@ CREATE INDEX IF NOT EXISTS idx_users_fcm_token
         }
         else {
             console.log('✅ users.fcm_token 컬럼 확인 완료');
+        }
+        // gratitude_journals 테이블 확인
+        const { error: gjError } = await supabase_1.default
+            .from('gratitude_journals')
+            .select('id')
+            .limit(0);
+        if (gjError && (gjError.code === '42P01' || gjError.message.includes('gratitude_journals'))) {
+            console.log('⚠️  gratitude_journals 테이블 없음 - Supabase Dashboard SQL Editor에서 migrations/005_gratitude_journal.sql 실행 필요');
+        }
+        else {
+            console.log('✅ gratitude_journals 테이블 확인 완료');
         }
     }
     catch {
@@ -265,6 +277,7 @@ app.use('/api/groups', group_routes_1.default);
 app.use('/api/intercessions', intercession_routes_1.default);
 app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/statistics', statistics_routes_1.default);
+app.use('/api/gratitude', gratitude_routes_1.default);
 // 기도 응답 피드
 app.get('/api/answers/feed', auth_1.optionalAuth, prayer_answer_controller_1.getAnswerFeed);
 // 404 핸들러

@@ -18,15 +18,15 @@ class MainTabScreen extends StatefulWidget {
 class MainTabScreenState extends State<MainTabScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const PrayersScreen(),
-    const GratitudeFeedScreen(),  // 🌸 감사 탭
-    const GroupsScreen(),
-    const ProfileScreen(),
+  final List<Widget> _screens = const [
+    HomeScreen(),
+    PrayersScreen(),
+    GratitudeFeedScreen(),
+    GroupsScreen(),
+    ProfileScreen(),
   ];
 
-  /// 외부에서 탭을 전환할 때 사용 (예: 홈화면 '전체보기' 버튼)
+  /// 외부에서 탭을 전환할 때 사용
   void switchToTab(int index) {
     setState(() => _currentIndex = index);
   }
@@ -38,82 +38,93 @@ class MainTabScreenState extends State<MainTabScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: AppTheme.surface,
-          border: Border(
-            top: BorderSide(color: AppTheme.border, width: 1),
-          ),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0x0A000000),
-              blurRadius: 12,
-              offset: Offset(0, -2),
-            ),
-          ],
+      bottomNavigationBar: _buildBottomNav(),
+      floatingActionButton: _buildFAB(),
+    );
+  }
+
+  Widget _buildBottomNav() {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          top: BorderSide(color: const Color(0xFFE8ECEF), width: 0.8),
         ),
-        child: BottomNavigationBar(
-          currentIndex: _currentIndex,
-          onTap: (index) => setState(() => _currentIndex = index),
-          backgroundColor: AppTheme.surface,
-          selectedItemColor: _selectedColor(_currentIndex),
-          unselectedItemColor: AppTheme.textLight,
-          type: BottomNavigationBarType.fixed,
-          elevation: 0,
-          selectedLabelStyle: const TextStyle(
-            fontSize: 11,
-            fontWeight: FontWeight.w700,
+        boxShadow: const [
+          BoxShadow(
+            color: Color(0x0D000000),
+            blurRadius: 16,
+            offset: Offset(0, -3),
           ),
-          unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: [
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: '홈',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.menu_book_outlined),
-              activeIcon: Icon(Icons.menu_book),
-              label: '기도',
-            ),
-            // 🌸 감사일기 탭 (황금색 강조)
-            BottomNavigationBarItem(
-              icon: const Text('🌸', style: TextStyle(fontSize: 22)),
-              activeIcon: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text('🌸', style: TextStyle(fontSize: 22)),
+        ],
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildNavItem(0, '🏠', '홈', AppTheme.primary),
+              _buildNavItem(1, '🙏', '기도', AppTheme.primary),
+              _buildNavItem(2, '🌸', '감사', const Color(0xFFF59E0B)),
+              _buildNavItem(3, '👥', '그룹', AppTheme.primary),
+              _buildNavItem(4, '👤', '프로필', AppTheme.primary),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, String emoji, String label, Color activeColor) {
+    final isSelected = _currentIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        decoration: isSelected
+            ? BoxDecoration(
+                color: index == 2
+                    ? const Color(0xFFFFF8E7)
+                    : AppTheme.primaryLight,
+                borderRadius: BorderRadius.circular(16),
+              )
+            : null,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              emoji,
+              style: TextStyle(
+                fontSize: isSelected ? 24 : 22,
               ),
-              label: '감사',
             ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.group_outlined),
-              activeIcon: Icon(Icons.group),
-              label: '그룹',
-            ),
-            const BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: '마이',
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                color: isSelected ? activeColor : const Color(0xFFADB5BD),
+              ),
             ),
           ],
         ),
       ),
-      floatingActionButton: _currentIndex == 1
-          ? FloatingActionButton(
-              backgroundColor: AppTheme.primary,
-              onPressed: () => context.push('/prayer/create'),
-              child: const Icon(Icons.edit_outlined, color: Colors.white),
-            )
-          : null,
     );
   }
 
-  Color _selectedColor(int index) {
-    if (index == 2) return const Color(0xFFF59E0B); // 감사 탭 = 황금색
-    return AppTheme.primary;
+  Widget? _buildFAB() {
+    // 기도 탭(1)에서만 FAB 표시
+    if (_currentIndex != 1) return null;
+    return FloatingActionButton(
+      backgroundColor: AppTheme.primary,
+      elevation: 4,
+      onPressed: () => context.push('/prayer/create'),
+      child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+    );
   }
 }
