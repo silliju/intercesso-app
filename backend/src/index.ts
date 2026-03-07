@@ -12,6 +12,7 @@ import groupRoutes from './routes/group.routes';
 import intercessionRoutes from './routes/intercession.routes';
 import notificationRoutes from './routes/notification.routes';
 import statisticsRoutes from './routes/statistics.routes';
+import gratitudeRoutes from './routes/gratitude.routes';
 import { getAnswerFeed } from './controllers/prayer_answer.controller';
 import { optionalAuth } from './middleware/auth';
 
@@ -138,6 +139,18 @@ CREATE INDEX IF NOT EXISTS idx_users_fcm_token
       `);
     } else {
       console.log('✅ users.fcm_token 컬럼 확인 완료');
+    }
+
+    // gratitude_journals 테이블 확인
+    const { error: gjError } = await supabaseAdmin
+      .from('gratitude_journals')
+      .select('id')
+      .limit(0);
+
+    if (gjError && (gjError.code === '42P01' || gjError.message.includes('gratitude_journals'))) {
+      console.log('⚠️  gratitude_journals 테이블 없음 - Supabase Dashboard SQL Editor에서 migrations/005_gratitude_journal.sql 실행 필요');
+    } else {
+      console.log('✅ gratitude_journals 테이블 확인 완료');
     }
 
   } catch {
@@ -274,6 +287,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/intercessions', intercessionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/statistics', statisticsRoutes);
+app.use('/api/gratitude', gratitudeRoutes);
 // 기도 응답 피드
 app.get('/api/answers/feed', optionalAuth as any, getAnswerFeed as any);
 
