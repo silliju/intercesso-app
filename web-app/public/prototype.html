@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Intercesso - UI 프로토타입</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { background: #1a1a2e; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; min-height: 100vh; font-family: -apple-system, 'Pretendard', 'Apple SD Gothic Neo', sans-serif; padding: 20px 10px 40px; }
+
+  /* ── 상단 화면 선택기 ── */
+  .screen-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; justify-content: center; max-width: 420px; width: 100%; }
+  .screen-btn { padding: 7px 14px; border-radius: 20px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; background: #2d2d4e; color: #adb5bd; transition: all .2s; }
+  .screen-btn.active { background: #00AAFF; color: #fff; }
+
+  /* ── 폰 프레임 ── */
+  .phone { width: 390px; height: 844px; background: #f8f9fa; border-radius: 44px; overflow: hidden; position: relative; box-shadow: 0 30px 80px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.1); display: flex; flex-direction: column; }
+  .phone-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; background: #000; border-radius: 0 0 20px 20px; z-index: 100; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .phone-notch .time { color: #fff; font-size: 11px; font-weight: 700; position: absolute; left: 16px; top: 10px; }
+  .phone-notch .icons { position: absolute; right: 16px; top: 10px; color: #fff; font-size: 11px; }
+
+  /* ── 화면 컨테이너 ── */
+  .screen { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; scrollbar-width: none; padding-bottom: 80px; }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen.active { display: flex; }
+
+  /* ── 색상 팔레트 (시안) ── */
+  :root {
+    --gido: #00AAFF; --gamsa: #F59E08; --seonggadae: #885CF6;
+    --simbang: #F97316; --guyeok: #108981; --gyojeok: #3B82F6;
+    --dark-navy: #1A1A2E; --gray: #687280; --light-gray: #E8ECEF;
+    --off-white: #F8F9FA; --white: #FFFFFF;
+    --gido-light: #E6F6FF; --gamsa-light: #FFF8E7; --gamsa-border: #FDE68A;
+  }
+
+  /* ── 공통 컴포넌트 ── */
+  .appbar { background: #fff; padding: 50px 16px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--light-gray); position: sticky; top: 0; z-index: 50; }
+  .appbar-title { font-size: 18px; font-weight: 800; color: var(--dark-navy); }
+  .appbar-title.primary { color: var(--gido); }
+  .appbar-actions { display: flex; gap: 4px; }
+  .icon-btn { width: 36px; height: 36px; border: none; background: none; cursor: pointer; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+
+  /* ── 바텀 네비 ── */
+  .bottom-nav { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: #fff; border-top: 1px solid var(--light-gray); display: flex; align-items: center; justify-content: space-around; z-index: 100; padding: 0 4px 8px; box-shadow: 0 -4px 16px rgba(0,0,0,.06); }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; padding: 5px 6px; border-radius: 14px; transition: all .2s; flex: 1; min-width: 0; }
+  .nav-item.active { background: var(--gido-light); }
+  .nav-item.active.gamsa { background: var(--gamsa-light); }
+  .nav-emoji { font-size: 20px; transition: font-size .2s; line-height: 1.3; }
+  .nav-item.active .nav-emoji { font-size: 22px; }
+  .nav-label { font-size: 9px; color: #adb5bd; font-weight: 400; white-space: nowrap; }
+  .nav-item.active .nav-label { color: var(--gido); font-weight: 700; }
+  .nav-item.active.gamsa .nav-label { color: var(--gamsa); }
+
+  /* ── 카드 ── */
+  .card { background: #fff; border-radius: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); padding: 16px; margin-bottom: 10px; }
+  .card.gamsa-card { background: var(--gamsa-light); border: 1px solid var(--gamsa-border); }
+
+  /* ── 알약 버튼 ── */
+  .pill-btn { border: none; border-radius: 50px; padding: 12px 24px; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: all .15s; }
+  .pill-btn.primary { background: var(--gido); color: #fff; }
+  .pill-btn.gamsa { background: var(--gamsa); color: #fff; }
+  .pill-btn.outline { background: transparent; color: var(--gido); border: 1.5px solid var(--gido); }
+  .pill-btn.outline-gray { background: transparent; color: #9ca3af; border: 1.5px solid #e5e7eb; }
+  .pill-btn.disabled { background: #e5e7eb; color: #9ca3af; }
+
+  /* ── 뱃지/칩 ── */
+  .badge { display: inline-flex; align-items: center; gap: 4px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+  .badge.gido { background: var(--gido-light); color: var(--gido); }
+  .badge.gamsa { background: #FEF3C7; color: #D97706; }
+  .badge.answered { background: #D1FAE5; color: #059669; }
+  .badge.praying { background: var(--gido-light); color: var(--gido); }
+  .badge.role-chunmu { background: #3B82F6; color: #fff; }
+  .badge.role-jwijisa { background: #F97316; color: #fff; }
+  .badge.role-patjang { background: #108981; color: #fff; }
+  .badge.role-danwon { background: #885CF6; color: #fff; }
+
+  /* ── 구분선 ── */
+  .divider { height: 1px; background: var(--light-gray); margin: 8px 0; }
+  .section-divider { height: 8px; background: var(--off-white); margin: 0 -0px; }
+
+  /* ── 탭바 ── */
+  .tab-bar { display: flex; background: #fff; border-bottom: 1px solid var(--light-gray); position: sticky; top: 61px; z-index: 40; }
+  .tab { flex: 1; padding: 12px 0; text-align: center; font-size: 14px; font-weight: 400; color: #687280; cursor: pointer; border-bottom: 2.5px solid transparent; transition: all .2s; }
+  .tab.active { color: var(--gido); font-weight: 700; border-bottom-color: var(--gido); }
+  .tab.active.gamsa-tab { color: var(--gamsa); border-bottom-color: var(--gamsa); }
+
+  /* ── 모드 토글 ── */
+  .mode-toggle { display: flex; background: #f0f4f8; border-radius: 14px; padding: 4px; margin: 10px 16px; }
+  .mode-btn { flex: 1; padding: 9px; text-align: center; font-size: 13px; font-weight: 700; color: #687280; cursor: pointer; border-radius: 10px; transition: all .2s; }
+  .mode-btn.active { background: var(--gido); color: #fff; box-shadow: 0 2px 8px rgba(0,170,255,.3); }
+
+  /* ── 섹션 헤더 ── */
+  .section-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px; }
+  .section-title { font-size: 16px; font-weight: 700; color: var(--dark-navy); }
+  .section-more { font-size: 12px; color: var(--gido); font-weight: 600; cursor: pointer; }
+
+  /* ── 입력 필드 ── */
+  .input-field { width: 100%; border: 1px solid var(--light-gray); border-radius: 12px; padding: 13px 16px; font-size: 14px; background: #fff; outline: none; font-family: inherit; }
+  .input-field:focus { border-color: var(--gido); }
+  .input-label { font-size: 13px; font-weight: 600; color: var(--dark-navy); margin-bottom: 6px; }
+
+  /* ── 아바타 ── */
+  .avatar { border-radius: 50%; object-fit: cover; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--gido); background: var(--gido-light); }
+
+  /* ── 그라데이션 버튼 ── */
+  .grad-btn { width: 100%; border: none; border-radius: 16px; padding: 16px; font-size: 15px; font-weight: 700; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .grad-btn.gido-grad { background: linear-gradient(135deg, #00AAFF, #0088DD); box-shadow: 0 4px 14px rgba(0,170,255,.35); }
+  .grad-btn.gamsa-grad { background: linear-gradient(135deg, #F59E08, #D97706); box-shadow: 0 4px 14px rgba(245,158,8,.35); }
+
+  /* ── 말씀 카드 ── */
+  .verse-card { background: linear-gradient(135deg, #3DBFA6, #108981); border-radius: 20px; padding: 22px 20px; text-align: center; box-shadow: 0 6px 20px rgba(16,137,129,.3); margin: 0 16px 16px; }
+  .verse-text { color: #fff; font-size: 17px; font-weight: 800; line-height: 1.6; margin: 10px 0 6px; }
+  .verse-ref { color: rgba(255,255,255,.8); font-size: 13px; }
+  .verse-badge { display: inline-block; background: rgba(255,255,255,.2); border: 1px solid rgba(255,255,255,.4); color: #fff; font-size: 11px; font-weight: 600; padding: 4px 12px; border-radius: 20px; margin-top: 10px; }
+  .verse-deco { width: 40px; height: 2px; background: rgba(255,255,255,.4); border-radius: 2px; margin: 0 auto; }
+
+  /* ── 프로필 헤더 ── */
+  .profile-header { background: linear-gradient(135deg, #00AAFF, #0066CC); padding: 50px 20px 24px; text-align: center; }
+  .profile-avatar-lg { width: 80px; height: 80px; border-radius: 50%; background: rgba(255,255,255,.25); border: 3px solid rgba(255,255,255,.6); margin: 0 auto 12px; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+  .profile-name { color: #fff; font-size: 20px; font-weight: 800; }
+  .profile-church { color: rgba(255,255,255,.8); font-size: 13px; margin-top: 4px; }
+
+  /* ── 통계 그리드 ── */
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 16px 16px; }
+  .stat-card { background: #fff; border-radius: 16px; padding: 16px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.05); }
+  .stat-value { font-size: 26px; font-weight: 800; color: var(--gido); }
+  .stat-label { font-size: 12px; color: #687280; margin-top: 4px; }
+
+  /* ── 스트릭 배지 ── */
+  .streak-banner { background: linear-gradient(90deg, #FFB800, #FF9500); border-radius: 12px; padding: 10px 16px; margin: 0 16px 12px; display: flex; align-items: center; gap: 8px; }
+  .streak-text { color: #fff; font-size: 13px; font-weight: 700; }
+
+  /* ── 인사말 카드 ── */
+  .greeting-card { background: #fff; border-radius: 20px; padding: 16px; margin: 12px 16px 0; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
+
+  /* ── 중보기도 요청 카드 ── */
+  .intercession-card { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.05); border-left: 4px solid var(--gido); }
+  .intercession-card.urgent { border-left-color: #EF4444; }
+  .intercession-card.accepted { border-left-color: #10B981; }
+
+  /* ── FAB ── */
+  .fab { position: fixed; bottom: 96px; right: 24px; width: 52px; height: 52px; border-radius: 50%; background: var(--gido); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; box-shadow: 0 4px 14px rgba(0,170,255,.4); z-index: 60; }
+
+  /* ── 그룹 카드 ── */
+  .group-card { background: #fff; border-radius: 16px; padding: 16px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,.05); display: flex; align-items: center; gap: 12px; }
+  .group-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+
+  /* ── 알림 아이템 ── */
+  .notif-item { background: #fff; padding: 14px 16px; display: flex; gap: 12px; align-items: flex-start; border-bottom: 1px solid var(--light-gray); }
+  .notif-item.unread { background: #EFF9FF; }
+  .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gido); flex-shrink: 0; margin-top: 6px; }
+
+  /* ── 텍스트 유틸 ── */
+  .text-primary { color: var(--dark-navy); }
+  .text-secondary { color: #687280; }
+  .text-light { color: #adb5bd; }
+  .text-gido { color: var(--gido); }
+  .text-gamsa { color: var(--gamsa); }
+  .fw700 { font-weight: 700; }
+  .fw600 { font-weight: 600; }
+  .fs12 { font-size: 12px; }
+  .fs13 { font-size: 13px; }
+  .fs14 { font-size: 14px; }
+  .fs15 { font-size: 15px; }
+  .fs16 { font-size: 16px; }
+  .mt4 { margin-top: 4px; }
+  .mt8 { margin-top: 8px; }
+
+  /* ── 레이블 ── */
+  .page-label { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.5); color: #fff; font-size: 10px; padding: 3px 10px; border-radius: 10px; z-index: 200; white-space: nowrap; }
+
+  /* ── 감정 칩 ── */
+  .emotion-chip { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 50px; border: 1.5px solid #e5e7eb; background: #f9fafb; cursor: pointer; font-size: 14px; font-weight: 600; color: #374151; transition: all .2s; }
+  .emotion-chip.selected { background: var(--gamsa); border-color: var(--gamsa); color: #fff; }
+
+  /* ── 공개범위 버튼 ── */
+  .scope-btn { flex: 1; padding: 12px 8px; border-radius: 12px; border: 1.5px solid #e5e7eb; background: #f9fafb; text-align: center; cursor: pointer; transition: all .2s; }
+  .scope-btn.selected { background: #FFFBEB; border-color: var(--gamsa); }
+  .scope-icon { font-size: 18px; display: block; margin-bottom: 4px; }
+  .scope-label { font-size: 12px; font-weight: 600; color: #9ca3af; }
+  .scope-btn.selected .scope-label { color: #D97706; }
+
+  /* ── 달력 ── */
+  .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 0 16px; }
+  .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 12px; font-weight: 600; color: #374151; cursor: pointer; }
+  .cal-day.today { background: var(--gido); color: #fff; }
+  .cal-day.has-entry { background: #FEF3C7; color: #D97706; }
+  .cal-day.empty { opacity: 0; }
+  .cal-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; padding: 8px 16px 4px; }
+  .cal-weekday { text-align: center; font-size: 11px; color: #9ca3af; font-weight: 600; }
+
+  /* ── 설정 아이템 ── */
+  .setting-item { background: #fff; padding: 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid var(--light-gray); cursor: pointer; }
+  .setting-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+
+  @media (max-width: 440px) {
+    .phone { width: 100%; max-width: 390px; height: calc(100vh - 160px); border-radius: 24px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- 화면 선택기 -->
+<div class="screen-selector">
+  <button class="screen-btn active" onclick="showScreen('home')">🏠 홈</button>
+  <button class="screen-btn" onclick="showScreen('prayer')">🙏 기도</button>
+  <button class="screen-btn" onclick="showScreen('create-prayer')">✏️ 기도작성</button>
+  <button class="screen-btn" onclick="showScreen('prayer-detail')">🔍 기도상세</button>
+  <button class="screen-btn" onclick="showScreen('intercession')">🤝 중보기도</button>
+  <button class="screen-btn" onclick="showScreen('gamsa')">🌸 감사</button>
+  <button class="screen-btn" onclick="showScreen('create-gamsa')">✍️ 감사작성</button>
+  <button class="screen-btn" onclick="showScreen('gamsa-calendar')">📅 감사달력</button>
+  <button class="screen-btn" onclick="showScreen('group')">👥 그룹</button>
+  <button class="screen-btn" onclick="showScreen('group-detail')">🏘️ 그룹상세</button>
+  <button class="screen-btn" onclick="showScreen('profile')">👤 프로필</button>
+  <button class="screen-btn" onclick="showScreen('notification')">🔔 알림</button>
+</div>
+
+<!-- 폰 프레임 -->
+<div class="phone">
+  <div class="phone-notch">
+    <span class="time">9:41</span>
+    <span class="icons">▶ 🛜 🔋</span>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       1. 홈 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen active" id="screen-home">
+    <!-- 앱바 -->
+    <div class="appbar">
+      <span class="appbar-title primary" style="font-size:22px">Intercesso</span>
+      <div class="appbar-actions">
+        <button class="icon-btn" onclick="showScreen('notification')">🔔</button>
+      </div>
+    </div>
+
+    <!-- 개인/교회 모드 토글 -->
+    <div class="mode-toggle">
+      <div class="mode-btn active" id="mode-personal" onclick="setMode('personal')">🙏 개인모드</div>
+      <div class="mode-btn" id="mode-church" onclick="setMode('church')">⛪ 교회모드</div>
+    </div>
+
+    <!-- 인사말 카드 -->
+    <div class="greeting-card">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="avatar" style="width:52px;height:52px;font-size:20px;background:linear-gradient(135deg,#00AAFF,#0066CC);color:#fff">홍</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:#1A1A2E">좋은 아침이에요, <span style="color:#00AAFF">홍길동님</span> ☀️</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">오늘도 함께 기도해요</div>
+        </div>
+      </div>
+      <div class="streak-banner" style="margin:12px 0 0">
+        <span style="font-size:16px">🔥</span>
+        <span class="streak-text">14일 연속 기도 + 감사 작성 중!  😄</span>
+      </div>
+    </div>
+
+    <!-- 빠른 액션 버튼 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 16px 0">
+      <button class="grad-btn gido-grad" onclick="showScreen('create-prayer')">
+        <span style="font-size:20px">🙏</span> 기도제목 작성
+      </button>
+      <button class="grad-btn gamsa-grad" onclick="showScreen('create-gamsa')">
+        <span style="font-size:20px">🌷</span> 감사일기 쓰기
+      </button>
+    </div>
+
+    <!-- 오늘의 말씀 -->
+    <div class="section-header" style="padding-bottom:4px">
+      <span class="section-title">오늘의 말씀</span>
+    </div>
+    <div class="verse-card">
+      <div class="verse-deco"></div>
+      <div style="font-size:28px;margin:12px 0 4px">📖</div>
+      <div class="verse-text">여호와는 나의 목자시니<br>내게 부족함이 없으리로다</div>
+      <div class="verse-ref">시편 23:1</div>
+      <div class="verse-badge">시편 23:1</div>
+      <div class="verse-deco" style="margin-top:14px"></div>
+    </div>
+
+    <!-- 기도/감사 피드 탭 -->
+    <div class="tab-bar" style="top:61px">
+      <div class="tab active" id="feed-tab-prayer" onclick="switchFeedTab('prayer')">기도 피드</div>
+      <div class="tab" id="feed-tab-gamsa" onclick="switchFeedTab('gamsa')">감사 피드</div>
+    </div>
+
+    <!-- 기도 피드 -->
+    <div id="feed-prayer" style="padding:12px 16px 0">
+      <!-- 기도 카드 1 -->
+      <div class="card" style="cursor:pointer" onclick="showScreen('prayer-detail')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px">기</div>
+          <span style="font-size:13px;font-weight:600;color:#1A1A2E">기도하는 마음</span>
+          <span style="margin-left:auto" class="badge gido">건강</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:4px">아픈 가족을 위한 기도</div>
+        <div style="font-size:13px;color:#687280;line-height:1.5">오늘 하루 가족을 위해 기도합니다... 🙏</div>
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;color:#687280">🙏 24명</span>
+          <span style="font-size:12px;color:#687280">💬 5</span>
+          <span style="margin-left:auto;font-size:11px;color:#adb5bd">1시간 전</span>
+        </div>
+      </div>
+      <!-- 기도 카드 2 -->
+      <div class="card" style="cursor:pointer" onclick="showScreen('prayer-detail')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px">은</div>
+          <span style="font-size:13px;font-weight:600;color:#1A1A2E">은혜 가득</span>
+          <span style="margin-left:auto" class="badge answered">✅ 응답받음</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:4px">새로운 시작을 위해</div>
+        <div style="font-size:13px;color:#687280;line-height:1.5">새로운 시작을 위해 기도 부탁드려요 ✨</div>
+        <div class="divider"></div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="font-size:12px;color:#687280">🙏 18명</span>
+          <span style="font-size:12px;color:#687280">💬 2</span>
+          <span style="margin-left:auto;font-size:11px;color:#adb5bd">2시간 전</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 감사 피드 (숨김) -->
+    <div id="feed-gamsa" style="padding:12px 16px 0;display:none">
+      <div class="card gamsa-card" style="cursor:pointer" onclick="showScreen('gamsa')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px;background:#FEF3C7;color:#D97706">사</div>
+          <span style="font-size:13px;font-weight:600;color:#1A1A2E">사랑이</span>
+          <span style="margin-left:auto" class="badge gamsa">감사 🙌</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#92400E;margin-bottom:6px">감사 3가지</div>
+        <div style="font-size:13px;color:#1A1A2E;line-height:1.6">1. 가족 건강<br>2. 주말 날씨<br>3. 친구 만남</div>
+        <div style="display:flex;gap:6px;margin-top:10px;font-size:16px">❤️ <span style="font-size:12px;color:#687280">3</span> &nbsp;👏 <span style="font-size:12px;color:#687280">2</span> &nbsp;💬 <span style="font-size:12px;color:#687280">1</span></div>
+      </div>
+      <div class="card gamsa-card" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px;background:#FEF3C7;color:#D97706">믿</div>
+          <span style="font-size:13px;font-weight:600;color:#1A1A2E">믿음이</span>
+          <span style="margin-left:auto" class="badge gamsa">감사 🙌</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#92400E;margin-bottom:6px">감사 3가지</div>
+        <div style="font-size:13px;color:#1A1A2E;line-height:1.6">1. 오늘의 예배<br>2. 좋은 소식<br>3. 건강한 하루</div>
+        <div style="display:flex;gap:6px;margin-top:10px;font-size:16px">❤️ <span style="font-size:12px;color:#687280">7</span> &nbsp;👏 <span style="font-size:12px;color:#687280">4</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       2. 기도 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-prayer">
+    <div class="appbar">
+      <span class="appbar-title">기도 🙏</span>
+      <button class="icon-btn" onclick="showScreen('create-prayer')">✏️</button>
+    </div>
+
+    <!-- 탭: 전체/내기도/함께기도 -->
+    <div class="tab-bar" style="top:61px">
+      <div class="tab active" onclick="setActiveTab(this)">전체</div>
+      <div class="tab" onclick="setActiveTab(this)">내 기도</div>
+      <div class="tab" onclick="setActiveTab(this)">함께기도</div>
+      <div class="tab" onclick="setActiveTab(this)">응답</div>
+    </div>
+
+    <div style="padding:12px 16px">
+      <!-- 기도 카드들 -->
+      <div class="card" style="cursor:pointer" onclick="showScreen('prayer-detail')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px">기</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1A1A2E">기도하는 마음</div>
+            <div style="font-size:11px;color:#adb5bd">7시간 전</div>
+          </div>
+          <span style="margin-left:auto" class="badge gido">건강</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:6px">아픈 가족을 위한 기도</div>
+        <div style="font-size:13px;color:#687280;line-height:1.5;margin-bottom:10px">서로를 위해 기도하는 시간을 가집시다. 주님의 은혜가 기득하길 바랍니다.</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="badge praying">🙏 기도중</span>
+          <span style="font-size:12px;color:#687280">🙏 23명</span>
+          <span style="font-size:12px;color:#687280">💬 5</span>
+        </div>
+      </div>
+
+      <div class="card" style="cursor:pointer" onclick="showScreen('prayer-detail')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px">은</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1A1A2E">은혜 가득</div>
+            <div style="font-size:11px;color:#adb5bd">2시간 전</div>
+          </div>
+          <span style="margin-left:auto" class="badge answered">✅ 응답</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:6px">취업 기도 응답받았어요!</div>
+        <div style="font-size:13px;color:#687280;line-height:1.5;margin-bottom:10px">드디어 원하던 회사에 합격했습니다! 함께 기도해주신 모든 분들 감사합니다.</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="badge answered">✅ 응답받음</span>
+          <span style="font-size:12px;color:#687280">🙏 41명</span>
+          <span style="font-size:12px;color:#687280">💬 12</span>
+        </div>
+      </div>
+
+      <div class="card" style="cursor:pointer" onclick="showScreen('intercession')">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <div class="avatar" style="width:32px;height:32px;font-size:13px">평</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1A1A2E">평화로운</div>
+            <div style="font-size:11px;color:#adb5bd">5시간 전</div>
+          </div>
+          <span style="margin-left:auto" class="badge gido">가정</span>
+        </div>
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:6px">부모님 건강을 위해 기도해주세요</div>
+        <div style="font-size:13px;color:#687280;line-height:1.5;margin-bottom:10px">연로하신 부모님이 건강하게 지내실 수 있도록 기도 부탁드립니다.</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="badge praying">🙏 기도중</span>
+          <span style="font-size:12px;color:#687280">🙏 15명</span>
+          <span style="font-size:12px;color:#687280">💬 3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       3. 기도 작성 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-create-prayer">
+    <div class="appbar">
+      <button class="icon-btn" onclick="goBack()">←</button>
+      <span class="appbar-title">기도제목 작성</span>
+      <button class="pill-btn primary" style="padding:8px 16px;font-size:13px">등록</button>
+    </div>
+    <div style="padding:16px">
+      <div class="input-label">제목 *</div>
+      <input class="input-field" placeholder="기도제목을 입력해주세요" style="margin-bottom:14px">
+
+      <div class="input-label">내용</div>
+      <textarea class="input-field" placeholder="기도 내용을 자세히 적어주세요" rows="4" style="margin-bottom:14px;resize:none"></textarea>
+
+      <div class="input-label">카테고리</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <span class="badge gido" style="cursor:pointer;padding:7px 14px">건강</span>
+        <span class="badge" style="cursor:pointer;padding:7px 14px;background:#f3f4f6;color:#374151">가정</span>
+        <span class="badge" style="cursor:pointer;padding:7px 14px;background:#f3f4f6;color:#374151">직장</span>
+        <span class="badge" style="cursor:pointer;padding:7px 14px;background:#f3f4f6;color:#374151">학업</span>
+        <span class="badge" style="cursor:pointer;padding:7px 14px;background:#f3f4f6;color:#374151">교회</span>
+        <span class="badge" style="cursor:pointer;padding:7px 14px;background:#f3f4f6;color:#374151">기타</span>
+      </div>
+
+      <div class="input-label">공개 범위</div>
+      <div style="display:flex;gap:8px;margin-bottom:20px">
+        <div class="scope-btn selected">
+          <span class="scope-icon">🔒</span>
+          <span class="scope-label">나만 보기</span>
+        </div>
+        <div class="scope-btn">
+          <span class="scope-icon">👥</span>
+          <span class="scope-label">그룹 공개</span>
+        </div>
+        <div class="scope-btn">
+          <span class="scope-icon">🌐</span>
+          <span class="scope-label">전체 공개</span>
+        </div>
+      </div>
+
+      <div class="input-label">중보기도 요청</div>
+      <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;margin-bottom:20px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:20px">🤝</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:#1A1A2E">중보기도 요청하기</div>
+            <div style="font-size:12px;color:#687280">특정 사람에게 기도를 요청해요</div>
+          </div>
+        </div>
+        <span style="color:#adb5bd">›</span>
+      </div>
+
+      <button class="pill-btn primary" style="width:100%;justify-content:center;height:52px;font-size:16px">🙏 기도제목 등록하기</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       4. 기도 상세 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-prayer-detail">
+    <div class="appbar">
+      <button class="icon-btn" onclick="goBack()">←</button>
+      <span class="appbar-title">기도 상세</span>
+      <button class="icon-btn">⋯</button>
+    </div>
+    <div style="padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="avatar" style="width:44px;height:44px;font-size:17px">기</div>
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">기도하는 마음</div>
+          <div style="font-size:12px;color:#adb5bd">7시간 전</div>
+        </div>
+        <span style="margin-left:auto" class="badge praying">🙏 기도중</span>
+      </div>
+
+      <div style="font-size:20px;font-weight:800;color:#1A1A2E;margin-bottom:12px">아픈 가족을 위한 기도</div>
+      <div style="font-size:14px;color:#374151;line-height:1.7;margin-bottom:16px">
+        서로를 위해 기도하는 시간을 가집시다. 주님의 은혜가 기득하길 바랍니다.<br><br>
+        연로하신 어머니가 지난주부터 몸이 좋지 않으셔서 많이 걱정됩니다. 빨리 회복하실 수 있도록 함께 기도해주세요.
+      </div>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <span class="badge gido">건강</span>
+        <span class="badge praying">🙏 기도중</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 반응 바 -->
+      <div style="display:flex;align-items:center;gap:8px;padding:12px 0">
+        <button class="pill-btn primary" style="padding:10px 20px;font-size:14px">🙏 함께 기도 (23)</button>
+        <button class="pill-btn outline" style="padding:10px 20px;font-size:14px">🤝 중보 요청</button>
+        <button class="icon-btn" style="margin-left:auto;background:#f3f4f6">💬 5</button>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 댓글 -->
+      <div style="padding:12px 0">
+        <div style="font-size:15px;font-weight:700;margin-bottom:12px">댓글 5</div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div class="avatar" style="width:34px;height:34px;font-size:13px">은</div>
+          <div style="background:#f3f4f6;border-radius:0 12px 12px 12px;padding:10px 14px;flex:1">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">은혜 가득</div>
+            <div style="font-size:13px;color:#374151">함께 기도할게요 🙏 주님께서 속히 회복시켜 주시길</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:14px">
+          <div class="avatar" style="width:34px;height:34px;font-size:13px">평</div>
+          <div style="background:#f3f4f6;border-radius:0 12px 12px 12px;padding:10px 14px;flex:1">
+            <div style="font-size:13px;font-weight:600;margin-bottom:4px">평화로운</div>
+            <div style="font-size:13px;color:#374151">어머니의 빠른 쾌유를 위해 기도합니다 ❤️</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 댓글 입력 -->
+      <div style="display:flex;gap:8px;position:sticky;bottom:90px;background:#f8f9fa;padding:8px 0">
+        <input class="input-field" placeholder="따뜻한 기도 댓글을 남겨주세요" style="flex:1">
+        <button class="pill-btn primary" style="padding:12px 16px;font-size:14px">전송</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       5. 중보기도 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-intercession">
+    <div class="appbar">
+      <button class="icon-btn" onclick="goBack()">←</button>
+      <span class="appbar-title">중보기도 🤝</span>
+      <button class="icon-btn">➕</button>
+    </div>
+
+    <!-- 탭: 받은 요청 / 보낸 요청 -->
+    <div class="tab-bar" style="top:61px">
+      <div class="tab active" onclick="setActiveTab(this)">받은 요청</div>
+      <div class="tab" onclick="setActiveTab(this)">보낸 요청</div>
+      <div class="tab" onclick="setActiveTab(this)">기도 중</div>
+    </div>
+
+    <div style="padding:12px 16px">
+      <div style="font-size:13px;color:#687280;margin-bottom:12px;background:#EFF9FF;padding:10px 14px;border-radius:10px">
+        💡 중보기도는 다른 사람을 위해 대신 기도해주는 것이에요
+      </div>
+
+      <!-- 중보 카드들 -->
+      <div class="intercession-card urgent">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="avatar" style="width:38px;height:38px;font-size:15px">은</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#1A1A2E">은혜 가득</div>
+            <div style="font-size:12px;color:#adb5bd">30분 전</div>
+          </div>
+          <span style="background:#FEE2E2;color:#EF4444;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">🔥 긴급</span>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#1A1A2E;margin-bottom:4px">수술을 앞두고 있어요</div>
+        <div style="font-size:13px;color:#687280;margin-bottom:12px">내일 아침 수술이 있습니다. 두렵고 떨리는 마음이에요. 함께 기도해주세요.</div>
+        <div style="display:flex;gap:8px">
+          <button class="pill-btn primary" style="flex:1;justify-content:center;padding:10px">🙏 수락</button>
+          <button class="pill-btn outline-gray" style="flex:1;justify-content:center;padding:10px">거절</button>
+        </div>
+      </div>
+
+      <div class="intercession-card accepted">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="avatar" style="width:38px;height:38px;font-size:15px">믿</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#1A1A2E">믿음이</div>
+            <div style="font-size:12px;color:#adb5bd">2시간 전</div>
+          </div>
+          <span style="background:#D1FAE5;color:#059669;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">✅ 기도중</span>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#1A1A2E;margin-bottom:4px">취업 면접 준비 중</div>
+        <div style="font-size:13px;color:#687280;margin-bottom:12px">이번 주 중요한 면접이 있어요. 지혜와 담대함을 달라고 기도해주세요.</div>
+        <div style="display:flex;gap:8px">
+          <button class="pill-btn primary" style="flex:1;justify-content:center;padding:10px;background:#10B981">🙏 기도 완료 보고</button>
+        </div>
+      </div>
+
+      <div class="intercession-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div class="avatar" style="width:38px;height:38px;font-size:15px">평</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:700;color:#1A1A2E">평화로운</div>
+            <div style="font-size:12px;color:#adb5bd">5시간 전</div>
+          </div>
+          <span style="background:#FEF3C7;color:#D97706;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">⏳ 대기중</span>
+        </div>
+        <div style="font-size:14px;font-weight:600;color:#1A1A2E;margin-bottom:4px">가정의 화평을 위해</div>
+        <div style="font-size:13px;color:#687280;margin-bottom:12px">가족 간 갈등이 있어요. 주님의 화평이 임하길 기도해주세요.</div>
+        <div style="display:flex;gap:8px">
+          <button class="pill-btn primary" style="flex:1;justify-content:center;padding:10px">🙏 수락</button>
+          <button class="pill-btn outline-gray" style="flex:1;justify-content:center;padding:10px">거절</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       6. 감사 피드 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-gamsa">
+    <div class="appbar" style="background:linear-gradient(135deg,#F59E08,#D97706);border:none">
+      <span class="appbar-title" style="color:#fff">감사 피드 🌸</span>
+      <div class="appbar-actions">
+        <button class="icon-btn" style="color:#fff" onclick="showScreen('gamsa-calendar')">📅</button>
+      </div>
+    </div>
+
+    <!-- 스트릭 배너 -->
+    <div style="margin:12px 16px 0;background:linear-gradient(90deg,#FFF7ED,#FFFBEB);border:1px solid #FDE68A;border-radius:14px;padding:12px 16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:24px">🔥</span>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:700;color:#92400E">14일 연속 감사일기 작성 중!</div>
+        <div style="font-size:12px;color:#B45309">총 42번 감사를 기록했어요</div>
+      </div>
+      <div style="background:#F59E08;color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700">최고 20일</div>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tab-bar" style="top:61px;margin-top:12px">
+      <div class="tab active gamsa-tab" onclick="setActiveTab(this, true)">🏠 우리 그룹</div>
+      <div class="tab" onclick="setActiveTab(this, true)">👥 팔로우</div>
+      <div class="tab" onclick="setActiveTab(this, true)">🌐 전체</div>
+    </div>
+
+    <div style="padding:12px 16px">
+      <div class="card gamsa-card" style="cursor:pointer" onclick="showScreen('gamsa')">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="avatar" style="width:36px;height:36px;font-size:14px;background:#FEF3C7;color:#D97706">사</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1A1A2E">사랑이 <span style="font-size:11px;background:#E0F2FE;color:#0284C7;padding:2px 8px;border-radius:10px;margin-left:4px">나</span></div>
+            <div style="font-size:12px;color:#adb5bd">오늘 😊</div>
+          </div>
+          <span style="margin-left:auto" class="badge gamsa">감사 🙌</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#92400E;margin-bottom:8px">감사 3가지</div>
+        <div style="font-size:13px;color:#1A1A2E;line-height:1.8">1. 가족 건강<br>2. 주말 날씨<br>3. 친구 만남</div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+          <button style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:20px;background:#FFFBEB">🙏 <span style="font-size:12px;color:#D97706;font-weight:600">3</span></button>
+          <button style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:20px">🤍 <span style="font-size:12px;color:#687280">2</span></button>
+          <span style="margin-left:auto;font-size:12px;color:#687280;display:flex;align-items:center;gap:4px">💬 1</span>
+        </div>
+      </div>
+
+      <div class="card gamsa-card">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div class="avatar" style="width:36px;height:36px;font-size:14px;background:#FEF3C7;color:#D97706">믿</div>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#1A1A2E">믿음이</div>
+            <div style="font-size:12px;color:#adb5bd">어제 🕊️</div>
+          </div>
+          <span style="margin-left:auto" class="badge gamsa">감사 🙌</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:#92400E;margin-bottom:8px">감사 3가지</div>
+        <div style="font-size:13px;color:#1A1A2E;line-height:1.8">1. 오늘의 예배<br>2. 좋은 소식<br>3. 건강한 하루</div>
+        <div style="margin-top:10px;display:flex;align-items:center;gap:8px">
+          <button style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:20px">🙏 <span style="font-size:12px;color:#687280">7</span></button>
+          <button style="background:none;border:none;cursor:pointer;font-size:15px;padding:4px 8px;border-radius:20px">🤍 <span style="font-size:12px;color:#687280">4</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <button style="position:fixed;bottom:96px;right:24px;background:linear-gradient(135deg,#F59E08,#D97706);border:none;border-radius:28px;padding:14px 20px;color:#fff;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(245,158,8,.4);display:flex;align-items:center;gap:6px;z-index:60" onclick="showScreen('create-gamsa')">
+      ✨ 감사일기 쓰기
+    </button>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       7. 감사일기 작성
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-create-gamsa">
+    <!-- 황금색 헤더 -->
+    <div style="background:linear-gradient(135deg,#F59E08,#D97706);padding:50px 16px 24px">
+      <button class="icon-btn" style="color:#fff;margin-bottom:12px" onclick="goBack()">←</button>
+      <div style="display:inline-block;background:rgba(255,255,255,.2);border-radius:20px;padding:4px 12px;margin-bottom:8px">
+        <span style="color:#fff;font-size:12px;font-weight:600">2024년 3월 7일 목요일</span>
+      </div>
+      <div style="color:#fff;font-size:22px;font-weight:800">오늘의 감사일기 ✨</div>
+      <div style="color:rgba(255,255,255,.8);font-size:13px;margin-top:4px">오늘 감사한 일 3가지를 기록해 보세요</div>
+    </div>
+
+    <div style="padding:16px">
+      <!-- 감사 3가지 입력 -->
+      <div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">
+        <div style="padding:16px;display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:linear-gradient(135deg,#F59E08,#D97706);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex-shrink:0">1</div>
+          <textarea class="input-field" placeholder="오늘 감사한 첫 번째 일을 써보세요" rows="2" style="border:none;padding:0;resize:none;flex:1;font-size:15px"></textarea>
+        </div>
+        <div class="divider"></div>
+        <div style="padding:16px;display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:linear-gradient(135deg,#F59E08,#D97706);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex-shrink:0">2</div>
+          <textarea class="input-field" placeholder="두 번째 감사한 일 (선택)" rows="2" style="border:none;padding:0;resize:none;flex:1;font-size:15px"></textarea>
+        </div>
+        <div class="divider"></div>
+        <div style="padding:16px;display:flex;gap:12px;align-items:flex-start">
+          <div style="width:32px;height:32px;background:linear-gradient(135deg,#F59E08,#D97706);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;flex-shrink:0">3</div>
+          <textarea class="input-field" placeholder="세 번째 감사한 일 (선택)" rows="2" style="border:none;padding:0;resize:none;flex:1;font-size:15px"></textarea>
+        </div>
+      </div>
+
+      <!-- 오늘의 감정 -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:12px">오늘의 감정</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <div class="emotion-chip selected" onclick="toggleEmotion(this)"><span>😊</span> 기쁨</div>
+          <div class="emotion-chip" onclick="toggleEmotion(this)"><span>🕊️</span> 평안</div>
+          <div class="emotion-chip" onclick="toggleEmotion(this)"><span>😭</span> 감격</div>
+          <div class="emotion-chip" onclick="toggleEmotion(this)"><span>🙌</span> 감사</div>
+        </div>
+      </div>
+
+      <!-- 기도 응답 연결 -->
+      <div class="card" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;background:#E6F6FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px">🔗</div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#1A1A2E">기도 응답과 연결하기</div>
+            <div style="font-size:12px;color:#9ca3af">선택</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px 12px;background:#f9fafb;border-radius:12px;border:1px solid #e5e7eb;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer">
+          <span style="color:#9ca3af;font-size:18px">+</span>
+          <span style="font-size:14px;color:#9ca3af">기도제목 선택하기</span>
+        </div>
+      </div>
+
+      <!-- 공개 범위 -->
+      <div class="card" style="margin-bottom:20px">
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:12px">공개 범위</div>
+        <div style="display:flex;gap:8px">
+          <div class="scope-btn selected">
+            <span class="scope-icon">🔒</span>
+            <span class="scope-label">나만 보기</span>
+          </div>
+          <div class="scope-btn">
+            <span class="scope-icon">👥</span>
+            <span class="scope-label">그룹 공개</span>
+          </div>
+          <div class="scope-btn">
+            <span class="scope-icon">🌐</span>
+            <span class="scope-label">전체 공개</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="grad-btn gamsa-grad" style="height:56px;font-size:17px;font-weight:800">🙌 감사 기록하기</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       8. 감사 달력
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-gamsa-calendar">
+    <div class="appbar">
+      <button class="icon-btn" onclick="goBack()">←</button>
+      <span class="appbar-title">감사 달력 📅</span>
+    </div>
+
+    <!-- 스트릭 정보 -->
+    <div style="padding:16px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+        <div class="stat-card"><div class="stat-value" style="color:#F59E08">14</div><div class="stat-label">현재 스트릭</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#F59E08">20</div><div class="stat-label">최고 스트릭</div></div>
+        <div class="stat-card"><div class="stat-value" style="color:#F59E08">42</div><div class="stat-label">총 기록</div></div>
+      </div>
+
+      <!-- 달력 -->
+      <div class="card">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <button style="background:none;border:none;font-size:20px;cursor:pointer">←</button>
+          <div style="font-size:16px;font-weight:700">2024년 3월</div>
+          <button style="background:none;border:none;font-size:20px;cursor:pointer">→</button>
+        </div>
+        <div class="cal-header">
+          <div class="cal-weekday" style="color:#EF4444">일</div>
+          <div class="cal-weekday">월</div><div class="cal-weekday">화</div>
+          <div class="cal-weekday">수</div><div class="cal-weekday">목</div>
+          <div class="cal-weekday">금</div>
+          <div class="cal-weekday" style="color:#3B82F6">토</div>
+        </div>
+        <div class="calendar-grid">
+          <div class="cal-day empty"></div><div class="cal-day empty"></div>
+          <div class="cal-day empty"></div><div class="cal-day empty"></div>
+          <div class="cal-day empty"></div>
+          <div class="cal-day has-entry">1</div><div class="cal-day has-entry">2</div>
+          <div class="cal-day has-entry">3</div><div class="cal-day has-entry">4</div>
+          <div class="cal-day has-entry">5</div><div class="cal-day has-entry">6</div>
+          <div class="cal-day today">7</div><div class="cal-day">8</div><div class="cal-day">9</div>
+          <div class="cal-day">10</div><div class="cal-day">11</div><div class="cal-day">12</div>
+          <div class="cal-day">13</div><div class="cal-day">14</div>
+          <div class="cal-day">15</div><div class="cal-day">16</div><div class="cal-day">17</div>
+          <div class="cal-day">18</div><div class="cal-day">19</div><div class="cal-day">20</div>
+          <div class="cal-day">21</div><div class="cal-day">22</div><div class="cal-day">23</div>
+          <div class="cal-day">24</div><div class="cal-day">25</div><div class="cal-day">26</div>
+          <div class="cal-day">27</div><div class="cal-day">28</div><div class="cal-day">29</div>
+          <div class="cal-day">30</div><div class="cal-day">31</div>
+        </div>
+        <div style="display:flex;gap:16px;padding:14px 4px 4px;justify-content:center">
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;border-radius:50%;background:#FEF3C7"></div><span style="font-size:12px;color:#687280">작성 완료</span></div>
+          <div style="display:flex;align-items:center;gap:6px"><div style="width:14px;height:14px;border-radius:50%;background:#00AAFF"></div><span style="font-size:12px;color:#687280">오늘</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       9. 그룹 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-group">
+    <div class="appbar">
+      <span class="appbar-title">그룹 👥</span>
+      <button class="icon-btn">➕</button>
+    </div>
+    <div style="padding:12px 16px">
+      <!-- 내 그룹 -->
+      <div class="section-header" style="padding:8px 0 10px">
+        <span class="section-title">내 그룹</span>
+        <span class="section-more">그룹 만들기 +</span>
+      </div>
+
+      <div class="group-card" style="cursor:pointer" onclick="showScreen('group-detail')">
+        <div class="group-icon" style="background:#E6F6FF;font-size:24px">⛪</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">새벽기도 모임</div>
+          <div style="font-size:12px;color:#687280">멤버 12명 · 기도 35개</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge role-chunmu">총무</span>
+          <span style="font-size:11px;color:#adb5bd">방금 전</span>
+        </div>
+      </div>
+
+      <div class="group-card" style="cursor:pointer" onclick="showScreen('group-detail')">
+        <div class="group-icon" style="background:#F3E8FF;font-size:24px">🎵</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">찬양팀</div>
+          <div style="font-size:12px;color:#687280">멤버 8명 · 기도 17개</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge role-patjang">파트장</span>
+          <span style="font-size:11px;color:#adb5bd">1시간 전</span>
+        </div>
+      </div>
+
+      <div class="group-card" style="cursor:pointer" onclick="showScreen('group-detail')">
+        <div class="group-icon" style="background:#DCFCE7;font-size:24px">📖</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">성경공부 모임</div>
+          <div style="font-size:12px;color:#687280">멤버 6명 · 기도 9개</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+          <span class="badge role-danwon">단원</span>
+          <span style="font-size:11px;color:#adb5bd">어제</span>
+        </div>
+      </div>
+
+      <!-- 추천 그룹 -->
+      <div class="section-header" style="padding:16px 0 10px">
+        <span class="section-title">추천 그룹</span>
+      </div>
+      <div class="group-card">
+        <div class="group-icon" style="background:#FEF3C7;font-size:24px">🙏</div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">중보기도팀</div>
+          <div style="font-size:12px;color:#687280">멤버 24명</div>
+        </div>
+        <button class="pill-btn outline" style="padding:8px 16px;font-size:12px">참여하기</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       10. 그룹 상세
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-group-detail">
+    <div class="appbar" style="background:linear-gradient(135deg,#00AAFF,#0066CC);border:none">
+      <button class="icon-btn" style="color:#fff" onclick="goBack()">←</button>
+      <span class="appbar-title" style="color:#fff">새벽기도 모임</span>
+      <button class="icon-btn" style="color:#fff">⚙️</button>
+    </div>
+
+    <!-- 그룹 정보 -->
+    <div style="background:linear-gradient(135deg,#00AAFF,#0066CC);padding:0 16px 20px;text-align:center">
+      <div style="font-size:48px;margin-bottom:8px">⛪</div>
+      <div style="color:rgba(255,255,255,.9);font-size:13px">멤버 12명 · 기도 35개</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <span class="badge" style="background:rgba(255,255,255,.25);color:#fff">🙏 기도중</span>
+        <span class="badge" style="background:rgba(255,255,255,.25);color:#fff">📅 매일 새벽</span>
+      </div>
+    </div>
+
+    <!-- 탭 -->
+    <div class="tab-bar" style="top:61px">
+      <div class="tab active" onclick="setActiveTab(this)">기도 목록</div>
+      <div class="tab" onclick="setActiveTab(this)">멤버</div>
+      <div class="tab" onclick="setActiveTab(this)">감사 피드</div>
+    </div>
+
+    <div style="padding:12px 16px">
+      <div class="card" style="cursor:pointer" onclick="showScreen('prayer-detail')">
+        <div style="font-size:15px;font-weight:700;color:#1A1A2E;margin-bottom:6px">그룹 아침 기도 모음</div>
+        <div style="font-size:13px;color:#687280;margin-bottom:10px">매일 아침 함께하는 기도 시간입니다.</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="badge praying">🙏 기도중</span>
+          <span style="font-size:12px;color:#687280">🙏 8명</span>
+        </div>
+      </div>
+      <div class="card">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:22px">👥</span>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:#1A1A2E">멤버 초대하기</div>
+            <div style="font-size:12px;color:#687280">초대 코드: PRAY-2024</div>
+          </div>
+          <button class="pill-btn outline" style="padding:8px 14px;font-size:12px">복사</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       11. 프로필 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-profile">
+    <div class="profile-header">
+      <div class="profile-avatar-lg">홍</div>
+      <div class="profile-name">홍길동</div>
+      <div class="profile-church">사랑의교회 · 청년부</div>
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:12px">
+        <button class="pill-btn" style="background:rgba(255,255,255,.25);color:#fff;padding:8px 18px;font-size:13px">✏️ 프로필 수정</button>
+        <button class="pill-btn" style="background:rgba(255,255,255,.25);color:#fff;padding:8px 18px;font-size:13px">📊 통계</button>
+      </div>
+    </div>
+
+    <!-- 통계 그리드 -->
+    <div class="stat-grid" style="margin-top:14px">
+      <div class="stat-card"><div class="stat-value">47</div><div class="stat-label">내 기도</div></div>
+      <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">응답받음</div></div>
+      <div class="stat-card"><div class="stat-value" style="color:#F59E08">42</div><div class="stat-label">감사일기</div></div>
+      <div class="stat-card"><div class="stat-value">128</div><div class="stat-label">함께 기도</div></div>
+    </div>
+
+    <!-- 설정 메뉴 -->
+    <div style="margin:14px 16px 0;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.05)">
+      <div class="setting-item">
+        <div class="setting-icon" style="background:#E6F6FF">🔔</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:#1A1A2E">알림 설정</div></div>
+        <span style="color:#adb5bd">›</span>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon" style="background:#F3E8FF">🔒</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:#1A1A2E">개인정보 보호</div></div>
+        <span style="color:#adb5bd">›</span>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon" style="background:#FEF3C7">📋</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:#1A1A2E">이용약관</div></div>
+        <span style="color:#adb5bd">›</span>
+      </div>
+      <div class="setting-item">
+        <div class="setting-icon" style="background:#FEE2E2">🚪</div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:600;color:#EF4444">로그아웃</div></div>
+        <span style="color:#adb5bd">›</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════
+       12. 알림 화면
+  ════════════════════════════════════════════ -->
+  <div class="screen" id="screen-notification">
+    <div class="appbar">
+      <button class="icon-btn" onclick="goBack()">←</button>
+      <span class="appbar-title">알림 🔔</span>
+      <button style="background:none;border:none;font-size:12px;color:var(--gido);cursor:pointer;font-weight:600">모두 읽음</button>
+    </div>
+    <div>
+      <div class="notif-item unread">
+        <div class="notif-dot"></div>
+        <div style="font-size:20px">🙏</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A2E"><span style="color:#00AAFF">은혜 가득</span>님이 함께 기도했어요</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">아픈 가족을 위한 기도</div>
+          <div style="font-size:11px;color:#adb5bd;margin-top:4px">10분 전</div>
+        </div>
+      </div>
+      <div class="notif-item unread">
+        <div class="notif-dot"></div>
+        <div style="font-size:20px">🤝</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A2E"><span style="color:#00AAFF">믿음이</span>님이 중보기도를 요청했어요</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">취업 면접이 내일 있어요...</div>
+          <div style="font-size:11px;color:#adb5bd;margin-top:4px">30분 전</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div style="width:8px"></div>
+        <div style="font-size:20px">💬</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A2E"><span style="color:#00AAFF">평화로운</span>님이 댓글을 달았어요</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">빠른 쾌유를 위해 기도합니다 ❤️</div>
+          <div style="font-size:11px;color:#adb5bd;margin-top:4px">2시간 전</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div style="width:8px"></div>
+        <div style="font-size:20px">🌸</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A2E">오늘 감사일기를 아직 안 썼어요</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">오늘 하루 3가지 감사를 기록해보세요</div>
+          <div style="font-size:11px;color:#adb5bd;margin-top:4px">3시간 전</div>
+        </div>
+      </div>
+      <div class="notif-item">
+        <div style="width:8px"></div>
+        <div style="font-size:20px">👥</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#1A1A2E">새벽기도 모임에 새 멤버가 들어왔어요</div>
+          <div style="font-size:13px;color:#687280;margin-top:2px">사랑이님이 가입했습니다</div>
+          <div style="font-size:11px;color:#adb5bd;margin-top:4px">어제</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 바텀 네비게이션 -->
+  <div class="bottom-nav">
+    <div class="nav-item active" id="nav-home" onclick="navTo('home')">
+      <span class="nav-emoji">🏠</span>
+      <span class="nav-label">홈</span>
+    </div>
+    <div class="nav-item" id="nav-prayer" onclick="navTo('prayer')">
+      <span class="nav-emoji">🙏</span>
+      <span class="nav-label">기도</span>
+    </div>
+    <div class="nav-item" id="nav-intercession" onclick="navTo('intercession')">
+      <span class="nav-emoji">🤝</span>
+      <span class="nav-label">중보</span>
+    </div>
+    <div class="nav-item gamsa" id="nav-gamsa" onclick="navTo('gamsa')">
+      <span class="nav-emoji">🌸</span>
+      <span class="nav-label">감사</span>
+    </div>
+    <div class="nav-item" id="nav-group" onclick="navTo('group')">
+      <span class="nav-emoji">👥</span>
+      <span class="nav-label">그룹</span>
+    </div>
+    <div class="nav-item" id="nav-profile" onclick="navTo('profile')">
+      <span class="nav-emoji">👤</span>
+      <span class="nav-label">프로필</span>
+    </div>
+  </div>
+</div>
+
+<script>
+  let history = ['home'];
+
+  const screenToNav = {
+    'home': 'home',
+    'prayer': 'prayer', 'create-prayer': 'prayer', 'prayer-detail': 'prayer',
+    'intercession': 'intercession',
+    'gamsa': 'gamsa', 'create-gamsa': 'gamsa', 'gamsa-calendar': 'gamsa',
+    'group': 'group', 'group-detail': 'group',
+    'profile': 'profile',
+    'notification': null
+  };
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('screen-' + id);
+    if (target) {
+      target.classList.add('active');
+      target.scrollTop = 0;
+      history.push(id);
+    }
+    // 화면 선택기 업데이트
+    document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.screen-btn').forEach(b => {
+      if (b.getAttribute('onclick')?.includes(`'${id}'`)) b.classList.add('active');
+    });
+    // 바텀네비 업데이트
+    updateNav(screenToNav[id]);
+  }
+
+  function navTo(id) {
+    showScreen(id);
+  }
+
+  function updateNav(navId) {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (navId) {
+      const nav = document.getElementById('nav-' + navId);
+      if (nav) nav.classList.add('active');
+    }
+  }
+
+  function goBack() {
+    if (history.length > 1) {
+      history.pop();
+      const prev = history[history.length - 1];
+      showScreen(prev);
+    }
+  }
+
+  function setActiveTab(el, isGamsa = false) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.tab').forEach(t => {
+      t.classList.remove('active', 'gamsa-tab');
+    });
+    el.classList.add('active');
+    if (isGamsa) el.classList.add('gamsa-tab');
+  }
+
+  function setMode(mode) {
+    document.getElementById('mode-personal').classList.toggle('active', mode === 'personal');
+    document.getElementById('mode-church').classList.toggle('active', mode === 'church');
+  }
+
+  function switchFeedTab(tab) {
+    const prayerTab = document.getElementById('feed-tab-prayer');
+    const gamsaTab = document.getElementById('feed-tab-gamsa');
+    const prayerFeed = document.getElementById('feed-prayer');
+    const gamsaFeed = document.getElementById('feed-gamsa');
+
+    if (tab === 'prayer') {
+      prayerTab.classList.add('active');
+      gamsaTab.classList.remove('active');
+      prayerFeed.style.display = 'block';
+      gamsaFeed.style.display = 'none';
+    } else {
+      gamsaTab.classList.add('active');
+      prayerTab.classList.remove('active');
+      gamsaFeed.style.display = 'block';
+      prayerFeed.style.display = 'none';
+    }
+  }
+
+  function toggleEmotion(el) {
+    const parent = el.parentElement;
+    parent.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+</script>
+</body>
+</html>

@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../home/home_screen.dart';
 import '../prayers/prayers_screen.dart';
+import '../intercession/intercession_screen.dart';
 import '../gratitude/gratitude_feed_screen.dart';
 import '../groups/groups_screen.dart';
 import '../profile/profile_screen.dart';
@@ -14,30 +15,33 @@ class MainTabScreen extends StatefulWidget {
   State<MainTabScreen> createState() => MainTabScreenState();
 }
 
-// public State 클래스 - HomeScreen에서 탭 전환 접근 가능
 class MainTabScreenState extends State<MainTabScreen> {
   int _currentIndex = 0;
 
   final List<Widget> _screens = const [
-    HomeScreen(),
-    PrayersScreen(),
-    GratitudeFeedScreen(),
-    GroupsScreen(),
-    ProfileScreen(),
+    HomeScreen(),          // 0 홈
+    PrayersScreen(),       // 1 기도
+    IntercessionScreen(),  // 2 중보
+    GratitudeFeedScreen(), // 3 감사
+    GroupsScreen(),        // 4 그룹
+    ProfileScreen(),       // 5 프로필
   ];
 
-  /// 외부에서 탭을 전환할 때 사용
-  void switchToTab(int index) {
-    setState(() => _currentIndex = index);
-  }
+  void switchToTab(int index) => setState(() => _currentIndex = index);
+
+  static const _tabs = [
+    _NavTab('🏠', '홈',    false),
+    _NavTab('🙏', '기도',  false),
+    _NavTab('🤝', '중보',  false),
+    _NavTab('🌸', '감사',  true),   // 감사는 황금색 강조
+    _NavTab('👥', '그룹',  false),
+    _NavTab('👤', '프로필', false),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
+      body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: _buildBottomNav(),
       floatingActionButton: _buildFAB(),
     );
@@ -45,86 +49,85 @@ class MainTabScreenState extends State<MainTabScreen> {
 
   Widget _buildBottomNav() {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
-        border: Border(
-          top: BorderSide(color: const Color(0xFFE8ECEF), width: 0.8),
-        ),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x0D000000),
-            blurRadius: 16,
-            offset: Offset(0, -3),
-          ),
-        ],
+        border: Border(top: BorderSide(color: Color(0xFFE8ECEF), width: 0.8)),
+        boxShadow: [BoxShadow(color: Color(0x0D000000), blurRadius: 16, offset: Offset(0, -3))],
       ),
       child: SafeArea(
         top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
+        child: SizedBox(
+          height: 58,
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildNavItem(0, '🏠', '홈', AppTheme.primary),
-              _buildNavItem(1, '🙏', '기도', AppTheme.primary),
-              _buildNavItem(2, '🌸', '감사', const Color(0xFFF59E0B)),
-              _buildNavItem(3, '👥', '그룹', AppTheme.primary),
-              _buildNavItem(4, '👤', '프로필', AppTheme.primary),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+            children: List.generate(_tabs.length, (i) {
+              final tab = _tabs[i];
+              final selected = _currentIndex == i;
+              final activeColor = tab.isGamsa ? AppTheme.gamsa : AppTheme.primary;
+              final activeBg   = tab.isGamsa ? const Color(0xFFFFF8E7) : AppTheme.primaryLight;
 
-  Widget _buildNavItem(int index, String emoji, String label, Color activeColor) {
-    final isSelected = _currentIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      behavior: HitTestBehavior.opaque,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: isSelected
-            ? BoxDecoration(
-                color: index == 2
-                    ? const Color(0xFFFFF8E7)
-                    : AppTheme.primaryLight,
-                borderRadius: BorderRadius.circular(16),
-              )
-            : null,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              emoji,
-              style: TextStyle(
-                fontSize: isSelected ? 24 : 22,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
-                color: isSelected ? activeColor : const Color(0xFFADB5BD),
-              ),
-            ),
-          ],
+              return Expanded(
+                child: GestureDetector(
+                  onTap: () => setState(() => _currentIndex = i),
+                  behavior: HitTestBehavior.opaque,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 180),
+                    margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 5),
+                    decoration: selected
+                        ? BoxDecoration(color: activeBg, borderRadius: BorderRadius.circular(12))
+                        : null,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          tab.emoji,
+                          style: TextStyle(fontSize: selected ? 22 : 20),
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          tab.label,
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                            color: selected ? activeColor : const Color(0xFFADB5BD),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
         ),
       ),
     );
   }
 
   Widget? _buildFAB() {
-    // 기도 탭(1)에서만 FAB 표시
-    if (_currentIndex != 1) return null;
-    return FloatingActionButton(
-      backgroundColor: AppTheme.primary,
-      elevation: 4,
-      onPressed: () => context.push('/prayer/create'),
-      child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
-    );
+    if (_currentIndex == 1) {
+      return FloatingActionButton(
+        backgroundColor: AppTheme.primary,
+        elevation: 4,
+        onPressed: () => context.push('/prayer/create'),
+        child: const Icon(Icons.add_rounded, color: Colors.white, size: 28),
+      );
+    }
+    if (_currentIndex == 3) {
+      return FloatingActionButton.extended(
+        backgroundColor: AppTheme.gamsa,
+        elevation: 4,
+        onPressed: () => context.push('/gratitude/create'),
+        icon: const Text('✨', style: TextStyle(fontSize: 16)),
+        label: const Text('감사 쓰기', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.white)),
+      );
+    }
+    return null;
   }
+}
+
+class _NavTab {
+  final String emoji;
+  final String label;
+  final bool isGamsa;
+  const _NavTab(this.emoji, this.label, this.isGamsa);
 }

@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen>
   void _goToGratitudeTab() {
     final mainState = context.findAncestorStateOfType<MainTabScreenState>();
     if (mainState != null) {
-      mainState.switchToTab(2);
+      mainState.switchToTab(3); // 3: 감사탭 (0홈·1기도·2중보·3감사·4그룹·5프로필)
     } else {
       context.push('/gratitude');
     }
@@ -426,7 +426,7 @@ class _HomeScreenState extends State<HomeScreen>
           child: GestureDetector(
             onTap: () {
               final mainState = context.findAncestorStateOfType<MainTabScreenState>();
-              mainState?.switchToTab(2);
+              mainState?.switchToTab(3); // 3: 감사탭
             },
             child: Container(
               height: 56,
