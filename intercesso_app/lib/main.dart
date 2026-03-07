@@ -7,6 +7,7 @@ import 'providers/auth_provider.dart';
 import 'providers/prayer_provider.dart';
 import 'providers/group_provider.dart';
 import 'providers/notification_provider.dart';
+import 'providers/gratitude_provider.dart';
 import 'routes/app_router.dart';
 import 'services/fcm_service.dart';
 
@@ -36,6 +37,7 @@ class IntercessoApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => PrayerProvider()),
         ChangeNotifierProvider(create: (_) => GroupProvider()),
         ChangeNotifierProvider(create: (_) => NotificationProvider()),
+        ChangeNotifierProvider(create: (_) => GratitudeProvider()),
       ],
       child: const _AppWithRouter(),
     );

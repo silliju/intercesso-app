@@ -16,6 +16,9 @@ import '../screens/group/create_group_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
+import '../screens/gratitude/gratitude_feed_screen.dart';
+import '../screens/gratitude/gratitude_calendar_screen.dart';
+import '../screens/gratitude/create_gratitude_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -89,6 +92,12 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(path: '/profile/edit', builder: (ctx, state) => const EditProfileScreen()),
       GoRoute(path: '/notifications', builder: (ctx, state) => const NotificationsScreen()),
       GoRoute(path: '/dashboard', builder: (ctx, state) => const DashboardScreen()),
+      GoRoute(path: '/gratitude', builder: (ctx, state) => const GratitudeFeedScreen()),
+      GoRoute(path: '/gratitude/calendar', builder: (ctx, state) => const GratitudeCalendarScreen()),
+      GoRoute(
+        path: '/gratitude/create',
+        builder: (ctx, state) => const CreateGratitudeScreen(),
+      ),
     ],
   );
 }

@@ -473,3 +473,128 @@ class UserStatisticsModel {
     );
   }
 }
+
+// lib/models/gratitude_model.dart
+class GratitudeModel {
+  final String id;
+  final String userId;
+  final String gratitude1;
+  final String? gratitude2;
+  final String? gratitude3;
+  final String? emotion;       // joy | peace | moved | thankful
+  final String? linkedPrayerId;
+  final String scope;           // private | group | public
+  final String journalDate;     // yyyy-MM-dd
+  final String createdAt;
+  final String updatedAt;
+
+  // 조인 데이터
+  final UserModel? user;
+  final Map<String, dynamic>? linkedPrayer;
+
+  // 피드에서 사용
+  final Map<String, int> reactionCounts;
+  final int commentCount;
+  final List<String> myReactions;
+
+  GratitudeModel({
+    required this.id,
+    required this.userId,
+    required this.gratitude1,
+    this.gratitude2,
+    this.gratitude3,
+    this.emotion,
+    this.linkedPrayerId,
+    required this.scope,
+    required this.journalDate,
+    required this.createdAt,
+    required this.updatedAt,
+    this.user,
+    this.linkedPrayer,
+    this.reactionCounts = const {},
+    this.commentCount = 0,
+    this.myReactions = const [],
+  });
+
+  factory GratitudeModel.fromJson(Map<String, dynamic> json) {
+    final reactions = json['reaction_counts'];
+    final reactionMap = <String, int>{};
+    if (reactions is Map) {
+      reactionMap['grace'] = (reactions['grace'] ?? 0) as int;
+      reactionMap['empathy'] = (reactions['empathy'] ?? 0) as int;
+    }
+
+    return GratitudeModel(
+      id: json['id'] ?? '',
+      userId: json['user_id'] ?? '',
+      gratitude1: json['gratitude_1'] ?? '',
+      gratitude2: json['gratitude_2'],
+      gratitude3: json['gratitude_3'],
+      emotion: json['emotion'],
+      linkedPrayerId: json['linked_prayer_id'],
+      scope: json['scope'] ?? 'private',
+      journalDate: json['journal_date'] ?? '',
+      createdAt: json['created_at'] ?? '',
+      updatedAt: json['updated_at'] ?? '',
+      user: json['user'] != null ? UserModel.fromJson(json['user']) : null,
+      linkedPrayer: json['linked_prayer'],
+      reactionCounts: reactionMap,
+      commentCount: json['comment_count'] ?? 0,
+      myReactions: json['my_reactions'] != null
+          ? List<String>.from(json['my_reactions'])
+          : [],
+    );
+  }
+
+  String get emotionLabel {
+    switch (emotion) {
+      case 'joy': return '기쁨 😊';
+      case 'peace': return '평안 🕊️';
+      case 'moved': return '감격 😭';
+      case 'thankful': return '감사 🙌';
+      default: return '';
+    }
+  }
+
+  String get emotionEmoji {
+    switch (emotion) {
+      case 'joy': return '😊';
+      case 'peace': return '🕊️';
+      case 'moved': return '😭';
+      case 'thankful': return '🙌';
+      default: return '✨';
+    }
+  }
+
+  String get scopeLabel {
+    switch (scope) {
+      case 'public': return '전체 공개';
+      case 'group': return '그룹 공개';
+      default: return '나만 보기';
+    }
+  }
+}
+
+// 감사일기 스트릭 모델
+class GratitudeStreakModel {
+  final int currentStreak;
+  final int longestStreak;
+  final String? lastJournalDate;
+  final int totalCount;
+
+  GratitudeStreakModel({
+    required this.currentStreak,
+    required this.longestStreak,
+    this.lastJournalDate,
+    required this.totalCount,
+  });
+
+  factory GratitudeStreakModel.fromJson(Map<String, dynamic> json) {
+    return GratitudeStreakModel(
+      currentStreak: json['current_streak'] ?? 0,
+      longestStreak: json['longest_streak'] ?? 0,
+      lastJournalDate: json['last_journal_date'],
+      totalCount: json['total_count'] ?? 0,
+    );
+  }
+}

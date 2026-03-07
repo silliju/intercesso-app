@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../home/home_screen.dart';
 import '../prayers/prayers_screen.dart';
-import '../intercession/intercession_screen.dart';
+import '../gratitude/gratitude_feed_screen.dart';
 import '../groups/groups_screen.dart';
 import '../profile/profile_screen.dart';
 
@@ -21,7 +21,7 @@ class MainTabScreenState extends State<MainTabScreen> {
   final List<Widget> _screens = [
     const HomeScreen(),
     const PrayersScreen(),
-    const IntercessionScreen(),
+    const GratitudeFeedScreen(),  // 🌸 감사 탭
     const GroupsScreen(),
     const ProfileScreen(),
   ];
@@ -56,7 +56,7 @@ class MainTabScreenState extends State<MainTabScreen> {
           currentIndex: _currentIndex,
           onTap: (index) => setState(() => _currentIndex = index),
           backgroundColor: AppTheme.surface,
-          selectedItemColor: AppTheme.primary,
+          selectedItemColor: _selectedColor(_currentIndex),
           unselectedItemColor: AppTheme.textLight,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
@@ -65,28 +65,36 @@ class MainTabScreenState extends State<MainTabScreen> {
             fontWeight: FontWeight.w700,
           ),
           unselectedLabelStyle: const TextStyle(fontSize: 11),
-          items: const [
-            BottomNavigationBarItem(
+          items: [
+            const BottomNavigationBarItem(
               icon: Icon(Icons.home_outlined),
               activeIcon: Icon(Icons.home),
               label: '홈',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.menu_book_outlined),
               activeIcon: Icon(Icons.menu_book),
               label: '기도',
             ),
+            // 🌸 감사일기 탭 (황금색 강조)
             BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_border),
-              activeIcon: Icon(Icons.favorite),
-              label: '중보',
+              icon: const Text('🌸', style: TextStyle(fontSize: 22)),
+              activeIcon: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF59E0B).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text('🌸', style: TextStyle(fontSize: 22)),
+              ),
+              label: '감사',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.group_outlined),
               activeIcon: Icon(Icons.group),
               label: '그룹',
             ),
-            BottomNavigationBarItem(
+            const BottomNavigationBarItem(
               icon: Icon(Icons.person_outline),
               activeIcon: Icon(Icons.person),
               label: '마이',
@@ -102,5 +110,10 @@ class MainTabScreenState extends State<MainTabScreen> {
             )
           : null,
     );
+  }
+
+  Color _selectedColor(int index) {
+    if (index == 2) return const Color(0xFFF59E0B); // 감사 탭 = 황금색
+    return AppTheme.primary;
   }
 }

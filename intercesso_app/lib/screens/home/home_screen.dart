@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/prayer_provider.dart';
+import '../../providers/gratitude_provider.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/statistics_service.dart';
@@ -35,6 +36,7 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
     await Future.wait([
       _loadDashboard(),
       _loadPrayers(),
+      _loadGratitude(),
     ]);
     debugPrint('[HomeScreen] _loadAll() 완료');
   }
@@ -99,6 +101,17 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
       debugPrint('[HomeScreen] 기도 목록 로드 오류: $e\n$stack');
       if (mounted) setState(() => _loadError = e.toString());
     }
+  }
+
+  Future<void> _loadGratitude() async {
+    if (!mounted) return;
+    try {
+      final gratProvider = context.read<GratitudeProvider>();
+      await Future.wait([
+        gratProvider.loadTodayJournal(),
+        gratProvider.loadStreak(),
+      ]);
+    } catch (_) {}
   }
 
   // ─── 기도 탭으로 이동
@@ -219,6 +232,81 @@ class _HomeScreenState extends State<HomeScreen> with AutomaticKeepAliveClientMi
                       ),
                     ),
                   ],
+                ),
+              ),
+            ),
+
+            // 🌸 감사일기 빠른 진입 카드
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                child: Consumer<GratitudeProvider>(
+                  builder: (_, gProvider, __) {
+                    final streak = gProvider.streak;
+                    final hasTodayJournal = gProvider.hasTodayJournal;
+                    return GestureDetector(
+                      onTap: () {
+                        final mainState = context.findAncestorStateOfType<MainTabScreenState>();
+                        mainState?.switchToTab(2);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: hasTodayJournal
+                                ? [const Color(0xFFFFF7ED), const Color(0xFFFFFBEB)]
+                                : [const Color(0xFFFFF7ED), const Color(0xFFFEF3C7)],
+                          ),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: hasTodayJournal
+                                ? const Color(0xFFF59E0B).withOpacity(0.4)
+                                : const Color(0xFFFDE68A),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Text(
+                              hasTodayJournal ? '🌸' : '✨',
+                              style: const TextStyle(fontSize: 28),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    hasTodayJournal ? '오늘 감사일기 완료! 🎉' : '오늘 감사일기를 써보세요',
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 14,
+                                      color: Color(0xFF92400E),
+                                    ),
+                                  ),
+                                  Text(
+                                    streak.currentStreak > 0
+                                        ? '🔥 ${streak.currentStreak}일 연속 • 총 ${streak.totalCount}번'
+                                        : '오늘 하루 3가지 감사를 기록해보세요',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      color: Color(0xFFB45309),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(
+                              hasTodayJournal ? Icons.check_circle_rounded : Icons.arrow_forward_ios_rounded,
+                              color: const Color(0xFFF59E0B),
+                              size: 20,
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
