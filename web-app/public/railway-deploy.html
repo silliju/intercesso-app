@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercesso 백엔드 Railway 배포 가이드</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { color: #38bdf8; font-size: 2rem; margin-bottom: 8px; }
+    h2 { color: #7dd3fc; font-size: 1.3rem; border-bottom: 1px solid #334155; padding-bottom: 8px; margin-top: 32px; }
+    .step { background: #1e293b; border-radius: 12px; padding: 20px; margin: 16px 0; border-left: 4px solid #38bdf8; }
+    .step-num { background: #0ea5e9; color: white; border-radius: 50%; width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 10px; }
+    .code-block { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 16px; font-family: 'Courier New', monospace; font-size: 13px; overflow-x: auto; margin: 12px 0; white-space: pre; }
+    .env-table { width: 100%; border-collapse: collapse; }
+    .env-table th { background: #0ea5e9; padding: 10px; text-align: left; }
+    .env-table td { padding: 10px; border-bottom: 1px solid #334155; vertical-align: top; }
+    .env-table .key { color: #fbbf24; font-family: monospace; }
+    .env-table .value { color: #86efac; font-family: monospace; font-size: 12px; word-break: break-all; }
+    .env-table .desc { color: #94a3b8; font-size: 12px; }
+    .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin: 2px; }
+    .badge-required { background: #ef4444; color: white; }
+    .badge-optional { background: #f59e0b; color: black; }
+    .badge-done { background: #10b981; color: white; }
+    .info-box { background: #1e3a5f; border: 1px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .warning-box { background: #3f2a00; border: 1px solid #f59e0b; border-radius: 8px; padding: 16px; margin: 16px 0; }
+    .link { color: #38bdf8; text-decoration: none; }
+    .link:hover { text-decoration: underline; }
+    .copy-btn { background: #334155; border: 1px solid #475569; color: #e2e8f0; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; float: right; margin-top: -2px; }
+    .copy-btn:hover { background: #475569; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>🚀 Intercesso Backend</h1>
+  <p style="color:#94a3b8;">Railway 배포 가이드 | GitHub: <a class="link" href="https://github.com/silliju/intercesso-backend" target="_blank">silliju/intercesso-backend</a></p>
+
+  <div class="info-box">
+    <strong>📦 준비 상태</strong><br>
+    ✅ GitHub에 빌드된 코드(dist/) 포함 푸시 완료<br>
+    ✅ nixpacks.toml - TypeScript 빌드 설정 완료<br>
+    ✅ railway.json - 헬스체크 경로 설정 완료 (<code>/health</code>)<br>
+    ✅ package.json - <code>npm start</code> → <code>node dist/index.js</code>
+  </div>
+
+  <h2>📋 Railway 배포 단계</h2>
+
+  <div class="step">
+    <span class="step-num">1</span>
+    <strong>Railway.app 접속 및 로그인</strong>
+    <div class="code-block">https://railway.app</div>
+    <p style="color:#94a3b8; font-size:14px;">GitHub 계정으로 로그인하세요 (silliju 계정 사용)</p>
+  </div>
+
+  <div class="step">
+    <span class="step-num">2</span>
+    <strong>새 프로젝트 생성</strong>
+    <ol style="color:#94a3b8; font-size:14px; line-height:2;">
+      <li>Dashboard → <strong>"New Project"</strong> 클릭</li>
+      <li><strong>"Deploy from GitHub repo"</strong> 선택</li>
+      <li><strong>silliju/intercesso-backend</strong> 선택</li>
+      <li>"Deploy Now" 클릭</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <span class="step-num">3</span>
+    <strong>환경변수 설정</strong> <span class="badge badge-required">필수</span>
+    <p style="color:#94a3b8; font-size:14px;">Settings → Variables 탭에서 아래 값들을 추가하세요:</p>
+    <table class="env-table">
+      <tr>
+        <th>변수명</th>
+        <th>값</th>
+        <th>설명</th>
+      </tr>
+      <tr>
+        <td class="key">NODE_ENV</td>
+        <td class="value">production</td>
+        <td class="desc">운영 환경</td>
+      </tr>
+      <tr>
+        <td class="key">PORT</td>
+        <td class="value">3000</td>
+        <td class="desc">서버 포트 (Railway가 자동 처리)</td>
+      </tr>
+      <tr>
+        <td class="key">SUPABASE_URL</td>
+        <td class="value">https://ypqbkqflikdjickyywvc.supabase.co</td>
+        <td class="desc">Supabase 프로젝트 URL</td>
+      </tr>
+      <tr>
+        <td class="key">SUPABASE_ANON_KEY</td>
+        <td class="value">YOUR_SUPABASE_ANON_KEY</td>
+        <td class="desc">Supabase anon 키</td>
+      </tr>
+      <tr>
+        <td class="key">SUPABASE_SERVICE_ROLE_KEY</td>
+        <td class="value">YOUR_SUPABASE_SERVICE_ROLE_KEY</td>
+        <td class="desc">Supabase service role 키 (비공개)</td>
+      </tr>
+      <tr>
+        <td class="key">JWT_SECRET</td>
+        <td class="value">intercesso_jwt_secret_2026_secure_key</td>
+        <td class="desc">JWT 서명 키 (변경 권장)</td>
+      </tr>
+      <tr>
+        <td class="key">JWT_EXPIRES_IN</td>
+        <td class="value">7d</td>
+        <td class="desc">JWT 만료 기간</td>
+      </tr>
+      <tr>
+        <td class="key">GOOGLE_CLIENT_ID</td>
+        <td class="value">777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com</td>
+        <td class="desc">구글 OAuth 클라이언트 ID</td>
+      </tr>
+      <tr>
+        <td class="key">KAKAO_REST_API_KEY</td>
+        <td class="value">3853e9c9f28e388a2f4dc4cffed572b4</td>
+        <td class="desc">카카오 REST API 키</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="step">
+    <span class="step-num">4</span>
+    <strong>배포 도메인 확인</strong>
+    <p style="color:#94a3b8; font-size:14px;">Settings → Networking → Generate Domain 클릭</p>
+    <p style="color:#94a3b8; font-size:14px;">예시 도메인: <code style="color:#86efac;">https://intercesso-backend-production.up.railway.app</code></p>
+    <p style="color:#94a3b8; font-size:14px;">헬스체크로 동작 확인:</p>
+    <div class="code-block">curl https://YOUR_DOMAIN.railway.app/health</div>
+  </div>
+
+  <div class="step">
+    <span class="step-num">5</span>
+    <strong>APK 재빌드</strong>
+    <p style="color:#94a3b8; font-size:14px;">Railway 도메인을 얻은 후, 이 페이지에 있는 채팅창에 아래처럼 입력하세요:</p>
+    <div class="code-block">Railway URL이 https://xxx.railway.app 나왔어. APK 다시 빌드해줘</div>
+    <p style="color:#94a3b8; font-size:14px;">그러면 올바른 API URL이 적용된 APK가 자동으로 빌드됩니다.</p>
+  </div>
+
+  <div class="warning-box">
+    <strong>⚠️ 주의사항</strong>
+    <ul style="color:#fbbf24; font-size:14px; line-height:2;">
+      <li>Railway 무료 플랜은 월 $5 크레딧 제공 (보통 1개 서비스 운영에 충분)</li>
+      <li>비활성 시 30분 후 슬립 모드 (첫 요청 시 ~10초 대기)</li>
+      <li>슬립 없이 항상 켜려면 유료 플랜($5/월) 필요</li>
+      <li>Google Play에 올리기 전에 반드시 Railway URL로 APK를 재빌드해야 합니다</li>
+    </ul>
+  </div>
+
+  <h2>🔄 배포 후 자동 업데이트</h2>
+  <div class="step">
+    <p style="color:#94a3b8; font-size:14px;">GitHub에 push하면 Railway가 자동으로 재배포합니다.</p>
+    <div class="code-block">git add .
+git commit -m "fix: 버그 수정"
+git push origin main
+# → Railway가 자동으로 새 버전 배포</div>
+  </div>
+
+  <h2>📱 현재 APK 다운로드</h2>
+  <p style="color:#94a3b8; font-size:14px;">⚠️ 아래 APK는 샌드박스 URL 기반 (Railway 배포 후 재빌드 필요)</p>
+  <div class="step">
+    <a class="link" href="/intercesso-v16.apk">📦 intercesso-v16.apk (현재 최신 - 샌드박스 URL 사용)</a>
+  </div>
+</div>
+</body>
+</html>

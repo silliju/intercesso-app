@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.leaveGroup = exports.joinByInviteCode = exports.removeMember = exports.getGroupMembers = exports.joinGroup = exports.deleteGroup = exports.updateGroup = exports.getGroupById = exports.getMyGroups = exports.createGroup = void 0;
+exports.getInviteCode = exports.searchGroups = exports.leaveGroup = exports.joinByInviteCode = exports.removeMember = exports.getGroupMembers = exports.joinGroup = exports.deleteGroup = exports.updateGroup = exports.getGroupById = exports.getMyGroups = exports.createGroup = void 0;
 const uuid_1 = require("uuid");
 const supabase_1 = __importDefault(require("../config/supabase"));
 const response_1 = require("../utils/response");
@@ -366,4 +366,61 @@ const leaveGroup = async (req, res) => {
     }
 };
 exports.leaveGroup = leaveGroup;
+// 그룹 검색
+const searchGroups = async (req, res) => {
+    try {
+        const { q } = req.query;
+        if (!q || q.trim().length === 0) {
+            (0, response_1.sendSuccess)(res, []);
+            return;
+        }
+        const { data: groups, error } = await supabase_1.default
+            .from('groups')
+            .select('*, creator:users(id, nickname)')
+            .ilike('name', `%${q.trim()}%`)
+            .eq('is_public', true)
+            .limit(20);
+        if (error) {
+            (0, response_1.sendError)(res, '검색 중 오류가 발생했습니다', 500, 'SERVER_ERROR');
+            return;
+        }
+        (0, response_1.sendSuccess)(res, groups || []);
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.searchGroups = searchGroups;
+// 초대 코드 조회 (관리자 전용)
+const getInviteCode = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { groupId } = req.params;
+        // 관리자 확인
+        const { data: membership } = await supabase_1.default
+            .from('group_members')
+            .select('role')
+            .eq('group_id', groupId)
+            .eq('user_id', userId)
+            .single();
+        if (!membership || membership.role !== 'admin') {
+            (0, response_1.sendError)(res, '권한이 없습니다', 403, 'FORBIDDEN');
+            return;
+        }
+        const { data: group, error } = await supabase_1.default
+            .from('groups')
+            .select('invite_code')
+            .eq('id', groupId)
+            .single();
+        if (error || !group) {
+            (0, response_1.sendError)(res, '그룹을 찾을 수 없습니다', 404, 'NOT_FOUND');
+            return;
+        }
+        (0, response_1.sendSuccess)(res, { invite_code: group.invite_code });
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.getInviteCode = getInviteCode;
 //# sourceMappingURL=group.controller.js.map

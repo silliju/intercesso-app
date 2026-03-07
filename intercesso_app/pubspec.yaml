@@ -1,7 +1,7 @@
 name: intercesso
 description: "기도 공유 플랫폼 - Intercesso"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.0+20
 
 environment:
   sdk: '>=3.3.0 <4.0.0'
@@ -40,10 +40,15 @@ dependencies:
   # 기타
   connectivity_plus: ^6.0.2
   url_launcher: ^6.2.4
-  share_plus: ^9.0.0
+  share_plus: ^10.1.0
   
   # 차트
   fl_chart: ^0.68.0
+
+  # Firebase / 푸시 알림
+  firebase_core: ^3.6.0
+  firebase_messaging: ^15.0.4
+  flutter_local_notifications: ^17.2.2
 
 dev_dependencies:
   flutter_test:

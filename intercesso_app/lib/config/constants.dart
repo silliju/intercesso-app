@@ -1,7 +1,21 @@
 // lib/config/constants.dart
 class AppConstants {
-  // API 설정 - 실제 배포 시 백엔드 URL로 교체
-  static const String baseUrl = 'https://3000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/api';
+  // ─── API 설정 ────────────────────────────────────────────
+  // 배포 시 --dart-define=API_BASE_URL=https://your-api.com/api 로 교체
+  // 예: flutter build apk --dart-define=API_BASE_URL=https://api.intercesso.app/api
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'https://3000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/api',
+  );
+
+  // ─── 앱 공개 URL ─────────────────────────────────────────
+  // 배포 시 실제 도메인으로 교체
+  static const String appWebUrl = String.fromEnvironment(
+    'APP_WEB_URL',
+    defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app',
+  );
+  static const String privacyUrl = '$appWebUrl/privacy';
+  static const String termsUrl = '$appWebUrl/terms';
 
   // ─── 소셜 로그인 키 ───────────────────────────────────────
   // 구글 OAuth 클라이언트 ID (Google Cloud Console에서 발급)

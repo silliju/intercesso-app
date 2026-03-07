@@ -4,13 +4,17 @@ module.exports = {
       name: 'intercesso-backend',
       script: './dist/index.js',
       cwd: '/home/user/webapp/backend',
+      env_file: '/home/user/webapp/backend/.env',
       env: {
         NODE_ENV: 'development',
         PORT: 3000,
-        SUPABASE_URL: 'your_supabase_url',
-        SUPABASE_ANON_KEY: 'your_supabase_anon_key',
-        SUPABASE_SERVICE_ROLE_KEY: 'your_supabase_service_role_key',
-        JWT_SECRET: 'your_jwt_secret'
+        SUPABASE_URL: 'https://your-project.supabase.co',
+        SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+        SUPABASE_SERVICE_ROLE_KEY: 'YOUR_SUPABASE_SERVICE_ROLE_KEY',
+        JWT_SECRET: 'YOUR_JWT_SECRET_KEY',
+        JWT_EXPIRES_IN: '7d',
+        GOOGLE_CLIENT_ID: 'YOUR_GOOGLE_CLIENT_ID',
+        KAKAO_REST_API_KEY: 'YOUR_KAKAO_REST_API_KEY'
       },
       watch: false,
       instances: 1,

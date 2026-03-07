@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
+import '../../config/constants.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/statistics_service.dart';
+import '../../services/api_service.dart';
 import '../main/main_tab_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,9 +19,13 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final StatisticsService _statisticsService = StatisticsService();
+  final ApiService _api = ApiService();
   Map<String, dynamic>? _stats;
   bool _isLoading = true;
   String _appVersion = '1.0.0';
+
+  static final String _privacyUrl = AppConstants.privacyUrl;
+  static final String _termsUrl = AppConstants.termsUrl;
 
   @override
   void initState() {
@@ -28,8 +35,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _loadVersion() async {
-    // pubspec.yaml 버전을 동적으로 가져오기 (패키지 이름 하드코딩)
-    // package_info_plus가 없으면 pubspec에서 정의한 단순 문자열 반환
     const version = String.fromEnvironment('APP_VERSION', defaultValue: '1.0.0');
     if (mounted) setState(() => _appVersion = version.isEmpty ? '1.0.0' : version);
   }
@@ -52,12 +57,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  Future<void> _launchUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('페이지를 열 수 없습니다')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
 
-    final totalPrayers   = _stats?['total_prayers']       ?? 0;
-    final answeredPrayers = _stats?['answered_prayers']   ?? 0;
+    final totalPrayers        = _stats?['total_prayers']        ?? 0;
+    final answeredPrayers     = _stats?['answered_prayers']     ?? 0;
     final totalParticipations = _stats?['total_participations'] ?? 0;
 
     return Scaffold(
@@ -86,7 +104,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   decoration: AppTheme.cardDecoration,
                   child: Column(
                     children: [
-                      // 프로필 이미지
                       CircleAvatar(
                         radius: 40,
                         backgroundColor: AppTheme.primaryLight,
@@ -119,10 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         const SizedBox(height: 4),
                         Text(
                           '⛪ ${user!.churchName}',
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.textSecondary,
-                          ),
+                          style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                         ),
                       ],
                       if (user?.bio != null) ...[
@@ -130,24 +144,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Text(
                           user!.bio!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 13,
-                            color: AppTheme.textSecondary,
-                          ),
+                          style: const TextStyle(fontSize: 13, color: AppTheme.textSecondary),
                         ),
                       ],
                       const SizedBox(height: 16),
                       const Divider(),
                       const SizedBox(height: 12),
-                      // 통계 - API에서 실제 값 사용
                       _isLoading
                           ? const SizedBox(
                               height: 40,
                               child: Center(
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: AppTheme.primary,
-                                ),
+                                child: CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
                               ),
                             )
                           : Row(
@@ -166,10 +173,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         height: 48,
                         child: OutlinedButton(
                           onPressed: () => context.push('/profile/edit'),
-                          child: const Text(
-                            '프로필 수정',
-                            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
-                          ),
+                          child: const Text('프로필 수정',
+                              style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
                         ),
                       ),
                     ],
@@ -177,7 +182,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              // 메뉴 카드
+              // 기능 메뉴
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
@@ -188,11 +193,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.menu_book_outlined,
                         title: '내 기도 목록',
                         onTap: () {
-                          // 기도 탭(index=1)으로 전환
                           final mainState = context.findAncestorStateOfType<MainTabScreenState>();
-                          if (mainState != null) {
-                            mainState.switchToTab(1);
-                          }
+                          mainState?.switchToTab(1);
                         },
                       ),
                       Divider(height: 1, indent: 64, color: AppTheme.border),
@@ -206,11 +208,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         icon: Icons.group_outlined,
                         title: '내 그룹',
                         onTap: () {
-                          // 그룹 탭(index=3)으로 전환
                           final mainState = context.findAncestorStateOfType<MainTabScreenState>();
-                          if (mainState != null) {
-                            mainState.switchToTab(3);
-                          }
+                          mainState?.switchToTab(3);
                         },
                       ),
                       Divider(height: 1, indent: 64, color: AppTheme.border),
@@ -225,24 +224,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 12),
 
-              // 로그아웃
+              // 정보 메뉴 (약관 & 개인정보)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   decoration: AppTheme.cardDecoration,
-                  child: MenuItemTile(
-                    icon: Icons.logout,
-                    title: '로그아웃',
-                    iconColor: AppTheme.error,
-                    onTap: () => _confirmLogout(context),
-                    trailing: const SizedBox.shrink(),
+                  child: Column(
+                    children: [
+                      MenuItemTile(
+                        icon: Icons.description_outlined,
+                        title: '이용약관',
+                        onTap: () => _launchUrl(_termsUrl),
+                      ),
+                      Divider(height: 1, indent: 64, color: AppTheme.border),
+                      MenuItemTile(
+                        icon: Icons.privacy_tip_outlined,
+                        title: '개인정보처리방침',
+                        onTap: () => _launchUrl(_privacyUrl),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // 계정 관리 메뉴
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: AppTheme.cardDecoration,
+                  child: Column(
+                    children: [
+                      MenuItemTile(
+                        icon: Icons.logout,
+                        title: '로그아웃',
+                        iconColor: AppTheme.textSecondary,
+                        onTap: () => _confirmLogout(context),
+                        trailing: const SizedBox.shrink(),
+                      ),
+                      Divider(height: 1, indent: 64, color: AppTheme.border),
+                      MenuItemTile(
+                        icon: Icons.delete_forever_outlined,
+                        title: '계정 삭제',
+                        iconColor: AppTheme.error,
+                        titleColor: AppTheme.error,
+                        onTap: () => _confirmDeleteAccount(context),
+                        trailing: const SizedBox.shrink(),
+                      ),
+                    ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
-                'Intercesso v\$_appVersion',
-                style: TextStyle(fontSize: 12, color: AppTheme.textLight),
+              Text(
+                'Intercesso v$_appVersion',
+                style: const TextStyle(fontSize: 12, color: AppTheme.textLight),
               ),
               const SizedBox(height: 32),
             ],
@@ -255,22 +291,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget _buildProfileStat(String value, String label) {
     return Column(
       children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: AppTheme.primary,
-          ),
-        ),
+        Text(value,
+            style: const TextStyle(
+                fontSize: 20, fontWeight: FontWeight.w800, color: AppTheme.primary)),
         const SizedBox(height: 2),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 11,
-            color: AppTheme.textSecondary,
-          ),
-        ),
+        Text(label,
+            style: const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
       ],
     );
   }
@@ -280,16 +306,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '로그아웃',
-          style: TextStyle(fontWeight: FontWeight.w700),
-        ),
+        title: const Text('로그아웃', style: TextStyle(fontWeight: FontWeight.w700)),
         content: const Text('정말 로그아웃 하시겠습니까?'),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('취소'),
-          ),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
           TextButton(
             onPressed: () {
               Navigator.pop(ctx);
@@ -301,5 +321,81 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ],
       ),
     );
+  }
+
+  void _confirmDeleteAccount(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Colors.red, size: 22),
+            SizedBox(width: 8),
+            Text('계정 삭제', style: TextStyle(fontWeight: FontWeight.w700, color: Colors.red)),
+          ],
+        ),
+        content: const Text(
+          '계정을 삭제하면 모든 기도, 댓글, 그룹 데이터가\n영구적으로 삭제됩니다.\n\n이 작업은 되돌릴 수 없습니다.',
+          style: TextStyle(fontSize: 14, height: 1.6),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('취소')),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _deleteAccount();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _deleteAccount() async {
+    // 로딩 다이얼로그 표시
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => const AlertDialog(
+        content: Row(
+          children: [
+            CircularProgressIndicator(strokeWidth: 2, color: AppTheme.primary),
+            SizedBox(width: 16),
+            Text('계정을 삭제하는 중...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      await _api.delete('/users/me');
+      if (mounted) {
+        Navigator.pop(context); // 로딩 다이얼로그 닫기
+        context.read<AuthProvider>().logout();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('계정이 삭제되었습니다'),
+            backgroundColor: AppTheme.success,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        Navigator.pop(context); // 로딩 다이얼로그 닫기
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('계정 삭제 실패: $e'),
+            backgroundColor: AppTheme.error,
+          ),
+        );
+      }
+    }
   }
 }

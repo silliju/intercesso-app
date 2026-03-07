@@ -231,3 +231,60 @@ export const getCommunityStats = async (req: AuthRequest, res: Response): Promis
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
 };
+
+// 내 통계 조회 (getDashboard와 동일한 데이터)
+export const getMyStatistics = async (req: AuthRequest, res: Response): Promise<void> => {
+  return getDashboard(req, res);
+};
+
+// 특정 유저 통계 조회
+export const getUserStatistics = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.params;
+
+    const { count: totalPrayers } = await supabaseAdmin
+      .from('prayers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    const { count: answeredPrayers } = await supabaseAdmin
+      .from('prayers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'answered');
+
+    const { count: gratefulPrayers } = await supabaseAdmin
+      .from('prayers')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId)
+      .eq('status', 'grateful');
+
+    const { count: totalParticipations } = await supabaseAdmin
+      .from('prayer_participations')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    const { count: totalComments } = await supabaseAdmin
+      .from('comments')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', userId);
+
+    const total = totalPrayers ?? 0;
+    const answered = answeredPrayers ?? 0;
+    const answerRate = total > 0 ? Math.round((answered / total) * 100) : 0;
+
+    sendSuccess(res, {
+      stats: {
+        total_prayers: total,
+        answered_prayers: answered,
+        grateful_prayers: gratefulPrayers ?? 0,
+        total_participations: totalParticipations ?? 0,
+        total_comments: totalComments ?? 0,
+        answer_rate: answerRate,
+        streak_days: 0,
+      },
+    });
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};

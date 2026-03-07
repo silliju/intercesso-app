@@ -407,3 +407,66 @@ export const leaveGroup = async (req: AuthRequest, res: Response): Promise<void>
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
 };
+
+// 그룹 검색
+export const searchGroups = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const { q } = req.query as { q?: string };
+    if (!q || q.trim().length === 0) {
+      sendSuccess(res, []);
+      return;
+    }
+
+    const { data: groups, error } = await supabaseAdmin
+      .from('groups')
+      .select('*, creator:users(id, nickname)')
+      .ilike('name', `%${q.trim()}%`)
+      .eq('is_public', true)
+      .limit(20);
+
+    if (error) {
+      sendError(res, '검색 중 오류가 발생했습니다', 500, 'SERVER_ERROR');
+      return;
+    }
+
+    sendSuccess(res, groups || []);
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};
+
+// 초대 코드 조회 (관리자 전용)
+export const getInviteCode = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { groupId } = req.params;
+
+    // 관리자 확인
+    const { data: membership } = await supabaseAdmin
+      .from('group_members')
+      .select('role')
+      .eq('group_id', groupId)
+      .eq('user_id', userId)
+      .single();
+
+    if (!membership || membership.role !== 'admin') {
+      sendError(res, '권한이 없습니다', 403, 'FORBIDDEN');
+      return;
+    }
+
+    const { data: group, error } = await supabaseAdmin
+      .from('groups')
+      .select('invite_code')
+      .eq('id', groupId)
+      .single();
+
+    if (error || !group) {
+      sendError(res, '그룹을 찾을 수 없습니다', 404, 'NOT_FOUND');
+      return;
+    }
+
+    sendSuccess(res, { invite_code: group.invite_code });
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};

@@ -4,6 +4,7 @@ import supabaseAdmin from '../config/supabase';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../middleware/auth';
 import { CreatePrayerBody, UpdatePrayerBody } from '../types';
+import { sendPush } from '../utils/fcm';
 
 export const getPrayers = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -371,6 +372,21 @@ export const participatePrayer = async (req: AuthRequest, res: Response): Promis
           message: `${participantUser?.nickname || '누군가'}님이 회원님의 기도에 함께 기도했습니다 🙏`,
           is_read: false,
         });
+
+        // 🔔 FCM 푸시 발송
+        const { data: prayerOwner } = await supabaseAdmin
+          .from('users')
+          .select('fcm_token')
+          .eq('id', prayer.user_id)
+          .single();
+        if (prayerOwner?.fcm_token) {
+          await sendPush({
+            token: prayerOwner.fcm_token,
+            title: '🙏 함께기도',
+            body: `${participantUser?.nickname || '누군가'}님이 회원님의 기도에 함께 기도했습니다`,
+            data: { type: 'prayer_participation', prayer_id: prayerId },
+          });
+        }
       }
     }
 
@@ -461,6 +477,21 @@ export const createComment = async (req: AuthRequest, res: Response): Promise<vo
         message: `${commenterUser?.nickname || '누군가'}님이 댓글을 남겼습니다`,
         is_read: false,
       });
+
+      // 🔔 FCM 푸시 발송
+      const { data: prayerOwner } = await supabaseAdmin
+        .from('users')
+        .select('fcm_token')
+        .eq('id', prayer.user_id)
+        .single();
+      if (prayerOwner?.fcm_token) {
+        await sendPush({
+          token: prayerOwner.fcm_token,
+          title: '💬 새 댓글',
+          body: `${commenterUser?.nickname || '누군가'}님이 댓글을 남겼습니다`,
+          data: { type: 'comment', prayer_id: prayerId },
+        });
+      }
     }
 
     sendSuccess(res, comment, '댓글이 작성되었습니다', 201);

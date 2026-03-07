@@ -38,7 +38,9 @@ const statsController = __importStar(require("../controllers/statistics.controll
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.get('/dashboard', auth_1.authenticate, statsController.getDashboard);
+router.get('/me', auth_1.authenticate, statsController.getMyStatistics); // 내 통계
 router.get('/prayers', auth_1.authenticate, statsController.getPrayerCharts);
 router.get('/community/:groupId', auth_1.authenticate, statsController.getCommunityStats);
+router.get('/users/:userId', auth_1.authenticate, statsController.getUserStatistics); // 특정 유저 통계
 exports.default = router;
 //# sourceMappingURL=statistics.routes.js.map

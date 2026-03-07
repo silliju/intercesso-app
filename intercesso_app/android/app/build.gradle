@@ -1,10 +1,15 @@
 plugins {
     id "com.android.application"
     id "kotlin-android"
-    // Flutter Gradle 플러그인은 Android/Kotlin 플러그인 다음에 적용해야 합니다
     id "dev.flutter.flutter-gradle-plugin"
-    // 구글 로그인을 위한 Google Services 플러그인
     id "com.google.gms.google-services"
+}
+
+// key.properties 로드
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('app/keystore/../key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 }
 
 android {
@@ -13,30 +18,46 @@ android {
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        // flutter_local_notifications 등 Java 8+ API 사용을 위한 desugaring
+        coreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_1_8
+        jvmTarget = "17"
+    }
+
+    signingConfigs {
+        release {
+            keyAlias = keystoreProperties['keyAlias']
+            keyPassword = keystoreProperties['keyPassword']
+            storeFile = keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storePassword = keystoreProperties['storePassword']
+        }
     }
 
     defaultConfig {
-        // 앱 고유 패키지명 - 카카오/구글 설정과 반드시 일치해야 합니다
         applicationId = "com.intercesso.intercesso"
-        // 카카오 SDK는 최소 API 21 이상 필요
         minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // 카카오 로그인 콜백 스킴 설정 (네이티브 앱 키 앞에 'kakao' 붙임)
         manifestPlaceholders += [kakaoNativeAppKey: "3853e9c9f28e388a2f4dc4cffed572b4"]
     }
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
+            // keystore 파일이 있을 때만 release 서명 사용, 없으면 debug 서명
+            if (keystorePropertiesFile.exists() && keystoreProperties['storeFile']) {
+                signingConfig = signingConfigs.release
+            } else {
+                signingConfig = signingConfigs.debug
+            }
+            minifyEnabled = false
+            shrinkResources = false
+        }
+        debug {
             signingConfig = signingConfigs.debug
         }
     }
@@ -44,4 +65,9 @@ android {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    // core library desugaring (flutter_local_notifications 필요)
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 }

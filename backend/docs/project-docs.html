@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Intercesso 프로젝트 문서</title>
+  <style>
+    :root {
+      --primary: #00AAFF;
+      --secondary: #00C9A7;
+      --dark: #1a1a2e;
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #334155;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --code-bg: #1e293b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+
+    /* 사이드바 레이아웃 */
+    .layout { display: flex; min-height: 100vh; }
+    .sidebar {
+      width: 280px;
+      background: var(--dark);
+      color: #fff;
+      position: fixed;
+      top: 0; left: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 24px 0;
+      z-index: 100;
+    }
+    .sidebar-logo {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 16px;
+    }
+    .sidebar-logo h1 { font-size: 22px; color: var(--primary); font-weight: 700; }
+    .sidebar-logo p { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 4px; }
+    .sidebar nav a {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 24px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .sidebar nav a:hover, .sidebar nav a.active {
+      background: rgba(0,170,255,0.1);
+      color: var(--primary);
+      border-left-color: var(--primary);
+    }
+    .sidebar nav .section-label {
+      padding: 16px 24px 6px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .main { margin-left: 280px; padding: 40px; max-width: 1000px; }
+
+    /* 헤더 */
+    .page-header {
+      background: linear-gradient(135deg, var(--dark), #16213e);
+      color: white;
+      padding: 48px 40px;
+      margin: -40px -40px 40px;
+    }
+    .page-header .badges { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+    .badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .badge-green { background: rgba(16,185,129,0.2); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .badge-blue { background: rgba(0,170,255,0.2); color: var(--primary); border: 1px solid rgba(0,170,255,0.3); }
+    .badge-yellow { background: rgba(245,158,11,0.2); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+    .page-header h1 { font-size: 36px; font-weight: 800; }
+    .page-header p { color: rgba(255,255,255,0.7); font-size: 16px; margin-top: 8px; }
+    .header-stats { display: flex; gap: 32px; margin-top: 24px; }
+    .stat { text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .stat-label { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+    /* 섹션 */
+    .section { margin-bottom: 48px; scroll-margin-top: 20px; }
+    .section-title {
+      font-size: 22px; font-weight: 700;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title .icon { font-size: 24px; }
+
+    /* 카드 */
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 600; margin-bottom: 8px; color: var(--dark); }
+    .card p { font-size: 14px; color: var(--muted); }
+
+    /* 테이블 */
+    .table-wrap { overflow-x: auto; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { background: var(--dark); color: white; padding: 10px 14px; text-align: left; font-weight: 600; }
+    td { padding: 9px 14px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: #f1f5f9; }
+    .method { font-weight: 700; font-size: 11px; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
+    .get { background: #dbeafe; color: #1d4ed8; }
+    .post { background: #dcfce7; color: #15803d; }
+    .put { background: #fef3c7; color: #92400e; }
+    .del { background: #fee2e2; color: #b91c1c; }
+    .auth-yes { color: #15803d; font-weight: 600; }
+    .auth-no { color: #94a3b8; }
+
+    /* 코드 블록 */
+    pre {
+      background: var(--code-bg); color: #e2e8f0;
+      padding: 20px; border-radius: 8px;
+      overflow-x: auto; font-size: 13px;
+      line-height: 1.6; margin: 12px 0;
+      font-family: 'Fira Code', 'Consolas', monospace;
+    }
+    code {
+      background: #e2e8f0; color: #475569;
+      padding: 2px 6px; border-radius: 4px;
+      font-size: 13px; font-family: monospace;
+    }
+    pre code { background: none; color: inherit; padding: 0; }
+
+    /* 파일 트리 */
+    .file-tree { background: var(--code-bg); border-radius: 8px; padding: 20px; }
+    .file-tree pre { background: none; padding: 0; margin: 0; color: #94a3b8; }
+    .file-tree .dir { color: #60a5fa; }
+    .file-tree .main-file { color: #34d399; }
+    .file-tree .comment { color: #64748b; }
+
+    /* 알림 박스 */
+    .alert { padding: 16px 20px; border-radius: 8px; margin-bottom: 16px; border-left: 4px solid; }
+    .alert-warning { background: #fffbeb; border-color: #f59e0b; color: #78350f; }
+    .alert-info { background: #eff6ff; border-color: #3b82f6; color: #1e3a5f; }
+    .alert-success { background: #f0fdf4; border-color: #22c55e; color: #14532d; }
+    .alert-danger { background: #fef2f2; border-color: #ef4444; color: #7f1d1d; }
+    .alert strong { display: block; margin-bottom: 4px; }
+
+    /* 그리드 */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+    /* 태그 */
+    .tag { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500; margin: 2px; }
+    .tag-blue { background: #dbeafe; color: #1d4ed8; }
+    .tag-green { background: #dcfce7; color: #15803d; }
+    .tag-purple { background: #f3e8ff; color: #7e22ce; }
+    .tag-orange { background: #ffedd5; color: #9a3412; }
+    .tag-red { background: #fee2e2; color: #b91c1c; }
+
+    /* 타임라인 */
+    .timeline { position: relative; padding-left: 28px; }
+    .timeline::before { content: ''; position: absolute; left: 8px; top: 0; bottom: 0; width: 2px; background: var(--border); }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-dot {
+      position: absolute; left: -24px; top: 4px;
+      width: 12px; height: 12px;
+      border-radius: 50%; background: var(--primary);
+      border: 2px solid white;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .timeline-dot.done { background: #22c55e; box-shadow: 0 0 0 2px #22c55e; }
+    .timeline-dot.pending { background: #e2e8f0; box-shadow: 0 0 0 2px #94a3b8; }
+    .timeline-title { font-weight: 600; font-size: 14px; }
+    .timeline-desc { font-size: 13px; color: var(--muted); }
+
+    /* URL 카드 */
+    .url-card { background: var(--dark); border-radius: 10px; padding: 16px 20px; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; }
+    .url-card .url-label { font-size: 11px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 1px; }
+    .url-card .url-value { font-size: 14px; color: var(--primary); font-family: monospace; }
+    .url-card .url-icon { font-size: 24px; }
+    .url-card a { color: inherit; text-decoration: none; }
+    .url-card a:hover .url-value { text-decoration: underline; }
+
+    /* 체크리스트 */
+    .checklist { list-style: none; }
+    .checklist li { padding: 6px 0; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+    .checklist li::before { content: '☐'; font-size: 16px; color: var(--muted); }
+    .checklist li.done::before { content: '✅'; }
+    .checklist li.warn::before { content: '⚠️'; }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 20px; }
+      .page-header { margin: -20px -20px 20px; padding: 32px 20px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+      .header-stats { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- 사이드바 -->
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>🙏 Intercesso</h1>
+      <p>프로젝트 완전 문서 v19</p>
+    </div>
+    <nav>
+      <div class="section-label">개요</div>
+      <a href="#overview">📌 프로젝트 개요</a>
+      <a href="#stack">🔧 기술 스택</a>
+      <a href="#architecture">🏗️ 시스템 아키텍처</a>
+
+      <div class="section-label">백엔드</div>
+      <a href="#backend-files">📁 백엔드 파일 구조</a>
+      <a href="#api">🌐 API 엔드포인트</a>
+
+      <div class="section-label">앱</div>
+      <a href="#flutter-files">📱 Flutter 파일 구조</a>
+      <a href="#screens">🖥️ 화면 흐름</a>
+
+      <div class="section-label">데이터</div>
+      <a href="#database">🗄️ 데이터베이스</a>
+      <a href="#types">📝 데이터 타입</a>
+
+      <div class="section-label">운영</div>
+      <a href="#env">🔑 환경변수</a>
+      <a href="#deploy">🚀 배포 현황</a>
+      <a href="#restore">🔄 환경 복원</a>
+      <a href="#troubleshoot">⚠️ 주의사항</a>
+      <a href="#roadmap">🗺️ 개발 계획</a>
+      <a href="#urls">🔗 주요 URL</a>
+    </nav>
+  </aside>
+
+  <!-- 메인 콘텐츠 -->
+  <main class="main">
+    <!-- 헤더 -->
+    <div class="page-header">
+      <div class="badges">
+        <span class="badge badge-green">✅ Railway 배포 완료</span>
+        <span class="badge badge-blue">APK v19</span>
+        <span class="badge badge-yellow">⏳ Google Play 준비 중</span>
+      </div>
+      <h1>Intercesso 프로젝트 문서</h1>
+      <p>기독교 중보기도 커뮤니티 앱 — 함께 기도하는 공동체</p>
+      <div class="header-stats">
+        <div class="stat"><div class="stat-num">3</div><div class="stat-label">레이어</div></div>
+        <div class="stat"><div class="stat-num">40+</div><div class="stat-label">API 엔드포인트</div></div>
+        <div class="stat"><div class="stat-num">11</div><div class="stat-label">DB 테이블</div></div>
+        <div class="stat"><div class="stat-num">20+</div><div class="stat-label">화면 (Screens)</div></div>
+      </div>
+    </div>
+
+    <!-- 1. 프로젝트 개요 -->
+    <section class="section" id="overview">
+      <h2 class="section-title"><span class="icon">📌</span> 프로젝트 개요</h2>
+      <div class="card">
+        <p style="font-size:15px; margin-bottom:16px">
+          <strong>Intercesso</strong>는 기독교 공동체를 위한 중보기도 공유 플랫폼입니다.
+          개인 기도 제목을 관리하고, 서로를 위해 기도하며, 응답받은 기도를 나누는 모바일 앱입니다.
+        </p>
+        <div class="grid-2">
+          <div>
+            <strong style="font-size:13px; color:var(--muted)">앱 패키지명</strong>
+            <div><code>com.intercesso.intercesso</code></div>
+          </div>
+          <div>
+            <strong style="font-size:13px; color:var(--muted)">버전</strong>
+            <div><code>1.0.0+1 (APK v19)</code></div>
+          </div>
+          <div>
+            <strong style="font-size:13px; color:var(--muted)">최소 Android</strong>
+            <div><code>API 21 (Android 5.0+)</code></div>
+          </div>
+          <div>
+            <strong style="font-size:13px; color:var(--muted)">슬로건</strong>
+            <div><code>함께 기도하는 공동체</code></div>
+          </div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <tr><th>기능</th><th>설명</th></tr>
+          <tr><td>🙏 <strong>기도 관리</strong></td><td>작성/수정/삭제, 상태 변경 (기도중→응답받음→감사), 카테고리 분류</td></tr>
+          <tr><td>👥 <strong>그룹</strong></td><td>교회/셀/소모임/가족 그룹 생성, 초대코드 공유로 참여</td></tr>
+          <tr><td>✉️ <strong>중보기도</strong></td><td>전체공개/그룹/개인 대상으로 중보기도 요청 발송, 수락/거절</td></tr>
+          <tr><td>📅 <strong>작정기도</strong></td><td>7/21/40/50/100일 설정, 매일 체크인 기능</td></tr>
+          <tr><td>📝 <strong>기도 응답</strong></td><td>응답받은 기도 간증 작성, 공개 피드에 공유</td></tr>
+          <tr><td>📊 <strong>통계 대시보드</strong></td><td>기도 횟수, 응답률, 카테고리별 통계, 연속 기도일</td></tr>
+          <tr><td>🔔 <strong>알림</strong></td><td>중보기도 요청, 댓글, 기도 참여 알림</td></tr>
+          <tr><td>🔐 <strong>소셜 로그인</strong></td><td>Google OAuth, 카카오 로그인</td></tr>
+          <tr><td>🗑️ <strong>계정 삭제</strong></td><td>개인정보처리방침 준수 완전 계정 삭제 기능</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- 2. 기술 스택 -->
+    <section class="section" id="stack">
+      <h2 class="section-title"><span class="icon">🔧</span> 기술 스택</h2>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">📱 Flutter 앱</div>
+          <div>
+            <span class="tag tag-blue">Flutter 3.x</span>
+            <span class="tag tag-blue">Dart 3.3+</span>
+            <span class="tag tag-green">Provider</span>
+            <span class="tag tag-green">go_router</span>
+            <span class="tag tag-purple">dio / http</span>
+            <span class="tag tag-purple">shared_preferences</span>
+            <span class="tag tag-orange">google_sign_in</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">🖥️ Node.js 백엔드</div>
+          <div>
+            <span class="tag tag-blue">Node.js 20</span>
+            <span class="tag tag-blue">TypeScript 5</span>
+            <span class="tag tag-green">Express.js 4</span>
+            <span class="tag tag-purple">JWT + bcryptjs</span>
+            <span class="tag tag-orange">@supabase/supabase-js</span>
+            <span class="tag tag-orange">helmet / cors</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">☁️ 인프라</div>
+          <div>
+            <span class="tag tag-blue">Railway</span>
+            <span class="tag tag-green">Supabase (PostgreSQL)</span>
+            <span class="tag tag-purple">GitHub</span>
+            <span class="tag tag-orange">Google OAuth</span>
+            <span class="tag tag-orange">Kakao API</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. 아키텍처 -->
+    <section class="section" id="architecture">
+      <h2 class="section-title"><span class="icon">🏗️</span> 시스템 아키텍처</h2>
+      <pre>┌─────────────────────────────────────────────────┐
+│                Flutter 앱 (Android)              │
+│                                                   │
+│  Screens → Providers → Services → ApiClient      │
+│  (화면)    (상태관리)   (비즈로직)  (HTTP/Dio)    │
+└───────────────────────────┬─────────────────────┘
+                            │ HTTPS REST API
+            ┌───────────────▼──────────────────────────┐
+            │           Railway 백엔드                  │
+            │  Express.js (TypeScript)                 │
+            │                                          │
+            │  /api/auth          인증 (JWT)            │
+            │  /api/prayers       기도 CRUD             │
+            │  /api/groups        그룹 관리             │
+            │  /api/intercessions 중보기도              │
+            │  /api/users         사용자 프로필          │
+            │  /api/notifications 알림                  │
+            │  /api/statistics    통계                  │
+            │  /terms  /privacy   법적 문서             │
+            └───────────────┬──────────────────────────┘
+                            │ Supabase JS SDK
+            ┌───────────────▼──────────────────────────┐
+            │           Supabase (PostgreSQL)           │
+            │  ypqbkqflikdjickyywvc.supabase.co        │
+            │  11개 테이블 (users, prayers, groups...)  │
+            └──────────────────────────────────────────┘</pre>
+    </section>
+
+    <!-- 4. 백엔드 파일 구조 -->
+    <section class="section" id="backend-files">
+      <h2 class="section-title"><span class="icon">📁</span> 백엔드 파일 구조 및 역할</h2>
+      <div class="file-tree">
+        <pre>backend/
+├── <span class="main-file">src/index.ts</span>              🚀 서버 진입점 — Express 초기화, 라우터 등록
+│
+├── src/config/
+│   └── <span class="main-file">supabase.ts</span>            Supabase 클라이언트 초기화 (anon + admin)
+│
+├── src/controllers/            📦 비즈니스 로직 처리
+│   ├── <span class="main-file">auth.controller.ts</span>    회원가입, 로그인, 토큰 갱신, 찾기
+│   ├── <span class="main-file">social_auth.controller.ts</span> 구글/카카오 소셜 로그인
+│   ├── <span class="main-file">prayer.controller.ts</span>  기도 CRUD, 참여, 댓글, 작정기도
+│   ├── <span class="main-file">group.controller.ts</span>   그룹 CRUD, 초대코드, 멤버 관리
+│   ├── <span class="main-file">intercession.controller.ts</span> 중보기도 요청/응답
+│   ├── <span class="main-file">user.controller.ts</span>    프로필 조회/수정, 계정 삭제
+│   ├── <span class="main-file">notification.controller.ts</span> 알림 목록, 읽음 처리
+│   ├── <span class="main-file">statistics.controller.ts</span>  대시보드 통계
+│   └── <span class="main-file">prayer_answer.controller.ts</span> 기도 응답/간증
+│
+├── src/routes/                 🛣️ URL 라우팅
+│   ├── auth.routes.ts          /api/auth/**
+│   ├── prayer.routes.ts        /api/prayers/**
+│   ├── group.routes.ts         /api/groups/**
+│   ├── intercession.routes.ts  /api/intercessions/**
+│   ├── user.routes.ts          /api/users/**
+│   ├── notification.routes.ts  /api/notifications/**
+│   ├── statistics.routes.ts    /api/statistics/**
+│   └── prayer_answer.routes.ts /api/prayers/:id/answer/**
+│
+├── src/middleware/
+│   └── <span class="main-file">auth.ts</span>               🔐 JWT 인증 미들웨어
+│                               authenticate (필수) / optionalAuth (선택)
+│
+├── src/types/
+│   └── <span class="main-file">index.ts</span>              📝 TypeScript 타입 정의 전체
+│
+├── src/utils/
+│   └── <span class="main-file">response.ts</span>           📤 표준 응답 함수
+│                               sendSuccess / sendError / sendPaginated
+│
+├── dist/                       ⚙️ 컴파일된 JS (Railway 실행)
+├── <span class="main-file">.env</span>                       🔑 환경변수 (로컬 전용, git 제외)
+├── <span class="main-file">railway.json</span>               Railway 배포 설정
+├── <span class="main-file">nixpacks.toml</span>              Railway 빌드 설정 (pre-built dist)
+├── <span class="main-file">ecosystem.config.cjs</span>       PM2 실행 설정 (샌드박스용)
+└── <span class="main-file">package.json</span>               Node.js 패키지 및 스크립트</pre>
+      </div>
+    </section>
+
+    <!-- 5. API 엔드포인트 -->
+    <section class="section" id="api">
+      <h2 class="section-title"><span class="icon">🌐</span> API 엔드포인트</h2>
+      <div class="alert alert-info">
+        <strong>Base URL</strong>
+        <code>https://intercesso-backend-production-5f72.up.railway.app</code>
+        — 인증 필요 API는 <code>Authorization: Bearer {JWT토큰}</code> 헤더 필요
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:16px">🔐 인증 (/api/auth)</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>메서드</th><th>경로</th><th>인증</th><th>설명</th></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/auth/check-profile-id</code></td><td class="auth-no">없음</td><td>프로필ID 중복 체크</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/signup</code></td><td class="auth-no">없음</td><td>회원가입</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/login</code></td><td class="auth-no">없음</td><td>이메일/비밀번호 로그인</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/logout</code></td><td class="auth-yes">필요</td><td>로그아웃</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/refresh</code></td><td class="auth-no">없음</td><td>토큰 갱신</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/find-email</code></td><td class="auth-no">없음</td><td>닉네임으로 이메일 찾기</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/forgot-password</code></td><td class="auth-no">없음</td><td>비밀번호 재설정 이메일</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/social/google</code></td><td class="auth-no">없음</td><td>구글 소셜 로그인</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/auth/social/kakao</code></td><td class="auth-no">없음</td><td>카카오 소셜 로그인</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:16px">🙏 기도 (/api/prayers)</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>메서드</th><th>경로</th><th>인증</th><th>설명</th></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/prayers</code></td><td class="auth-no">선택</td><td>기도 목록 (필터/페이지네이션)</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/prayers/:id</code></td><td class="auth-no">선택</td><td>기도 상세 조회</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/prayers</code></td><td class="auth-yes">필요</td><td>기도 작성</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td><code>/api/prayers/:id</code></td><td class="auth-yes">필요</td><td>기도 수정</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td><code>/api/prayers/:id</code></td><td class="auth-yes">필요</td><td>기도 삭제</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/prayers/:id/participate</code></td><td class="auth-yes">필요</td><td>함께기도 참여</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td><code>/api/prayers/:id/participate</code></td><td class="auth-yes">필요</td><td>함께기도 취소</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/prayers/:id/comments</code></td><td class="auth-yes">필요</td><td>댓글 작성</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td><code>/api/prayers/comments/:commentId</code></td><td class="auth-yes">필요</td><td>댓글 삭제</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/prayers/:id/checkins</code></td><td class="auth-yes">필요</td><td>작정기도 체크인 목록</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/prayers/:id/checkins</code></td><td class="auth-yes">필요</td><td>작정기도 체크인</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/prayers/:id/answer</code></td><td class="auth-no">선택</td><td>기도 응답 조회</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/prayers/:id/answer</code></td><td class="auth-yes">필요</td><td>기도 응답 작성</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:16px">👥 그룹 (/api/groups)</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>메서드</th><th>경로</th><th>인증</th><th>설명</th></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/groups</code></td><td class="auth-yes">필요</td><td>내 그룹 목록</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/groups</code></td><td class="auth-yes">필요</td><td>그룹 생성</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/groups/search?q=검색어</code></td><td class="auth-yes">필요</td><td>그룹 검색</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/groups/join-by-code</code></td><td class="auth-yes">필요</td><td>초대코드로 참여</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/groups/:id</code></td><td class="auth-no">선택</td><td>그룹 상세</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td><code>/api/groups/:id</code></td><td class="auth-yes">필요</td><td>그룹 수정</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td><code>/api/groups/:id</code></td><td class="auth-yes">필요</td><td>그룹 삭제</td></tr>
+          <tr><td><span class="method del">DELETE</span></td><td><code>/api/groups/:id/leave</code></td><td class="auth-yes">필요</td><td>그룹 탈퇴</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/groups/:id/members</code></td><td class="auth-yes">필요</td><td>멤버 목록</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/groups/:id/invite</code></td><td class="auth-yes">필요</td><td>초대 코드 조회</td></tr>
+        </table>
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:16px">✉️ 중보기도 (/api/intercessions)</h3>
+      <div class="table-wrap">
+        <table>
+          <tr><th>메서드</th><th>경로</th><th>인증</th><th>설명</th></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/intercessions/search-users</code></td><td class="auth-yes">필요</td><td>요청 대상 사용자 검색</td></tr>
+          <tr><td><span class="method post">POST</span></td><td><code>/api/intercessions</code></td><td class="auth-yes">필요</td><td>중보기도 요청 생성</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/intercessions/received</code></td><td class="auth-yes">필요</td><td>받은 중보기도 목록</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/intercessions/public</code></td><td class="auth-yes">필요</td><td>전체공개 중보기도</td></tr>
+          <tr><td><span class="method get">GET</span></td><td><code>/api/intercessions/sent</code></td><td class="auth-yes">필요</td><td>보낸 중보기도 목록</td></tr>
+          <tr><td><span class="method put">PUT</span></td><td><code>/api/intercessions/:id/respond</code></td><td class="auth-yes">필요</td><td>수락/거절 응답</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- 6. Flutter 파일 구조 -->
+    <section class="section" id="flutter-files">
+      <h2 class="section-title"><span class="icon">📱</span> Flutter 앱 파일 구조 및 역할</h2>
+      <div class="file-tree">
+        <pre>intercesso_app/lib/
+│
+├── <span class="main-file">main.dart</span>                   🚀 앱 진입점 — Provider 설정
+│
+├── config/
+│   ├── <span class="main-file">constants.dart</span>           🔧 앱 상수 (API URL, 색상, 카테고리)
+│   └── theme.dart                  구버전 테마
+│
+├── theme/
+│   └── <span class="main-file">app_theme.dart</span>           🎨 최신 테마 (MaterialTheme)
+│
+├── models/
+│   └── <span class="main-file">models.dart</span>              📦 모든 데이터 모델
+│                                    UserModel, PrayerModel, GroupModel,
+│                                    CommentModel, IntercessionModel...
+│
+├── providers/                      🔄 상태 관리 (ChangeNotifier)
+│   ├── <span class="main-file">auth_provider.dart</span>       로그인 상태, JWT 토큰 관리
+│   ├── <span class="main-file">prayer_provider.dart</span>     기도 목록, 필터, 검색 상태
+│   ├── <span class="main-file">group_provider.dart</span>      그룹 목록, 선택된 그룹
+│   └── <span class="main-file">notification_provider.dart</span>읽지 않은 알림 수
+│
+├── services/                       🌐 API 호출 로직 (Repository 패턴)
+│   ├── <span class="main-file">auth_service.dart</span>        로그인, 회원가입, 소셜 인증
+│   ├── <span class="main-file">prayer_service.dart</span>      기도 CRUD, 참여, 댓글, 체크인
+│   ├── <span class="main-file">group_service.dart</span>       그룹 CRUD, 초대코드
+│   ├── <span class="main-file">intercession_service.dart</span>중보기도 요청/응답
+│   ├── <span class="main-file">user_service.dart</span>        프로필, 계정 삭제
+│   ├── <span class="main-file">notification_service.dart</span>알림 목록
+│   ├── <span class="main-file">statistics_service.dart</span>  통계 대시보드
+│   ├── <span class="main-file">prayer_answer_service.dart</span>기도 응답/간증
+│   ├── <span class="main-file">social_auth_service.dart</span> 구글/카카오 소셜 인증
+│   └── api_service.dart            구버전 API 서비스
+│
+├── api/
+│   └── <span class="main-file">api_client.dart</span>          🔗 Dio HTTP 클라이언트
+│                                    (Interceptor, 자동 토큰 주입)
+│
+├── routes/
+│   └── <span class="main-file">app_router.dart</span>          🛣️ go_router 라우팅 + 인증 리다이렉트
+│
+├── screens/                        📱 UI 화면
+│   ├── splash_screen.dart           시작 화면 (자동 로그인)
+│   ├── onboarding/ → onboarding_screen.dart   첫 실행 온보딩
+│   ├── auth/
+│   │   ├── login_screen.dart         로그인 (이메일+구글+카카오)
+│   │   ├── signup_screen.dart        회원가입 (이용약관 동의)
+│   │   └── find_account_screen.dart  아이디/비밀번호 찾기
+│   ├── main/ → main_tab_screen.dart  하단 탭 네비게이션
+│   ├── home/ → home_screen.dart      홈 피드
+│   ├── prayers/ → prayers_screen.dart        내 기도 목록
+│   ├── prayer/
+│   │   ├── create_prayer_screen.dart  기도 작성
+│   │   ├── prayer_detail_screen.dart  기도 상세 (댓글, 참여, 상태변경)
+│   │   └── prayer_edit_screen.dart    기도 수정
+│   ├── groups/ → groups_screen.dart  그룹 목록
+│   ├── group/
+│   │   ├── create_group_screen.dart   그룹 생성
+│   │   └── group_detail_screen.dart   그룹 상세
+│   ├── intercession/ → intercession_screen.dart  중보기도
+│   ├── notifications/ → notifications_screen.dart 알림
+│   ├── profile/
+│   │   ├── profile_screen.dart        프로필 (계정 삭제)
+│   │   └── edit_profile_screen.dart   프로필 수정
+│   └── dashboard/ → dashboard_screen.dart  통계 대시보드
+│
+├── widgets/
+│   ├── <span class="main-file">common_widgets.dart</span>      공통 위젯 (버튼, 카드, 로딩 등)
+│   └── prayer_answer_section.dart    기도 응답 섹션 위젯
+│
+└── utils/
+    ├── date_utils.dart              날짜 포맷 유틸
+    └── helpers.dart                 기타 헬퍼 함수</pre>
+      </div>
+    </section>
+
+    <!-- 7. 화면 흐름 -->
+    <section class="section" id="screens">
+      <h2 class="section-title"><span class="icon">🖥️</span> 화면 흐름</h2>
+      <pre>앱 시작
+  └── /splash (자동 로그인 시도)
+        ├── 로그인됨  → /home (MainTabScreen)
+        └── 미로그인  → /onboarding → /login
+
+/login
+  ├── 이메일/비밀번호 로그인
+  ├── 🔵 구글 로그인
+  ├── 🟡 카카오 로그인
+  └── → /home
+
+/home (MainTabScreen) — 하단 4탭
+  ├── 탭 1: 홈 (공개 기도 피드)
+  ├── 탭 2: 내 기도 목록
+  │         ├── /prayer/create  (기도 작성)
+  │         └── /prayer/:id     (상세 → 수정/응답/댓글)
+  ├── 탭 3: 그룹
+  │         ├── /group/create   (그룹 생성)
+  │         └── /group/:id      (그룹 상세)
+  └── 탭 4: 프로필
+            ├── /profile/edit   (프로필 수정)
+            └── /dashboard      (통계 대시보드)
+
+공통 라우트:
+  /notifications     알림 목록
+  /find-account      아이디/비밀번호 찾기</pre>
+    </section>
+
+    <!-- 8. 데이터베이스 -->
+    <section class="section" id="database">
+      <h2 class="section-title"><span class="icon">🗄️</span> 데이터베이스 구조</h2>
+      <div class="alert alert-info">
+        <strong>Supabase (PostgreSQL)</strong>
+        URL: <code>https://ypqbkqflikdjickyywvc.supabase.co</code>
+      </div>
+      <div class="grid-2">
+        <div class="card"><div class="card-title">users</div><p>사용자 계정 (email, nickname, profile_id, bcrypt 비밀번호)</p></div>
+        <div class="card"><div class="card-title">prayers</div><p>기도 제목 (title, content, category, scope, status, 작정기도 설정)</p></div>
+        <div class="card"><div class="card-title">prayer_participants</div><p>함께기도 참여 기록 (prayer_id, user_id)</p></div>
+        <div class="card"><div class="card-title">prayer_comments</div><p>기도 댓글 (prayer_id, user_id, content)</p></div>
+        <div class="card"><div class="card-title">covenant_checkins</div><p>작정기도 일별 체크인 (prayer_id, checkin_date)</p></div>
+        <div class="card"><div class="card-title">groups</div><p>공동체 그룹 (name, type, invite_code, is_public)</p></div>
+        <div class="card"><div class="card-title">group_members</div><p>그룹 멤버 (group_id, user_id, role: admin/member)</p></div>
+        <div class="card"><div class="card-title">intercession_requests</div><p>중보기도 요청 (requester→recipient, status: pending/accepted)</p></div>
+        <div class="card"><div class="card-title">notifications</div><p>알림 (type, related_id, is_read)</p></div>
+        <div class="card"><div class="card-title">user_statistics</div><p>사용자 통계 (총기도수, 응답수, 연속일수)</p></div>
+        <div class="card"><div class="card-title">prayer_answers</div><p>기도 응답/간증 (content, scope: public/group/private)</p></div>
+      </div>
+    </section>
+
+    <!-- 9. 데이터 타입 -->
+    <section class="section" id="types">
+      <h2 class="section-title"><span class="icon">📝</span> 데이터 타입 정의</h2>
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="card-title">PrayerScope (공개 범위)</div>
+            <div>
+              <span class="tag tag-blue">public — 전체 공개</span>
+              <span class="tag tag-green">friends — 지인 공개</span>
+              <span class="tag tag-purple">community — 공동체</span>
+              <span class="tag tag-orange">private — 비공개</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">PrayerStatus (기도 상태)</div>
+            <div>
+              <span class="tag tag-blue">praying — 기도중 🙏</span>
+              <span class="tag tag-green">answered — 응답받음 ✅</span>
+              <span class="tag tag-orange">grateful — 감사 🙌</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">PrayerCategory</div>
+            <div>
+              <span class="tag tag-blue">건강</span>
+              <span class="tag tag-blue">가정</span>
+              <span class="tag tag-blue">진로</span>
+              <span class="tag tag-blue">영적</span>
+              <span class="tag tag-blue">사업</span>
+              <span class="tag tag-blue">기타</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <div class="card-title">GroupType</div>
+            <div>
+              <span class="tag tag-green">church — 교회</span>
+              <span class="tag tag-green">cell — 셀/구역</span>
+              <span class="tag tag-green">gathering — 소모임</span>
+              <span class="tag tag-green">family — 가족</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">CovenantDays (작정일수)</div>
+            <div>
+              <span class="tag tag-purple">7일</span>
+              <span class="tag tag-purple">21일</span>
+              <span class="tag tag-purple">40일</span>
+              <span class="tag tag-purple">50일</span>
+              <span class="tag tag-purple">100일</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">API 응답 포맷</div>
+            <pre style="font-size:12px; margin:0">{ success: true, statusCode: 200,
+  message: "...", data: {...} }
+
+// 에러
+{ success: false, statusCode: 401,
+  message: "...", error: { code: "..." } }</pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. 환경변수 -->
+    <section class="section" id="env">
+      <h2 class="section-title"><span class="icon">🔑</span> 환경변수 및 설정</h2>
+      <div class="alert alert-danger">
+        <strong>⚠️ 보안 주의</strong>
+        아래 환경변수는 Railway Variables에만 저장. 클라이언트(Flutter 앱) 코드에 절대 노출 금지!
+      </div>
+      <pre>NODE_ENV=production
+# PORT는 Railway가 자동 주입 — 절대 Variables에 PORT=3000 설정하지 말 것!
+
+# Supabase
+SUPABASE_URL=https://ypqbkqflikdjickyywvc.supabase.co
+SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+
+# JWT
+JWT_SECRET=intercesso_jwt_secret_2026_secure_key
+JWT_EXPIRES_IN=7d
+
+# 소셜 로그인
+GOOGLE_CLIENT_ID=777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com
+KAKAO_REST_API_KEY=3853e9c9f28e388a2f4dc4cffed572b4</pre>
+
+      <h3 style="margin:20px 0 10px; font-size:15px">Flutter 앱 상수 (constants.dart)</h3>
+      <pre>// API URL — 빌드 시 --dart-define으로 주입 가능
+static const String apiBaseUrl = String.fromEnvironment(
+  'API_BASE_URL',
+  defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app/api'
+);
+
+// 앱 색상
+primary:    0xFF00AAFF  (파란색)
+secondary:  0xFF00C9A7  (청록색)
+
+// SharedPreferences 키
+tokenKey:    'auth_token'
+userIdKey:   'user_id'
+userDataKey: 'user_data'</pre>
+    </section>
+
+    <!-- 11. 배포 현황 -->
+    <section class="section" id="deploy">
+      <h2 class="section-title"><span class="icon">🚀</span> 배포 현황</h2>
+      <div class="grid-2">
+        <div class="card" style="border-left: 4px solid #22c55e">
+          <div class="card-title">✅ Railway 백엔드 (운영 중)</div>
+          <p><strong>URL:</strong> <code style="font-size:12px">intercesso-backend-production-5f72.up.railway.app</code></p>
+          <p><strong>GitHub:</strong> 자동 배포 (main 브랜치 push시)</p>
+          <p><strong>24/7 항상 켜짐</strong> — 샌드박스 종료 후에도 유지</p>
+        </div>
+        <div class="card" style="border-left: 4px solid #f59e0b">
+          <div class="card-title">⏳ Google Play Store (준비 중)</div>
+          <p>APK v19 빌드 완료 (Debug Build)</p>
+          <p>Release 빌드 및 서명 필요</p>
+          <p>개발자 계정 등록 ($25) 필요</p>
+        </div>
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:15px">APK 버전 히스토리</h3>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-title">APK v17 — 초기 Railway 배포 준비</div>
+          <div class="timeline-desc">dist/ git 포함, nixpacks 빌드 설정 수정</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-title">APK v18 — Railway URL 적용</div>
+          <div class="timeline-desc">API URL을 sandbox → Railway로 교체</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot done"></div>
+          <div class="timeline-title">APK v19 — 이용약관/개인정보 URL 변경 (최신)</div>
+          <div class="timeline-desc">/terms, /privacy 링크를 Railway URL로 최종 변경</div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot pending"></div>
+          <div class="timeline-title">APK v20 — Release 빌드 (예정)</div>
+          <div class="timeline-desc">키스토어 서명 적용, Google Play 출시용</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. 환경 복원 -->
+    <section class="section" id="restore">
+      <h2 class="section-title"><span class="icon">🔄</span> 개발 환경 복원 방법</h2>
+      <div class="alert alert-success">
+        <strong>백업 파일</strong>
+        <code>https://www.genspark.ai/api/files/s/5PInBZVX</code> (v18 전체 백업)
+      </div>
+
+      <h3 style="margin:16px 0 10px; font-size:15px">샌드박스 복원</h3>
+      <pre>1. GenSpark AI 새 세션 시작
+2. "이 백업 파일로 프로젝트 복원하고 서비스 다시 시작해줘" 메시지
+3. 자동 복원 진행 (5~10분)
+4. 서비스 재시작:
+   - intercesso-backend  (포트 3000)
+   - intercesso-webapp   (포트 4000)</pre>
+
+      <h3 style="margin:16px 0 10px; font-size:15px">코드 수정 → Railway 배포</h3>
+      <pre># 1. src/ 파일 수정 후 TypeScript 빌드
+cd /home/user/webapp/backend
+npm run build
+
+# 2. dist/ 포함하여 GitHub 푸시 → Railway 자동 배포
+git add .
+git commit -m "수정 내용 설명"
+git push origin main
+
+# 3. 배포 확인
+curl https://intercesso-backend-production-5f72.up.railway.app/health</pre>
+
+      <h3 style="margin:16px 0 10px; font-size:15px">APK 재빌드</h3>
+      <pre># Railway URL 포함 APK 빌드
+cd /home/user/webapp/intercesso_app
+flutter build apk --debug \
+  --dart-define=API_BASE_URL=https://intercesso-backend-production-5f72.up.railway.app/api \
+  --dart-define=APP_WEB_URL=https://intercesso-backend-production-5f72.up.railway.app</pre>
+    </section>
+
+    <!-- 13. 주의사항 -->
+    <section class="section" id="troubleshoot">
+      <h2 class="section-title"><span class="icon">⚠️</span> 주요 주의사항 및 트러블슈팅</h2>
+
+      <div class="alert alert-danger">
+        <strong>🚫 Railway PORT 설정 — 가장 중요!</strong>
+        Variables에 <code>PORT=3000</code> 설정하면 안 됩니다. Railway가 PORT를 자동으로 주입합니다.
+        코드에서 <code>const PORT = process.env.PORT || 3000;</code> 패턴 필수.
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ dist/ 파일을 git에 포함해야 함</strong>
+        nixpacks.toml이 TypeScript 재빌드를 하지 않으므로, 소스 수정 후 반드시
+        <code>npm run build</code> → dist/ 포함하여 커밋 필요.
+      </div>
+
+      <div class="alert alert-warning">
+        <strong>⚠️ go_router 라우트 순서</strong>
+        정적 라우트(<code>/prayer/create</code>)를 동적 라우트(<code>/prayer/:id</code>) 보다 먼저 등록해야 충돌 방지.
+      </div>
+
+      <div class="alert alert-info">
+        <strong>ℹ️ Railway 도메인 변경 시</strong>
+        포트 변경 후 404 발생 시: Settings → Networking → 기존 도메인 삭제 → 새 도메인 생성.
+        새 도메인을 constants.dart에 업데이트 후 APK 재빌드 필요.
+      </div>
+
+      <h3 style="margin:20px 0 10px; font-size:15px">Supabase DB 자동 마이그레이션</h3>
+      <p style="font-size:14px; margin-bottom:10px">백엔드 시작 시 <code>runMigrations()</code>가 다음 항목을 자동 체크합니다:</p>
+      <ul style="list-style: none; font-size:14px; margin-left: 10px">
+        <li>✅ <code>prayers.target_type</code> 컬럼</li>
+        <li>✅ <code>prayers.group_id</code> 컬럼</li>
+        <li>✅ <code>users.password_hash</code> 컬럼</li>
+        <li>✅ <code>users.profile_id</code> 컬럼</li>
+        <li>✅ <code>prayer_answers</code> 테이블</li>
+        <li>✅ <code>prayer_answer_comments</code> 테이블</li>
+      </ul>
+      <p style="font-size:13px; color: var(--muted); margin-top: 8px">
+        누락 시 백엔드 로그에 SQL이 출력되며 Supabase Dashboard에서 수동 실행 필요.
+        마이그레이션 파일: <code>database/migrations/002_prayer_answers.sql</code>
+      </p>
+    </section>
+
+    <!-- 14. 개발 계획 -->
+    <section class="section" id="roadmap">
+      <h2 class="section-title"><span class="icon">🗺️</span> 향후 개발 계획</h2>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title">🔜 단기 (즉시 가능)</div>
+          <ul class="checklist">
+            <li>Release APK 빌드 (키스토어 서명)</li>
+            <li>Google Play Store 출시 ($25 개발자 계정)</li>
+            <li>Feature Graphic 제작 (1024×500)</li>
+            <li>앱 스크린샷 준비 (최소 2장)</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-title">🔜 중기 (1-3개월)</div>
+          <ul class="checklist">
+            <li>FCM 푸시 알림 실제 발송</li>
+            <li>iOS 빌드 (Codemagic + App Store)</li>
+            <li>프로필 이미지 업로드 (Supabase Storage)</li>
+            <li>기도 전문 검색 강화</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15. 주요 URL -->
+    <section class="section" id="urls">
+      <h2 class="section-title"><span class="icon">🔗</span> 주요 URL 및 계정 정보</h2>
+      <div class="url-card">
+        <div class="url-icon">🚀</div>
+        <div>
+          <div class="url-label">Railway 백엔드 (운영 중)</div>
+          <a href="https://intercesso-backend-production-5f72.up.railway.app" target="_blank">
+            <div class="url-value">https://intercesso-backend-production-5f72.up.railway.app</div>
+          </a>
+        </div>
+      </div>
+      <div class="url-card">
+        <div class="url-icon">💻</div>
+        <div>
+          <div class="url-label">GitHub 저장소 (백엔드)</div>
+          <a href="https://github.com/silliju/intercesso-backend" target="_blank">
+            <div class="url-value">https://github.com/silliju/intercesso-backend</div>
+          </a>
+        </div>
+      </div>
+      <div class="url-card">
+        <div class="url-icon">🗄️</div>
+        <div>
+          <div class="url-label">Supabase 대시보드</div>
+          <a href="https://app.supabase.com" target="_blank">
+            <div class="url-value">https://app.supabase.com → 프로젝트: ypqbkqflikdjickyywvc</div>
+          </a>
+        </div>
+      </div>
+      <div class="url-card">
+        <div class="url-icon">🚂</div>
+        <div>
+          <div class="url-label">Railway 대시보드</div>
+          <a href="https://railway.app" target="_blank">
+            <div class="url-value">https://railway.app (silliju 계정 로그인)</div>
+          </a>
+        </div>
+      </div>
+      <div class="url-card">
+        <div class="url-icon">📄</div>
+        <div>
+          <div class="url-label">이용약관</div>
+          <a href="https://intercesso-backend-production-5f72.up.railway.app/terms" target="_blank">
+            <div class="url-value">https://intercesso-backend-production-5f72.up.railway.app/terms</div>
+          </a>
+        </div>
+      </div>
+      <div class="url-card">
+        <div class="url-icon">🔒</div>
+        <div>
+          <div class="url-label">개인정보처리방침</div>
+          <a href="https://intercesso-backend-production-5f72.up.railway.app/privacy" target="_blank">
+            <div class="url-value">https://intercesso-backend-production-5f72.up.railway.app/privacy</div>
+          </a>
+        </div>
+      </div>
+
+      <div style="text-align:center; margin-top:48px; padding:24px; background: var(--dark); border-radius:12px; color: rgba(255,255,255,0.5); font-size:13px">
+        📖 Intercesso 프로젝트 문서 | APK v19 | 2026년 3월<br>
+        Railway 백엔드 운영 중 · Supabase DB 연결 완료 · Google Play 출시 준비 중
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  // 스크롤에 따른 사이드바 활성화
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.sidebar nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

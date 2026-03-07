@@ -166,3 +166,99 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
 };
+
+// 계정 삭제 - 구글 플레이 정책 필수 요건
+export const deleteMe = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    // 1. 내가 만든 그룹에서 나를 creator로 가진 그룹 확인
+    const { data: myGroups } = await supabaseAdmin
+      .from('groups')
+      .select('id')
+      .eq('creator_id', userId);
+
+    // 2. 내가 만든 그룹 삭제 (group_members 포함)
+    if (myGroups && myGroups.length > 0) {
+      const groupIds = myGroups.map((g: any) => g.id);
+      await supabaseAdmin.from('group_members').delete().in('group_id', groupIds);
+      await supabaseAdmin.from('prayers').update({ group_id: null }).in('group_id', groupIds);
+      await supabaseAdmin.from('groups').delete().in('id', groupIds);
+    }
+
+    // 3. 내 그룹 멤버십 삭제
+    await supabaseAdmin.from('group_members').delete().eq('user_id', userId);
+
+    // 4. 내 기도 참여 기록 삭제
+    await supabaseAdmin.from('prayer_participations').delete().eq('user_id', userId);
+
+    // 5. 내 댓글 삭제
+    await supabaseAdmin.from('comments').delete().eq('user_id', userId);
+
+    // 6. 내 중보기도 요청 삭제
+    await supabaseAdmin.from('intercession_requests').delete().eq('requester_id', userId);
+    await supabaseAdmin.from('intercession_requests').delete().eq('target_user_id', userId);
+
+    // 7. 내 알림 삭제
+    await supabaseAdmin.from('notifications').delete().eq('user_id', userId);
+
+    // 8. 내 기도 체크인 삭제
+    await supabaseAdmin.from('prayer_checkins').delete().eq('user_id', userId);
+
+    // 9. 내 기도 삭제
+    await supabaseAdmin.from('prayers').delete().eq('user_id', userId);
+
+    // 10. 내 통계 삭제
+    await supabaseAdmin.from('user_statistics').delete().eq('user_id', userId);
+
+    // 11. 사용자 계정 삭제
+    const { error } = await supabaseAdmin.from('users').delete().eq('id', userId);
+
+    if (error) {
+      sendError(res, '계정 삭제에 실패했습니다', 500, 'DELETE_ERROR');
+      return;
+    }
+
+    sendSuccess(res, null, '계정이 삭제되었습니다');
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};
+
+// FCM 토큰 저장/갱신 (로그인 후 앱에서 호출)
+export const updateFcmToken = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+    const { token } = req.body;
+
+    if (!token || typeof token !== 'string') {
+      sendError(res, 'FCM 토큰이 필요합니다', 400, 'INVALID_TOKEN');
+      return;
+    }
+
+    await supabaseAdmin
+      .from('users')
+      .update({ fcm_token: token })
+      .eq('id', userId);
+
+    sendSuccess(res, null, 'FCM 토큰이 저장되었습니다');
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};
+
+// FCM 토큰 삭제 (로그아웃 시 호출 → 불필요한 푸시 방지)
+export const deleteFcmToken = async (req: AuthRequest, res: Response): Promise<void> => {
+  try {
+    const userId = req.user!.userId;
+
+    await supabaseAdmin
+      .from('users')
+      .update({ fcm_token: null })
+      .eq('id', userId);
+
+    sendSuccess(res, null, 'FCM 토큰이 삭제되었습니다');
+  } catch {
+    sendError(res, '서버 오류', 500, 'SERVER_ERROR');
+  }
+};

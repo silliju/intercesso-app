@@ -6,7 +6,7 @@ class GroupService {
   final ApiService _api = ApiService();
 
   Future<List<GroupModel>> getMyGroups() async {
-    final response = await _api.get('/groups/my');
+    final response = await _api.get('/groups');
     final List<dynamic> data = response['data'] ?? [];
     return data.map((g) => GroupModel.fromJson(g)).toList();
   }

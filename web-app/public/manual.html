@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intercesso 사용 설명서</title>
+  <style>
+    /* ── 기본 리셋 & 폰트 ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #00AAFF;
+      --primary-dark: #0088CC;
+      --secondary: #00C9A7;
+      --bg: #F0F4FF;
+      --card: #FFFFFF;
+      --text: #1A1A2E;
+      --text2: #6B7280;
+      --border: #E5E7EB;
+      --success: #10B981;
+      --warn: #F59E0B;
+      --error: #EF4444;
+      --radius: 16px;
+      --shadow: 0 4px 24px rgba(0,170,255,.10);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Pretendard', 'Apple SD Gothic Neo', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    /* ── 히어로 헤더 ── */
+    .hero {
+      background: linear-gradient(135deg, #00AAFF 0%, #00C9A7 100%);
+      color: #fff;
+      padding: 64px 24px 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: rgba(255,255,255,.07);
+      border-radius: 50%;
+      top: -200px; right: -150px;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      width: 400px; height: 400px;
+      background: rgba(255,255,255,.05);
+      border-radius: 50%;
+      bottom: -100px; left: -100px;
+    }
+    .hero-icon { font-size: 72px; margin-bottom: 16px; display: block; }
+    .hero h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; letter-spacing: -1px; margin-bottom: 12px; }
+    .hero p { font-size: clamp(14px, 2.5vw, 18px); opacity: .9; max-width: 520px; margin: 0 auto 24px; }
+    .hero-badge {
+      display: inline-block;
+      background: rgba(255,255,255,.2);
+      border: 1px solid rgba(255,255,255,.4);
+      border-radius: 50px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: .5px;
+    }
+
+    /* ── 네비게이션 목차 ── */
+    .toc-wrap {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,.06);
+    }
+    .toc {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      gap: 4px;
+      padding: 10px 20px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .toc::-webkit-scrollbar { display: none; }
+    .toc a {
+      white-space: nowrap;
+      text-decoration: none;
+      color: var(--text2);
+      font-size: 13px;
+      font-weight: 500;
+      padding: 6px 14px;
+      border-radius: 50px;
+      transition: all .2s;
+    }
+    .toc a:hover { background: var(--bg); color: var(--primary); }
+    .toc a.active { background: var(--primary); color: #fff; }
+
+    /* ── 공통 레이아웃 ── */
+    .container { max-width: 900px; margin: 0 auto; padding: 0 20px; }
+
+    /* ── 섹션 ── */
+    .section {
+      padding: 60px 0 20px;
+    }
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 32px;
+    }
+    .section-icon {
+      width: 52px; height: 52px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: clamp(20px, 3vw, 26px);
+      font-weight: 800;
+      letter-spacing: -.5px;
+    }
+    .section-header p { font-size: 14px; color: var(--text2); margin-top: 2px; }
+
+    /* ── 카드 ── */
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card p, .card li { font-size: 14.5px; color: var(--text2); line-height: 1.8; }
+    .card ul, .card ol { padding-left: 20px; }
+    .card li { margin-bottom: 6px; }
+    .card li strong { color: var(--text); }
+
+    /* ── 스텝 카드 ── */
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+    .step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      left: 19px; top: 44px;
+      width: 2px;
+      height: calc(100% - 24px);
+      background: linear-gradient(to bottom, var(--primary), transparent);
+    }
+    .step-num {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 15px;
+      margin-top: 2px;
+      box-shadow: 0 4px 12px rgba(0,170,255,.3);
+    }
+    .step-content { flex: 1; padding-bottom: 28px; }
+    .step-content h4 { font-size: 16px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .step-content p { font-size: 14px; color: var(--text2); line-height: 1.7; }
+    .step-content .tip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #EFF6FF;
+      border-left: 3px solid var(--primary);
+      border-radius: 0 8px 8px 0;
+      padding: 8px 14px;
+      font-size: 13px;
+      color: var(--primary-dark);
+      margin-top: 10px;
+    }
+
+    /* ── 2열 그리드 ── */
+    .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+
+    /* ── 기능 뱃지 ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+      margin: 3px 3px 3px 0;
+    }
+    .badge-blue { background: #EFF6FF; color: #1D4ED8; }
+    .badge-green { background: #ECFDF5; color: #065F46; }
+    .badge-orange { background: #FFF7ED; color: #9A3412; }
+    .badge-purple { background: #F5F3FF; color: #5B21B6; }
+
+    /* ── 앱 화면 시뮬레이터 (목업) ── */
+    .mockup-row {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 8px 4px 20px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .mockup-row::-webkit-scrollbar { display: none; }
+    .mockup {
+      flex-shrink: 0;
+      width: 220px;
+      background: #1A1A2E;
+      border-radius: 32px;
+      padding: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    }
+    .mockup-inner {
+      background: #fff;
+      border-radius: 22px;
+      overflow: hidden;
+      height: 420px;
+    }
+    .mockup-header {
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      padding: 16px 14px 12px;
+      color: #fff;
+    }
+    .mockup-header .bar { height: 10px; background: rgba(255,255,255,.3); border-radius: 5px; margin-bottom: 6px; }
+    .mockup-header .bar.short { width: 60%; }
+    .mockup-content { padding: 12px; }
+    .mockup-item {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .mockup-item .line { height: 8px; background: #D1D5DB; border-radius: 4px; margin-bottom: 5px; }
+    .mockup-item .line.short { width: 60%; }
+    .mockup-item .line.xshort { width: 40%; height: 6px; background: #E5E7EB; }
+    .mockup-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text2);
+      margin-top: 10px;
+      font-weight: 600;
+    }
+
+    /* ── 탭 메뉴 설명 ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .tab-item {
+      flex: 1;
+      text-align: center;
+      padding: 14px 8px;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .tab-item:last-child { border-right: none; }
+    .tab-item .tab-icon { font-size: 22px; margin-bottom: 4px; }
+    .tab-item .tab-label { font-size: 11px; font-weight: 600; color: var(--text2); }
+    .tab-item.active .tab-label { color: var(--primary); }
+    .tab-item.active { background: #EFF6FF; }
+
+    /* ── 경고/팁 박스 ── */
+    .notice {
+      display: flex;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .notice-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .notice-info { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E40AF; }
+    .notice-tip { background: #ECFDF5; border: 1px solid #A7F3D0; color: #065F46; }
+    .notice-warn { background: #FFFBEB; border: 1px solid #FCD34D; color: #92400E; }
+
+    /* ── FAQ ── */
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      background: var(--card);
+    }
+    .faq-q {
+      padding: 16px 20px;
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .faq-q:hover { background: var(--bg); }
+    .faq-q::after { content: '＋'; font-size: 18px; color: var(--primary); transition: transform .2s; }
+    .faq-item input { display: none; }
+    .faq-item input:checked ~ .faq-q::after { content: '－'; }
+    .faq-item input:checked ~ .faq-a { display: block; }
+    .faq-a {
+      display: none;
+      padding: 0 20px 16px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.8;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── 다운로드 섹션 ── */
+    .download-card {
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+      border-radius: var(--radius);
+      padding: 40px;
+      text-align: center;
+      color: #fff;
+    }
+    .download-card h3 { font-size: 24px; font-weight: 800; margin-bottom: 10px; }
+    .download-card p { opacity: .7; font-size: 14px; margin-bottom: 28px; }
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: #fff;
+      text-decoration: none;
+      padding: 16px 36px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,170,255,.4);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-download:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,170,255,.5); }
+
+    /* ── 푸터 ── */
+    footer {
+      text-align: center;
+      padding: 40px 20px 60px;
+      color: var(--text2);
+      font-size: 13px;
+      border-top: 1px solid var(--border);
+      margin-top: 60px;
+    }
+    footer span { color: var(--primary); font-weight: 600; }
+
+    /* ── 구분선 ── */
+    .divider { border: none; border-top: 1px solid var(--border); margin: 8px 0 24px; }
+
+    /* ── 반응형 ── */
+    @media (max-width: 600px) {
+      .card { padding: 20px; }
+      .section { padding: 40px 0 10px; }
+      .download-card { padding: 28px 20px; }
+    }
+
+    /* ── 색상 점 인디케이터 ── */
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+    .dot-blue { background: var(--primary); }
+    .dot-green { background: var(--success); }
+    .dot-orange { background: var(--warn); }
+
+    /* ── 인라인 코드 ── */
+    code {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ── 테이블 ── */
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th {
+      background: var(--bg);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border);
+      font-size: 13px;
+      color: var(--text2);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+    }
+    td { padding: 12px 16px; border-bottom: 1px solid var(--border); color: var(--text2); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg); }
+
+    /* ── 스크롤 투 탑 ── */
+    .back-top {
+      position: fixed;
+      bottom: 28px; right: 28px;
+      background: var(--primary);
+      color: #fff;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(0,170,255,.4);
+      transition: transform .2s;
+    }
+    .back-top:hover { transform: translateY(-3px); }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HERO ══════════════ -->
+<header class="hero" id="top">
+  <span class="hero-icon">🙏</span>
+  <h1>Intercesso</h1>
+  <p>함께 기도하는 공동체 앱<br>사용 설명서 — 처음 사용자도 5분이면 시작!</p>
+  <span class="hero-badge">✦ 사용 설명서 v12 · 2025</span>
+</header>
+
+<!-- ══════════════ 목차 NAV ══════════════ -->
+<nav class="toc-wrap">
+  <div class="toc">
+    <a href="#start">🚀 시작하기</a>
+    <a href="#home">🏠 홈</a>
+    <a href="#prayer">🙏 기도</a>
+    <a href="#intercession">🤝 중보기도</a>
+    <a href="#group">👥 그룹</a>
+    <a href="#notification">🔔 알림</a>
+    <a href="#profile">👤 프로필</a>
+    <a href="#dashboard">📊 통계</a>
+    <a href="#faq">❓ FAQ</a>
+    <a href="#download">📲 다운로드</a>
+  </div>
+</nav>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<main>
+
+<!-- ───── 앱 소개 ───── -->
+<section class="section container">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EFF6FF">✨</div>
+    <div>
+      <h2>Intercesso란?</h2>
+      <p>나의 기도를 기록하고, 공동체와 함께 기도하는 플랫폼</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>🎯 핵심 가치</h3>
+      <ul>
+        <li><strong>기도 기록</strong> — 나의 기도 제목과 응답을 기록하세요</li>
+        <li><strong>공동체 기도</strong> — 지인·그룹과 함께 기도해요</li>
+        <li><strong>중보기도</strong> — 누군가를 위해 대신 기도해 드려요</li>
+        <li><strong>작정기도</strong> — 7·21·40·100일 목표 기도를 도전하세요</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>📱 주요 화면</h3>
+      <div class="tab-bar">
+        <div class="tab-item active">
+          <div class="tab-icon">🏠</div>
+          <div class="tab-label">홈</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-icon">🙏</div>
+          <div class="tab-label">기도</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-icon">🤝</div>
+          <div class="tab-label">중보</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-icon">👥</div>
+          <div class="tab-label">그룹</div>
+        </div>
+        <div class="tab-item">
+          <div class="tab-icon">👤</div>
+          <div class="tab-label">프로필</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:var(--text2)">하단 탭으로 5가지 주요 기능을 언제든 이동할 수 있어요.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 1. 시작하기 ───── -->
+<section class="section container" id="start">
+  <div class="section-header">
+    <div class="section-icon" style="background:linear-gradient(135deg,#EFF6FF,#DBEAFE)">🚀</div>
+    <div>
+      <h2>시작하기</h2>
+      <p>회원가입부터 로그인까지 — 3분이면 충분해요</p>
+    </div>
+  </div>
+
+  <!-- 회원가입 -->
+  <div class="card">
+    <h3>📝 회원가입</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>앱 실행 → 온보딩 화면</h4>
+          <p>앱을 처음 열면 Intercesso를 소개하는 3장의 화면이 나타납니다. 오른쪽으로 넘기거나 <strong>건너뛰기</strong>를 눌러 로그인 화면으로 이동하세요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>회원가입 버튼 탭</h4>
+          <p>로그인 화면 하단의 <strong>"계정이 없으신가요? 회원가입"</strong>을 누릅니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>정보 입력</h4>
+          <p>아래 항목을 차례로 입력하세요.</p>
+          <table style="margin-top:10px">
+            <tr><th>항목</th><th>설명</th><th>필수여부</th></tr>
+            <tr><td>📧 이메일</td><td>로그인에 사용할 이메일 주소</td><td><span class="badge badge-orange">필수</span></td></tr>
+            <tr><td>🔒 비밀번호</td><td>6자 이상 (영문+숫자 권장)</td><td><span class="badge badge-orange">필수</span></td></tr>
+            <tr><td>✏️ 닉네임</td><td>공동체에서 표시될 이름</td><td><span class="badge badge-orange">필수</span></td></tr>
+            <tr><td>⛪ 교회명</td><td>소속 교회 (검색 편의)</td><td><span class="badge badge-blue">선택</span></td></tr>
+          </table>
+          <div class="tip">💡 닉네임은 나중에 프로필 수정에서 바꿀 수 있어요.</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>가입 완료 → 홈으로 이동</h4>
+          <p><strong>회원가입</strong> 버튼을 누르면 자동으로 로그인되어 홈 화면으로 이동합니다. 🎉</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 로그인 -->
+  <div class="card">
+    <h3>🔑 로그인</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>이메일 &amp; 비밀번호 입력</h4>
+          <p>가입 시 등록한 이메일과 비밀번호를 입력하세요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>비밀번호 찾기</h4>
+          <p>비밀번호가 기억나지 않으면 <strong>"비밀번호 찾기"</strong>를 눌러 이메일로 재설정 링크를 받으세요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>자동 로그인</h4>
+          <p>한 번 로그인하면 앱을 다시 열어도 자동으로 홈 화면이 열립니다. 로그아웃 전까지 다시 입력할 필요 없어요.</p>
+          <div class="tip">🔐 보안을 위해 공용 기기에서는 사용 후 반드시 로그아웃해 주세요.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 2. 홈 화면 ───── -->
+<section class="section container" id="home">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EFF6FF">🏠</div>
+    <div>
+      <h2>홈 화면</h2>
+      <p>기도 현황을 한눈에 — 대시보드와 최근 기도</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>📊 나의 기도 현황 카드</h3>
+      <p>홈 상단에 나의 기도 통계가 한눈에 보입니다.</p>
+      <hr class="divider" />
+      <table>
+        <tr><th>항목</th><th>설명</th></tr>
+        <tr><td>총 기도</td><td>지금까지 작성한 기도 수</td></tr>
+        <tr><td>응답받음</td><td>상태를 "응답받음"으로 바꾼 기도 수</td></tr>
+        <tr><td>🔥 연속 기도일</td><td>매일 기도 참여를 이어온 일수</td></tr>
+        <tr><td>참여 기도</td><td>다른 분의 기도에 함께한 횟수</td></tr>
+        <tr><td>응답률</td><td>(응답받음 ÷ 총 기도) × 100%</td></tr>
+      </table>
+    </div>
+    <div class="card">
+      <h3>📋 최근 기도 목록</h3>
+      <ul>
+        <li>최신 공개 기도 최대 <strong>5개</strong>가 표시됩니다.</li>
+        <li>기도 카드를 탭하면 <strong>기도 상세</strong> 화면으로 이동해요.</li>
+        <li><strong>전체 보기 →</strong> 를 누르면 기도 목록 탭으로 이동합니다.</li>
+        <li>공개 기도가 없을 경우 나의 기도 목록이 대신 표시됩니다.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="notice notice-tip">
+    <span class="notice-icon">✅</span>
+    <div>홈 화면은 아래로 당기면(Pull-to-Refresh) 최신 정보로 새로고침됩니다.</div>
+  </div>
+</section>
+
+<!-- ───── 3. 기도 목록 & 작성 ───── -->
+<section class="section container" id="prayer">
+  <div class="section-header">
+    <div class="section-icon" style="background:#ECFDF5">🙏</div>
+    <div>
+      <h2>기도 목록 &amp; 기도 작성</h2>
+      <p>나의 기도를 기록하고, 공동체의 기도를 함께해요</p>
+    </div>
+  </div>
+
+  <!-- 기도 목록 탭 -->
+  <div class="card">
+    <h3>📂 기도 목록 — 탭 구분</h3>
+    <p>상단 4개의 탭으로 원하는 기도를 골라 볼 수 있어요.</p>
+    <hr class="divider" />
+    <table>
+      <tr><th>탭</th><th>보여주는 기도</th></tr>
+      <tr><td>🌐 전체 공개</td><td>모든 사용자의 공개 기도</td></tr>
+      <tr><td>✏️ 내 기도</td><td>내가 작성한 기도 전체</td></tr>
+      <tr><td>🤝 지인 기도</td><td>나를 팔로우하거나 그룹 안 지인의 기도</td></tr>
+      <tr><td>🙏 기도중</td><td>내가 "기도 참여"한 기도들</td></tr>
+    </table>
+  </div>
+
+  <!-- 카테고리 필터 -->
+  <div class="card">
+    <h3>🏷️ 카테고리 필터</h3>
+    <p>탭 아래 가로 스크롤 칩으로 카테고리를 선택하면 해당 기도만 보입니다.</p>
+    <hr class="divider" />
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <span class="badge badge-blue">전체</span>
+      <span class="badge badge-green">💊 건강</span>
+      <span class="badge badge-orange">👪 가정</span>
+      <span class="badge badge-purple">🎯 진로</span>
+      <span class="badge badge-blue">✝️ 영적</span>
+      <span class="badge badge-green">💼 사업</span>
+      <span class="badge badge-orange">📌 기타</span>
+    </div>
+  </div>
+
+  <!-- 검색 -->
+  <div class="card">
+    <h3>🔍 기도 검색</h3>
+    <p>화면 상단 검색 아이콘을 누르면 검색창이 열립니다. 기도 제목이나 내용의 키워드를 입력하면 실시간으로 필터링됩니다.</p>
+    <div class="notice notice-info" style="margin-top:12px">
+      <span class="notice-icon">ℹ️</span>
+      <div>검색은 <strong>현재 탭의 기도 목록</strong> 안에서만 동작합니다. 전체 탭에서 검색하면 공개 기도 전체를 찾아줘요.</div>
+    </div>
+  </div>
+
+  <!-- 기도 작성 -->
+  <div class="card">
+    <h3>✍️ 기도 작성하기</h3>
+    <p>화면 우측 하단의 <strong>➕ 버튼</strong>을 눌러 새 기도를 작성합니다.</p>
+    <hr class="divider" />
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>제목 입력 (필수)</h4>
+          <p>기도의 제목을 간결하게 적어요. 최대 100자.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>내용 입력 (필수)</h4>
+          <p>기도 내용을 자세히 적어요. 구체적일수록 함께 기도하는 분들이 더 잘 이해할 수 있어요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>카테고리 선택 (선택)</h4>
+          <p>건강 / 가정 / 진로 / 영적 / 사업 / 기타 중 하나를 선택하세요. 탭하면 선택 해제도 됩니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>공개 범위 설정</h4>
+          <table style="margin-top:8px">
+            <tr><th>범위</th><th>공개 대상</th></tr>
+            <tr><td>🌐 전체 공개</td><td>모든 Intercesso 사용자</td></tr>
+            <tr><td>👥 지인 공개</td><td>나를 아는 사람들만</td></tr>
+            <tr><td>🏘 공동체</td><td>같은 그룹 멤버만</td></tr>
+            <tr><td>🔒 비공개</td><td>나만 볼 수 있어요</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h4>작정기도 설정 (선택)</h4>
+          <p>작정기도 토글을 켜면 기간(7 / 21 / 40 / 50 / 100일)을 선택할 수 있어요. 매일 체크인으로 진도를 기록합니다.</p>
+          <div class="tip">🔥 작정기도는 꾸준한 기도 습관을 만드는 데 큰 도움이 됩니다!</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h4>완료 버튼 탭</h4>
+          <p>우측 상단 <strong>"완료"</strong>를 누르면 기도가 저장됩니다. 🙏</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기도 상세 -->
+  <div class="card">
+    <h3>📖 기도 상세 화면</h3>
+    <p>기도 카드를 탭하면 상세 화면이 열립니다. 할 수 있는 것들:</p>
+    <hr class="divider" />
+    <div class="grid2">
+      <div>
+        <p><strong>👁️ 기도 참여</strong></p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">하단 "기도하기 🙏" 버튼을 탭하면 함께 기도하는 목록에 추가됩니다. 다시 탭하면 참여 취소.</p>
+        <p><strong>💬 댓글</strong></p>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:12px">위로를 전하거나 기도 응답을 나눠요. 내가 쓴 댓글은 <strong>길게 누르면</strong> 삭제 옵션이 뜹니다.</p>
+      </div>
+      <div>
+        <p><strong>📝 상태 변경 (내 기도)</strong></p>
+        <table style="margin-top:6px;margin-bottom:12px">
+          <tr><td>🙏 기도중</td><td>아직 기도 중</td></tr>
+          <tr><td>✅ 응답받음</td><td>기도가 응답됐어요!</td></tr>
+          <tr><td>🙌 감사</td><td>감사의 마음을 나눠요</td></tr>
+        </table>
+        <p><strong>🗑️ 삭제 (내 기도)</strong></p>
+        <p style="font-size:13px;color:var(--text2)">우측 상단 메뉴 → 삭제. 확인 다이얼로그가 뜹니다.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 작정기도 체크인 -->
+  <div class="card">
+    <h3>🔥 작정기도 체크인</h3>
+    <p>작정기도로 설정한 기도의 상세 화면에는 체크인 섹션이 나타납니다.</p>
+    <hr class="divider" />
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>진행률 확인</h4>
+          <p>상단 프로그레스 바에서 전체 기간 대비 체크인 횟수를 한눈에 볼 수 있어요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>오늘 체크인</h4>
+          <p><strong>"오늘 기도했어요 ✅"</strong> 버튼을 눌러 오늘의 기도를 기록합니다. 하루에 한 번만 가능해요.</p>
+          <div class="tip">💡 이미 체크인한 날은 버튼이 비활성화되며 "오늘 완료 ✔"로 표시됩니다.</div>
+        </div>
+      </div>
+    </div>
+    <div class="notice notice-warn" style="margin-top:8px">
+      <span class="notice-icon">⚠️</span>
+      <div>작정기도 체크인은 본인(기도 작성자)만 가능합니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 4. 중보기도 ───── -->
+<section class="section container" id="intercession">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F5F3FF">🤝</div>
+    <div>
+      <h2>중보기도</h2>
+      <p>나를 위해 기도해 줄 분을 요청하거나, 다른 분의 기도를 도와드려요</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>📤 중보기도 요청하기</h3>
+      <p>기도 상세 화면에서 <strong>"중보기도 요청하기"</strong> 버튼을 탭합니다. (내 기도 + 기도중 상태일 때만 표시)</p>
+      <hr class="divider" />
+      <table>
+        <tr><th>요청 유형</th><th>설명</th></tr>
+        <tr><td>🌐 전체 공개</td><td>Intercesso 사용자 모두에게 요청</td></tr>
+        <tr><td>👥 그룹</td><td>내가 속한 특정 그룹에 요청</td></tr>
+        <tr><td>🧑 개인</td><td>특정 사람을 직접 지정해 요청</td></tr>
+      </table>
+      <p style="margin-top:10px;font-size:13px;color:var(--text2)">요청 시 한마디 메시지를 함께 보낼 수 있어요.</p>
+    </div>
+    <div class="card">
+      <h3>📥 중보기도 요청 받기</h3>
+      <p>누군가 나에게 중보기도를 요청하면 하단 탭 <strong>🤝 중보</strong>에 알림 배지가 생깁니다.</p>
+      <hr class="divider" />
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>받은 요청 탭 확인</h4>
+            <p>중보기도 화면의 <strong>"받은 요청"</strong> 탭에 목록이 표시됩니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>수락 또는 거절</h4>
+            <p>각 카드의 <strong>수락 ✅ / 거절 ❌</strong> 버튼을 눌러 응답하세요. 수락하면 기도 상세로 바로 이동해 함께 기도할 수 있습니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📋 보낸 요청 확인</h3>
+    <p><strong>"보낸 요청"</strong> 탭에서 내가 보낸 중보기도 요청의 상태를 확인할 수 있어요.</p>
+    <hr class="divider" />
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
+      <span class="badge badge-orange">⏳ 대기중</span>
+      <span class="badge badge-green">✅ 수락됨</span>
+      <span class="badge" style="background:#FEE2E2;color:#991B1B">❌ 거절됨</span>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 5. 그룹 ───── -->
+<section class="section container" id="group">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FEF3C7">👥</div>
+    <div>
+      <h2>그룹</h2>
+      <p>교회, 셀, 소모임, 가족과 함께 기도하는 공간</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>🔍 그룹 찾기 &amp; 참여</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>초대코드로 참여</h4>
+          <p>그룹 화면 우측 상단 <strong>🔑 키 아이콘</strong>을 탭합니다. 그룹 관리자에게 받은 초대코드를 입력하면 바로 가입됩니다.</p>
+          <div class="tip">💡 초대코드는 영문+숫자 조합 6자리예요.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>➕ 그룹 만들기</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>그룹 화면 → ➕ 아이콘 탭</h4>
+          <p>그룹 목록 우측 상단의 <strong>+</strong> 버튼을 누릅니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>그룹 정보 입력</h4>
+          <table style="margin-top:8px">
+            <tr><th>항목</th><th>설명</th></tr>
+            <tr><td>그룹명</td><td>필수, 그룹의 이름</td></tr>
+            <tr><td>설명</td><td>선택, 그룹 소개</td></tr>
+            <tr><td>그룹 유형</td><td>교회 / 셀·구역 / 소모임 / 가족</td></tr>
+            <tr><td>공개 여부</td><td>공개 ON → 누구나 참여 가능</td></tr>
+          </table>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>그룹 만들기 버튼</h4>
+          <p>완성하면 <strong>그룹 만들기</strong>를 탭. 자동으로 관리자(어드민)가 됩니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📋 그룹 상세 화면</h3>
+    <p>그룹을 탭하면 2개 탭이 있습니다.</p>
+    <hr class="divider" />
+    <div class="grid2">
+      <div>
+        <p><strong>🙏 기도 탭</strong></p>
+        <ul style="margin-top:8px">
+          <li>그룹 전용 기도 목록을 볼 수 있어요</li>
+          <li>우측 하단 <strong>➕ 버튼</strong>으로 그룹 기도 작성</li>
+          <li>아래로 당기면 새로고침</li>
+        </ul>
+      </div>
+      <div>
+        <p><strong>👥 멤버 탭</strong></p>
+        <ul style="margin-top:8px">
+          <li>그룹 멤버 목록과 역할(어드민) 확인</li>
+          <li>어드민은 상단 <strong>초대코드 복사</strong> 버튼으로 코드를 공유 가능</li>
+        </ul>
+      </div>
+    </div>
+    <div class="notice notice-info" style="margin-top:14px">
+      <span class="notice-icon">ℹ️</span>
+      <div>관리자(어드민) 배지가 있는 멤버가 그룹을 운영합니다. 어드민만 초대코드를 확인·공유할 수 있어요.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 6. 알림 ───── -->
+<section class="section container" id="notification">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FEF2F2">🔔</div>
+    <div>
+      <h2>알림</h2>
+      <p>놓친 기도 소식을 빠르게 확인하세요</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📬 알림 유형</h3>
+    <table>
+      <tr><th>알림 종류</th><th>설명</th><th>탭 시 이동</th></tr>
+      <tr><td>🙏 기도 참여</td><td>누군가 내 기도에 함께해요</td><td>기도 상세</td></tr>
+      <tr><td>💬 댓글</td><td>내 기도에 댓글이 달렸어요</td><td>기도 상세</td></tr>
+      <tr><td>✅ 응답받음</td><td>기도가 응답받음으로 변경됐어요</td><td>기도 상세</td></tr>
+      <tr><td>👥 그룹 초대</td><td>그룹에 초대됐어요</td><td>그룹 상세</td></tr>
+      <tr><td>🤝 중보기도 요청</td><td>중보기도 요청이 왔어요</td><td>중보기도 화면</td></tr>
+    </table>
+    <div class="notice notice-tip" style="margin-top:12px">
+      <span class="notice-icon">✅</span>
+      <div>알림을 탭하면 해당 기도나 그룹으로 <strong>자동으로 이동</strong>합니다. 읽은 알림은 자동으로 읽음 처리됩니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 7. 프로필 ───── -->
+<section class="section container" id="profile">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F0FDF4">👤</div>
+    <div>
+      <h2>프로필</h2>
+      <p>나를 소개하고 개인 설정을 관리해요</p>
+    </div>
+  </div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>✏️ 프로필 수정</h3>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>프로필 탭 → 수정 버튼</h4>
+            <p>프로필 화면 상단 <strong>"프로필 수정"</strong> 버튼을 탭합니다.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>정보 수정</h4>
+            <table style="margin-top:8px">
+              <tr><th>항목</th><th>설명</th></tr>
+              <tr><td>닉네임</td><td>표시 이름 변경</td></tr>
+              <tr><td>교회명</td><td>소속 교회 수정</td></tr>
+              <tr><td>자기소개</td><td>짧은 한마디 소개</td></tr>
+            </table>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>저장</h4>
+            <p><strong>수정 완료</strong> 버튼을 탭하면 저장됩니다.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>📋 프로필 메뉴</h3>
+      <table>
+        <tr><th>메뉴</th><th>설명</th></tr>
+        <tr><td>📋 내 기도 목록</td><td>내가 작성한 기도만 모아보기</td></tr>
+        <tr><td>📊 기도 통계</td><td>상세 통계 대시보드로 이동</td></tr>
+        <tr><td>👥 그룹</td><td>그룹 탭으로 이동</td></tr>
+        <tr><td>🔔 알림 설정</td><td>알림 화면으로 이동</td></tr>
+        <tr><td>🚪 로그아웃</td><td>현재 계정에서 로그아웃</td></tr>
+      </table>
+      <div class="notice notice-warn" style="margin-top:12px">
+        <span class="notice-icon">⚠️</span>
+        <div>로그아웃하면 자동 로그인이 해제됩니다. 로그인 화면으로 이동합니다.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 8. 통계 대시보드 ───── -->
+<section class="section container" id="dashboard">
+  <div class="section-header">
+    <div class="section-icon" style="background:#EFF6FF">📊</div>
+    <div>
+      <h2>기도 통계 대시보드</h2>
+      <p>나의 기도 여정을 숫자로 돌아보세요</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>📈 대시보드 항목</h3>
+    <table>
+      <tr><th>항목</th><th>설명</th></tr>
+      <tr><td>🙏 총 기도 수</td><td>지금까지 작성한 기도 총 개수</td></tr>
+      <tr><td>✅ 응답받은 기도</td><td>응답받음 상태로 바꾼 기도 수</td></tr>
+      <tr><td>🙌 감사 기도</td><td>감사 상태로 기록한 기도 수</td></tr>
+      <tr><td>🤝 총 참여</td><td>다른 사람 기도에 참여한 횟수</td></tr>
+      <tr><td>💬 총 댓글</td><td>내가 작성한 댓글 수</td></tr>
+      <tr><td>🔥 연속 기도일</td><td>매일 기도를 이어온 연속 일수</td></tr>
+      <tr><td>📈 응답률</td><td>응답받음 기도 / 전체 기도 비율 (%)</td></tr>
+    </table>
+    <div class="notice notice-tip" style="margin-top:12px">
+      <span class="notice-icon">✅</span>
+      <div>프로필 화면 → <strong>기도 통계</strong> 메뉴 또는 홈 화면의 <strong>대시보드</strong> 링크로 이동할 수 있어요.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 9. 자주 묻는 질문 (FAQ) ───── -->
+<section class="section container" id="faq">
+  <div class="section-header">
+    <div class="section-icon" style="background:#FEF3C7">❓</div>
+    <div>
+      <h2>자주 묻는 질문</h2>
+      <p>궁금한 게 있으면 여기서 먼저 찾아보세요</p>
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq1" />
+    <label class="faq-q" for="faq1">비밀번호를 잊었어요. 어떻게 하나요?</label>
+    <div class="faq-a">
+      로그인 화면에서 <strong>"비밀번호 찾기"</strong>를 탭하고, 가입 시 등록한 이메일을 입력하세요. 해당 이메일로 재설정 링크가 발송됩니다. 메일 수신함(스팸 폴더도 확인)에서 링크를 클릭하면 새 비밀번호를 설정할 수 있어요.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq2" />
+    <label class="faq-q" for="faq2">내 기도가 다른 사람에게 보이지 않게 하려면?</label>
+    <div class="faq-a">
+      기도 작성 시 공개 범위를 <strong>🔒 비공개</strong>로 설정하면 본인만 볼 수 있습니다. 이미 작성된 기도는 기도 상세 → 수정 → 범위 변경으로 비공개로 바꿀 수 있어요.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq3" />
+    <label class="faq-q" for="faq3">그룹 초대코드는 어디서 확인하나요?</label>
+    <div class="faq-a">
+      그룹 상세 화면의 <strong>멤버 탭</strong> 상단에 있는 <strong>"초대코드 복사"</strong> 버튼을 탭하면 클립보드에 복사됩니다. 이 버튼은 <strong>그룹 관리자(어드민)만</strong> 볼 수 있어요.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq4" />
+    <label class="faq-q" for="faq4">작정기도 체크인을 빠뜨렸어요. 소급 입력이 되나요?</label>
+    <div class="faq-a">
+      아니요. 작정기도 체크인은 <strong>당일만</strong> 가능합니다. 꾸준히 매일 기록하는 습관을 만드는 게 목적이에요. 빠뜨린 날은 내일부터 다시 시작하면 됩니다. 💪
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq5" />
+    <label class="faq-q" for="faq5">중보기도 요청을 잘못 보냈어요. 취소할 수 있나요?</label>
+    <div class="faq-a">
+      현재 버전에서는 발송된 중보기도 요청의 직접 취소 기능이 없습니다. 상대방이 아직 수락하지 않은 경우, 보낸 요청 목록에서 확인만 가능합니다. 향후 업데이트에서 취소 기능이 추가될 예정입니다.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq6" />
+    <label class="faq-q" for="faq6">탈퇴는 어떻게 하나요?</label>
+    <div class="faq-a">
+      현재 버전에서 앱 내 직접 탈퇴 기능은 준비 중입니다. 탈퇴를 원하시면 앱 내 문의 기능 또는 서비스 이메일로 요청해 주세요. 모든 데이터는 요청일로부터 7일 내에 삭제됩니다.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq7" />
+    <label class="faq-q" for="faq7">기도 검색이 안 돼요.</label>
+    <div class="faq-a">
+      검색은 <strong>현재 탭에 로드된 기도</strong> 중에서만 작동합니다. 검색 전에 먼저 원하는 탭(예: 전체 공개)을 선택하고, 목록이 완전히 로드된 후 검색 아이콘을 탭해 키워드를 입력하세요. 네트워크 상태가 나쁘면 로딩이 완료되지 않아 검색 결과가 적게 나올 수 있어요.
+    </div>
+  </div>
+
+  <div class="faq-item">
+    <input type="checkbox" id="faq8" />
+    <label class="faq-q" for="faq8">알림이 오지 않아요.</label>
+    <div class="faq-a">
+      스마트폰 <strong>설정 → 앱 → Intercesso → 알림</strong>에서 알림 권한이 허용되어 있는지 확인하세요. iOS의 경우 설정 → 알림 → Intercesso에서 "알림 허용"을 켜 주세요.
+    </div>
+  </div>
+</section>
+
+<!-- ───── 10. 다운로드 ───── -->
+<section class="section container" id="download">
+  <div class="download-card">
+    <div style="font-size:60px;margin-bottom:16px">📲</div>
+    <h3>Intercesso 앱 다운로드</h3>
+    <p>Android APK — 최신 버전 v12 (2025)</p>
+    <a class="btn-download" href="/intercesso-v12.apk" download>
+      ⬇️ APK 다운로드 (Android)
+    </a>
+    <p style="margin-top:20px;font-size:12px;opacity:.5">
+      ※ 설치 전 기기 설정 → 보안 → "출처를 알 수 없는 앱 허용"을 켜 주세요.<br>
+      iOS 버전은 준비 중입니다.
+    </p>
+  </div>
+
+  <div class="card" style="margin-top:20px">
+    <h3>📱 APK 설치 방법 (Android)</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>APK 파일 다운로드</h4>
+          <p>위 버튼을 탭해 <code>intercesso-v12.apk</code> 파일을 다운로드합니다.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>"출처를 알 수 없는 앱" 허용</h4>
+          <p>설정 → <strong>보안</strong> → <strong>출처를 알 수 없는 앱 허용</strong>을 활성화합니다. (Android 8 이상은 설치 시 팝업에서 바로 허용 가능)</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>APK 파일 실행 → 설치</h4>
+          <p>다운로드된 파일을 탭하면 설치 화면이 나타납니다. <strong>설치</strong>를 눌러 완료하세요.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>앱 실행</h4>
+          <p>홈 화면 또는 앱 서랍에서 <strong>Intercesso</strong> 아이콘을 탭하면 시작됩니다. 🙏</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ───── 용어 사전 ───── -->
+<section class="section container">
+  <div class="section-header">
+    <div class="section-icon" style="background:#F0FDF4">📖</div>
+    <div>
+      <h2>용어 설명</h2>
+      <p>앱에서 사용하는 주요 단어들</p>
+    </div>
+  </div>
+  <div class="card">
+    <table>
+      <tr><th>용어</th><th>설명</th></tr>
+      <tr><td><strong>중보기도</strong></td><td>다른 사람의 기도 제목을 대신 기도해 주는 행위</td></tr>
+      <tr><td><strong>작정기도</strong></td><td>정해진 날수(7·21·40·100일)동안 매일 기도하기로 다짐한 기도</td></tr>
+      <tr><td><strong>기도 참여</strong></td><td>다른 사람의 기도 제목을 함께 기도해 주는 것. "기도중" 탭에 추가됨</td></tr>
+      <tr><td><strong>체크인</strong></td><td>작정기도에서 오늘 기도했음을 앱에 기록하는 것</td></tr>
+      <tr><td><strong>공개 범위</strong></td><td>기도가 누구에게 보이는지 설정하는 옵션 (전체/지인/공동체/비공개)</td></tr>
+      <tr><td><strong>어드민</strong></td><td>그룹 관리자. 그룹을 만든 사람이 자동으로 어드민이 됨</td></tr>
+      <tr><td><strong>초대코드</strong></td><td>그룹에 새 멤버를 초대할 때 사용하는 영문+숫자 6자리 코드</td></tr>
+      <tr><td><strong>연속 기도일</strong></td><td>하루도 빠짐없이 기도 활동(참여·작성·체크인)을 이어온 일수</td></tr>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>🙏 <span>Intercesso</span> — 함께 기도하는 공동체</p>
+  <p style="margin-top:6px">© 2025 Intercesso · 사용 설명서 v12</p>
+</footer>
+
+<!-- 스크롤 투 탑 -->
+<a href="#top" class="back-top" title="맨 위로">↑</a>
+
+<script>
+  // ── 목차 활성 탭 처리 ──
+  const sections = document.querySelectorAll('section[id]');
+  const links = document.querySelectorAll('.toc a');
+
+  function updateActive() {
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 120) current = s.id;
+    });
+    links.forEach(a => {
+      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+    });
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  updateActive();
+</script>
+</body>
+</html>

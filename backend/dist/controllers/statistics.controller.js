@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getCommunityStats = exports.getPrayerCharts = exports.getDashboard = void 0;
+exports.getUserStatistics = exports.getMyStatistics = exports.getCommunityStats = exports.getPrayerCharts = exports.getDashboard = void 0;
 const supabase_1 = __importDefault(require("../config/supabase"));
 const response_1 = require("../utils/response");
 const getDashboard = async (req, res) => {
@@ -23,12 +23,25 @@ const getDashboard = async (req, res) => {
             .eq('user_id', userId)
             .eq('status', 'answered');
         const answeredPrayers = answeredCount ?? 0;
+        // 감사 기도 수
+        const { count: gratefulCount } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'grateful');
+        const gratefulPrayers = gratefulCount ?? 0;
         // 내가 함께 기도한 횟수
         const { count: participCount } = await supabase_1.default
             .from('prayer_participations')
             .select('id', { count: 'exact', head: true })
             .eq('user_id', userId);
         const totalParticipations = participCount ?? 0;
+        // 내가 작성한 댓글 수
+        const { count: commentCount } = await supabase_1.default
+            .from('comments')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const totalComments = commentCount ?? 0;
         // 연속 기도 일수 계산
         const { data: recentPrayerDates } = await supabase_1.default
             .from('prayers')
@@ -98,7 +111,9 @@ const getDashboard = async (req, res) => {
             stats: {
                 total_prayers: totalPrayers,
                 answered_prayers: answeredPrayers,
+                grateful_prayers: gratefulPrayers,
                 total_participations: totalParticipations,
+                total_comments: totalComments,
                 streak_days: streakDays,
                 answer_rate: answerRate,
             },
@@ -199,4 +214,55 @@ const getCommunityStats = async (req, res) => {
     }
 };
 exports.getCommunityStats = getCommunityStats;
+// 내 통계 조회 (getDashboard와 동일한 데이터)
+const getMyStatistics = async (req, res) => {
+    return (0, exports.getDashboard)(req, res);
+};
+exports.getMyStatistics = getMyStatistics;
+// 특정 유저 통계 조회
+const getUserStatistics = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { count: totalPrayers } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const { count: answeredPrayers } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'answered');
+        const { count: gratefulPrayers } = await supabase_1.default
+            .from('prayers')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('status', 'grateful');
+        const { count: totalParticipations } = await supabase_1.default
+            .from('prayer_participations')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const { count: totalComments } = await supabase_1.default
+            .from('comments')
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId);
+        const total = totalPrayers ?? 0;
+        const answered = answeredPrayers ?? 0;
+        const answerRate = total > 0 ? Math.round((answered / total) * 100) : 0;
+        (0, response_1.sendSuccess)(res, {
+            stats: {
+                total_prayers: total,
+                answered_prayers: answered,
+                grateful_prayers: gratefulPrayers ?? 0,
+                total_participations: totalParticipations ?? 0,
+                total_comments: totalComments ?? 0,
+                answer_rate: answerRate,
+                streak_days: 0,
+            },
+        });
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.getUserStatistics = getUserStatistics;
 //# sourceMappingURL=statistics.controller.js.map

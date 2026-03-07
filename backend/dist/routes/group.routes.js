@@ -39,6 +39,7 @@ const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 router.post('/', auth_1.authenticate, groupController.createGroup);
 router.get('/', auth_1.authenticate, groupController.getMyGroups);
+router.get('/search', auth_1.authenticate, groupController.searchGroups); // 그룹 검색
 router.post('/join-by-code', auth_1.authenticate, groupController.joinByInviteCode);
 router.get('/:groupId', auth_1.optionalAuth, groupController.getGroupById);
 router.put('/:groupId', auth_1.authenticate, groupController.updateGroup);
@@ -46,6 +47,7 @@ router.delete('/:groupId', auth_1.authenticate, groupController.deleteGroup);
 router.post('/:groupId/join', auth_1.authenticate, groupController.joinGroup);
 router.delete('/:groupId/leave', auth_1.authenticate, groupController.leaveGroup);
 router.get('/:groupId/members', auth_1.authenticate, groupController.getGroupMembers);
+router.get('/:groupId/invite', auth_1.authenticate, groupController.getInviteCode); // 초대 코드 조회
 router.delete('/:groupId/members/:targetUserId', auth_1.authenticate, groupController.removeMember);
 exports.default = router;
 //# sourceMappingURL=group.routes.js.map

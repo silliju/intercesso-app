@@ -1,9 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- 인터넷 권한 - API 통신 및 소셜 로그인에 필요 -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- FCM 푸시 알림 권한 (Android 13+) -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
-        android:label="intercesso"
+        android:label="Intercesso"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

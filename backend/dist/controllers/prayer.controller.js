@@ -7,6 +7,7 @@ exports.checkInCovenant = exports.getCovenantCheckins = exports.deleteComment = 
 const uuid_1 = require("uuid");
 const supabase_1 = __importDefault(require("../config/supabase"));
 const response_1 = require("../utils/response");
+const fcm_1 = require("../utils/fcm");
 const getPrayers = async (req, res) => {
     try {
         const userId = req.user?.userId;
@@ -205,10 +206,10 @@ const updatePrayer = async (req, res) => {
         const userId = req.user.userId;
         const { prayerId } = req.params;
         const updates = req.body;
-        // 소유자 확인
+        // 소유자 확인 (기존 status 도 함께 가져옴)
         const { data: existing } = await supabase_1.default
             .from('prayers')
-            .select('user_id')
+            .select('user_id, status')
             .eq('id', prayerId)
             .single();
         if (!existing || existing.user_id !== userId) {
@@ -228,6 +229,45 @@ const updatePrayer = async (req, res) => {
         if (error) {
             (0, response_1.sendError)(res, '기도 수정 실패', 500, 'UPDATE_ERROR');
             return;
+        }
+        // ── user_statistics 캐시 업데이트 (상태 변경 시) ──
+        if (updates.status && updates.status !== existing.status) {
+            const prevStatus = existing.status;
+            const nextStatus = updates.status;
+            // 이전 상태 카운트 감소
+            const decrementField = {
+                answered: 'answered_prayers',
+                grateful: 'grateful_prayers',
+            };
+            // 다음 상태 카운트 증가
+            const incrementField = {
+                answered: 'answered_prayers',
+                grateful: 'grateful_prayers',
+            };
+            const { data: stat } = await supabase_1.default
+                .from('user_statistics')
+                .select('answered_prayers, grateful_prayers')
+                .eq('user_id', userId)
+                .single();
+            if (stat) {
+                const patch = {};
+                if (decrementField[prevStatus]) {
+                    const field = decrementField[prevStatus];
+                    patch[field] = Math.max(0, (stat[field] ?? 0) - 1);
+                }
+                if (incrementField[nextStatus]) {
+                    const field = incrementField[nextStatus];
+                    // 같은 필드를 이미 patch 했을 수 있으니 현재 값 기준으로 계산
+                    const base = patch[field] !== undefined ? patch[field] : (stat[field] ?? 0);
+                    patch[field] = base + 1;
+                }
+                if (Object.keys(patch).length > 0) {
+                    await supabase_1.default
+                        .from('user_statistics')
+                        .update(patch)
+                        .eq('user_id', userId);
+                }
+            }
         }
         (0, response_1.sendSuccess)(res, prayer, '기도가 수정되었습니다');
     }
@@ -306,6 +346,20 @@ const participatePrayer = async (req, res) => {
                     message: `${participantUser?.nickname || '누군가'}님이 회원님의 기도에 함께 기도했습니다 🙏`,
                     is_read: false,
                 });
+                // 🔔 FCM 푸시 발송
+                const { data: prayerOwner } = await supabase_1.default
+                    .from('users')
+                    .select('fcm_token')
+                    .eq('id', prayer.user_id)
+                    .single();
+                if (prayerOwner?.fcm_token) {
+                    await (0, fcm_1.sendPush)({
+                        token: prayerOwner.fcm_token,
+                        title: '🙏 함께기도',
+                        body: `${participantUser?.nickname || '누군가'}님이 회원님의 기도에 함께 기도했습니다`,
+                        data: { type: 'prayer_participation', prayer_id: prayerId },
+                    });
+                }
             }
         }
         (0, response_1.sendSuccess)(res, null, '기도에 참여했습니다 🙏');
@@ -387,6 +441,20 @@ const createComment = async (req, res) => {
                 message: `${commenterUser?.nickname || '누군가'}님이 댓글을 남겼습니다`,
                 is_read: false,
             });
+            // 🔔 FCM 푸시 발송
+            const { data: prayerOwner } = await supabase_1.default
+                .from('users')
+                .select('fcm_token')
+                .eq('id', prayer.user_id)
+                .single();
+            if (prayerOwner?.fcm_token) {
+                await (0, fcm_1.sendPush)({
+                    token: prayerOwner.fcm_token,
+                    title: '💬 새 댓글',
+                    body: `${commenterUser?.nickname || '누군가'}님이 댓글을 남겼습니다`,
+                    data: { type: 'comment', prayer_id: prayerId },
+                });
+            }
         }
         (0, response_1.sendSuccess)(res, comment, '댓글이 작성되었습니다', 201);
     }

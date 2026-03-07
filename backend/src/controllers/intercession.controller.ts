@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import supabaseAdmin from '../config/supabase';
 import { sendSuccess, sendError, sendPaginated } from '../utils/response';
 import { AuthRequest } from '../middleware/auth';
+import { sendPush, sendPushMultiple } from '../utils/fcm';
 
 /**
  * message 필드에 타입 정보 인코딩 (DB 스키마 변경 없이 target_type 구현)
@@ -108,6 +109,21 @@ export const createIntercessionRequest = async (req: AuthRequest, res: Response)
       }));
       await supabaseAdmin.from('notifications').insert(notifs)
 
+      // 🔔 FCM 푸시 발송 (그룹 멤버 전체)
+      const memberIds = members.map((m) => m.user_id);
+      const { data: memberUsers } = await supabaseAdmin
+        .from('users')
+        .select('fcm_token')
+        .in('id', memberIds)
+        .not('fcm_token', 'is', null);
+      const tokens = (memberUsers || []).map((u: any) => u.fcm_token).filter(Boolean);
+      await sendPushMultiple(
+        tokens,
+        '🙏 그룹 중보기도 요청',
+        `${requesterNick}님이 그룹에 중보기도를 요청했습니다`,
+        { type: 'intercession_request', prayer_id }
+      );
+
       sendSuccess(res, { count: members.length }, `${members.length}명에게 중보기도 요청을 보냈습니다`, 201);
       return;
     }
@@ -162,7 +178,22 @@ export const createIntercessionRequest = async (req: AuthRequest, res: Response)
         title: '중보기도 요청',
         message: `${requesterNick}님이 중보기도를 요청했습니다 🙏`,
         is_read: false,
-      })
+      });
+
+      // 🔔 FCM 푸시 발송 (개인)
+      const { data: recipientUser } = await supabaseAdmin
+        .from('users')
+        .select('fcm_token')
+        .eq('id', recipient_id)
+        .single();
+      if (recipientUser?.fcm_token) {
+        await sendPush({
+          token: recipientUser.fcm_token,
+          title: '🙏 중보기도 요청',
+          body: `${requesterNick}님이 중보기도를 요청했습니다`,
+          data: { type: 'intercession_request', prayer_id, request_id: request.id },
+        });
+      }
     }
 
     // 디코드된 정보 포함하여 반환

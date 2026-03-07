@@ -7,4 +7,7 @@ export declare const getUserStats: (req: AuthRequest, res: Response) => Promise<
 export declare const getConnections: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const addConnection: (req: AuthRequest, res: Response) => Promise<void>;
 export declare const searchUsers: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const deleteMe: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const updateFcmToken: (req: AuthRequest, res: Response) => Promise<void>;
+export declare const deleteFcmToken: (req: AuthRequest, res: Response) => Promise<void>;
 //# sourceMappingURL=user.controller.d.ts.map

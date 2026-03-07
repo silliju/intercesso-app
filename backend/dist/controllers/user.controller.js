@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.searchUsers = exports.addConnection = exports.getConnections = exports.getUserStats = exports.getUserById = exports.updateMe = exports.getMe = void 0;
+exports.deleteFcmToken = exports.updateFcmToken = exports.deleteMe = exports.searchUsers = exports.addConnection = exports.getConnections = exports.getUserStats = exports.getUserById = exports.updateMe = exports.getMe = void 0;
 const uuid_1 = require("uuid");
 const supabase_1 = __importDefault(require("../config/supabase"));
 const response_1 = require("../utils/response");
@@ -160,4 +160,85 @@ const searchUsers = async (req, res) => {
     }
 };
 exports.searchUsers = searchUsers;
+// 계정 삭제 - 구글 플레이 정책 필수 요건
+const deleteMe = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        // 1. 내가 만든 그룹에서 나를 creator로 가진 그룹 확인
+        const { data: myGroups } = await supabase_1.default
+            .from('groups')
+            .select('id')
+            .eq('creator_id', userId);
+        // 2. 내가 만든 그룹 삭제 (group_members 포함)
+        if (myGroups && myGroups.length > 0) {
+            const groupIds = myGroups.map((g) => g.id);
+            await supabase_1.default.from('group_members').delete().in('group_id', groupIds);
+            await supabase_1.default.from('prayers').update({ group_id: null }).in('group_id', groupIds);
+            await supabase_1.default.from('groups').delete().in('id', groupIds);
+        }
+        // 3. 내 그룹 멤버십 삭제
+        await supabase_1.default.from('group_members').delete().eq('user_id', userId);
+        // 4. 내 기도 참여 기록 삭제
+        await supabase_1.default.from('prayer_participations').delete().eq('user_id', userId);
+        // 5. 내 댓글 삭제
+        await supabase_1.default.from('comments').delete().eq('user_id', userId);
+        // 6. 내 중보기도 요청 삭제
+        await supabase_1.default.from('intercession_requests').delete().eq('requester_id', userId);
+        await supabase_1.default.from('intercession_requests').delete().eq('target_user_id', userId);
+        // 7. 내 알림 삭제
+        await supabase_1.default.from('notifications').delete().eq('user_id', userId);
+        // 8. 내 기도 체크인 삭제
+        await supabase_1.default.from('prayer_checkins').delete().eq('user_id', userId);
+        // 9. 내 기도 삭제
+        await supabase_1.default.from('prayers').delete().eq('user_id', userId);
+        // 10. 내 통계 삭제
+        await supabase_1.default.from('user_statistics').delete().eq('user_id', userId);
+        // 11. 사용자 계정 삭제
+        const { error } = await supabase_1.default.from('users').delete().eq('id', userId);
+        if (error) {
+            (0, response_1.sendError)(res, '계정 삭제에 실패했습니다', 500, 'DELETE_ERROR');
+            return;
+        }
+        (0, response_1.sendSuccess)(res, null, '계정이 삭제되었습니다');
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.deleteMe = deleteMe;
+// FCM 토큰 저장/갱신 (로그인 후 앱에서 호출)
+const updateFcmToken = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const { token } = req.body;
+        if (!token || typeof token !== 'string') {
+            (0, response_1.sendError)(res, 'FCM 토큰이 필요합니다', 400, 'INVALID_TOKEN');
+            return;
+        }
+        await supabase_1.default
+            .from('users')
+            .update({ fcm_token: token })
+            .eq('id', userId);
+        (0, response_1.sendSuccess)(res, null, 'FCM 토큰이 저장되었습니다');
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.updateFcmToken = updateFcmToken;
+// FCM 토큰 삭제 (로그아웃 시 호출 → 불필요한 푸시 방지)
+const deleteFcmToken = async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        await supabase_1.default
+            .from('users')
+            .update({ fcm_token: null })
+            .eq('id', userId);
+        (0, response_1.sendSuccess)(res, null, 'FCM 토큰이 삭제되었습니다');
+    }
+    catch {
+        (0, response_1.sendError)(res, '서버 오류', 500, 'SERVER_ERROR');
+    }
+};
+exports.deleteFcmToken = deleteFcmToken;
 //# sourceMappingURL=user.controller.js.map

@@ -530,6 +530,7 @@ class MenuItemTile extends StatelessWidget {
   final String? subtitle;
   final VoidCallback? onTap;
   final Color? iconColor;
+  final Color? titleColor;
   final Widget? trailing;
 
   const MenuItemTile({
@@ -539,6 +540,7 @@ class MenuItemTile extends StatelessWidget {
     this.subtitle,
     this.onTap,
     this.iconColor,
+    this.titleColor,
     this.trailing,
   });
 
@@ -573,10 +575,10 @@ class MenuItemTile extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
+                      color: titleColor ?? AppTheme.textPrimary,
                     ),
                   ),
                   if (subtitle != null)
