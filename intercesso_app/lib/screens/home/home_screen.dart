@@ -199,7 +199,15 @@ class _HomeScreenState extends State<HomeScreen>
   Widget _modeTab(String label, bool isPersonal) {
     final isSelected = _isPersonalMode == isPersonal;
     return GestureDetector(
-      onTap: () => setState(() => _isPersonalMode = isPersonal),
+      onTap: () {
+        setState(() => _isPersonalMode = isPersonal);
+        // 교회모드 선택 시 찬양대 홈으로 이동, 돌아오면 개인모드 복귀
+        if (!isPersonal) {
+          context.push('/choir').then((_) {
+            if (mounted) setState(() => _isPersonalMode = true);
+          });
+        }
+      },
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 220),
         margin: const EdgeInsets.all(4),
