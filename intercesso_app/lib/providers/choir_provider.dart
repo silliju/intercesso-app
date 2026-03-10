@@ -78,12 +78,15 @@ class ChoirProvider extends ChangeNotifier {
   void selectChoir(ChoirModel choir) {
     _selectedChoir = choir;
     notifyListeners();
-    loadChoirData(choir.id);
+    loadChoirData(choir.id); // 내부에서 _setLoading 관리
   }
 
   // ── 찬양대 데이터 전체 로드 ──────────────────────────────────
-  Future<void> loadChoirData(String choirId) async {
-    _setLoading(true);
+  // ※ callerOwnsLoading=true 이면 이 함수 내부에서 _setLoading 호출 안 함
+  //   (loadMyChoirs 등 상위에서 이미 로딩 상태를 관리할 때 사용)
+  Future<void> loadChoirData(String choirId,
+      {bool callerOwnsLoading = false}) async {
+    if (!callerOwnsLoading) _setLoading(true);
     try {
       await Future.wait([
         loadMembers(choirId),
@@ -95,7 +98,7 @@ class ChoirProvider extends ChangeNotifier {
     } catch (e) {
       _errorMessage = e.toString();
     } finally {
-      _setLoading(false);
+      if (!callerOwnsLoading) _setLoading(false);
     }
   }
 
@@ -103,20 +106,24 @@ class ChoirProvider extends ChangeNotifier {
 
   // ── 내 찬양대 목록 로드 ──────────────────────────────────────
   Future<void> loadMyChoirs() async {
+    // 이미 로드된 경우 재로드 불필요
+    if (_myChoirs.isNotEmpty) return;
     _setLoading(true);
     try {
       _myChoirs = await _service.getMyChoirs();
       if (_myChoirs.isNotEmpty && _selectedChoir == null) {
         _selectedChoir = _myChoirs.first;
-        await loadChoirData(_selectedChoir!.id);
+        // callerOwnsLoading=true → 이중 _setLoading 방지
+        await loadChoirData(_selectedChoir!.id, callerOwnsLoading: true);
       }
     } catch (e) {
-      // API 실패 시 mock 데이터로 폴백
+      // API 실패 시 mock 데이터로 즉시 반환 (추가 딜레이 없음)
       debugPrint('loadMyChoirs API error: $e');
       _myChoirs = _mockChoirs();
       if (_myChoirs.isNotEmpty && _selectedChoir == null) {
         _selectedChoir = _myChoirs.first;
-        await loadChoirData(_selectedChoir!.id);
+        // mock 데이터도 동일하게 병렬 로드
+        await loadChoirData(_selectedChoir!.id, callerOwnsLoading: true);
       }
     } finally {
       _setLoading(false);
@@ -481,6 +488,7 @@ class ChoirProvider extends ChangeNotifier {
 
   // ── 내부 헬퍼 ────────────────────────────────────────────────
   void _setLoading(bool value) {
+    if (_isLoading == value) return; // 값이 같으면 불필요한 rebuild 방지
     _isLoading = value;
     notifyListeners();
   }
