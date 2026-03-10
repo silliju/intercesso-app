@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>자료 다운로드</title>
+  <style>
+    :root{--primary:#2f6fed;--primary-dark:#1e56c8;--primary-light:#eef4fd;--bg:#f4f6fb;--surface:#fff;--border:#e4e9f2;--text:#1f2d3d;--muted:#6b7c93;--light:#adb5bd;--success:#10b981;--warning:#f59e0b;--error:#ef4444;--radius:18px;--radius-sm:12px;--shadow-sm:0 4px 16px rgba(0,0,0,0.06);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#e8edf5;font-family:'Segoe UI',sans-serif;display:flex;justify-content:center;padding:24px 16px;min-height:100vh;}
+    .phone{width:375px;background:var(--bg);border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,0.2);overflow:hidden;min-height:780px;}
+    .status-bar{background:var(--primary);height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+    .status-bar span{color:#fff;font-size:11px;font-weight:600;}
+    .header{background:linear-gradient(135deg,var(--primary),#4a90e2);padding:16px 20px 20px;}
+    .header-top{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+    .back-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .header-title{color:#fff;font-size:17px;font-weight:700;}
+    .content{padding:16px;overflow-y:auto;max-height:640px;}
+
+    /* 요약 카드 */
+    .summary-card{background:rgba(255,255,255,0.2);border-radius:14px;padding:12px 16px;display:flex;gap:20px;}
+    .sum-item{text-align:center;}
+    .sum-num{font-size:20px;font-weight:800;color:#fff;}
+    .sum-label{font-size:11px;color:rgba(255,255,255,0.75);}
+
+    /* 섹션 */
+    .section-title{font-size:14px;font-weight:700;color:var(--text);margin:16px 0 10px;display:flex;align-items:center;gap:6px;}
+
+    /* 파일 카드 */
+    .file-card{background:var(--surface);border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;border:1px solid var(--border);box-shadow:var(--shadow-sm);display:flex;align-items:center;gap:14px;}
+    .file-icon{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+    .icon-pdf{background:#fee2e2;}
+    .icon-img{background:#dbeafe;}
+    .icon-mp3{background:#fef3c7;}
+    .icon-zip{background:#ede9fe;}
+    .file-info{flex:1;}
+    .file-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+    .file-meta{font-size:12px;color:var(--muted);}
+    .file-size{font-size:11px;color:var(--light);margin-top:2px;}
+    .download-btn{width:40px;height:40px;border-radius:12px;background:var(--primary-light);border:none;display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;flex-shrink:0;}
+
+    /* 새 파일 뱃지 */
+    .new-badge{display:inline-block;background:#d1fae5;color:#065f46;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;margin-left:6px;}
+
+    /* 다운로드 진행 */
+    .download-progress{background:var(--bg);border-radius:10px;height:6px;margin-top:6px;overflow:hidden;}
+    .progress-fill{background:linear-gradient(90deg,var(--primary),#60a5fa);height:100%;border-radius:10px;}
+
+    /* 전체 다운로드 버튼 */
+    .bulk-btn{width:100%;height:50px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;font-size:14px;font-weight:700;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:14px;box-shadow:0 4px 12px rgba(47,111,237,0.3);}
+
+    /* 하단 탭 */
+    .bottom-nav{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);display:flex;height:58px;}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:var(--light);font-weight:500;}
+    .nav-item.active{color:var(--primary);}
+    .nav-icon{font-size:20px;}
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar"><span>9:41</span><span>LTE ●●●</span></div>
+  <div class="header">
+    <div class="header-top">
+      <button class="back-btn">←</button>
+      <span class="header-title">자료 다운로드</span>
+    </div>
+    <div class="summary-card">
+      <div class="sum-item"><div class="sum-num">12</div><div class="sum-label">전체 파일</div></div>
+      <div class="sum-item"><div class="sum-num">3</div><div class="sum-label">새 파일</div></div>
+      <div class="sum-item"><div class="sum-num">8</div><div class="sum-label">다운로드</div></div>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- 전체 다운로드 -->
+    <button class="bulk-btn">⬇️ 이번 주 자료 전체 다운로드</button>
+
+    <!-- 악보 섹션 -->
+    <div class="section-title">🎼 악보 파일</div>
+
+    <div class="file-card">
+      <div class="file-icon icon-pdf">📄</div>
+      <div class="file-info">
+        <div class="file-name">주님의 은혜 - 전체 악보<span class="new-badge">NEW</span></div>
+        <div class="file-meta">혼성 4부 · 찬양집 Vol.3</div>
+        <div class="file-size">2.4 MB · PDF</div>
+      </div>
+      <button class="download-btn">⬇️</button>
+    </div>
+
+    <div class="file-card">
+      <div class="file-icon icon-pdf">📄</div>
+      <div class="file-info">
+        <div class="file-name">주님의 은혜 - 테너 파트<span class="new-badge">NEW</span></div>
+        <div class="file-meta">테너 파트 전용</div>
+        <div class="file-size">1.1 MB · PDF</div>
+        <div class="download-progress"><div class="progress-fill" style="width:65%"></div></div>
+      </div>
+      <button class="download-btn">⏸️</button>
+    </div>
+
+    <div class="file-card">
+      <div class="file-icon icon-img">🖼️</div>
+      <div class="file-info">
+        <div class="file-name">나의 피난처 - 전체 악보</div>
+        <div class="file-meta">혼성 4부 · 찬양집 Vol.1</div>
+        <div class="file-size">3.8 MB · JPG</div>
+      </div>
+      <button class="download-btn">⬇️</button>
+    </div>
+
+    <!-- 영상 링크 섹션 -->
+    <div class="section-title">🎬 연습 영상 링크</div>
+
+    <div class="file-card">
+      <div class="file-icon" style="background:#fee2e2;">▶️</div>
+      <div class="file-info">
+        <div class="file-name">주님의 은혜 - 전체 연습<span class="new-badge">NEW</span></div>
+        <div class="file-meta">YouTube · 3분 24초</div>
+        <div class="file-size">유튜브 링크</div>
+      </div>
+      <button class="download-btn">🔗</button>
+    </div>
+
+    <div class="file-card">
+      <div class="file-icon" style="background:#fee2e2;">▶️</div>
+      <div class="file-info">
+        <div class="file-name">주님의 은혜 - 테너 파트</div>
+        <div class="file-meta">YouTube · 2분 15초</div>
+        <div class="file-size">유튜브 링크</div>
+      </div>
+      <button class="download-btn">🔗</button>
+    </div>
+
+    <!-- 기타 자료 -->
+    <div class="section-title">📁 기타 자료</div>
+
+    <div class="file-card">
+      <div class="file-icon icon-zip">🗜️</div>
+      <div class="file-info">
+        <div class="file-name">3월 예배 자료 모음</div>
+        <div class="file-meta">악보 + 영상 링크 모음</div>
+        <div class="file-size">8.2 MB · ZIP</div>
+      </div>
+      <button class="download-btn">⬇️</button>
+    </div>
+
+    <div style="height:70px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item"><div class="nav-icon">🏠</div>홈</div>
+    <div class="nav-item"><div class="nav-icon">📅</div>일정</div>
+    <div class="nav-item active"><div class="nav-icon">📂</div>자료실</div>
+    <div class="nav-item"><div class="nav-icon">✅</div>출석</div>
+    <div class="nav-item"><div class="nav-icon">⚙️</div>관리</div>
+  </div>
+</div>
+</body>
+</html>

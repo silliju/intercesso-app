@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>회원 정보 수정</title>
+  <style>
+    :root {
+      --primary:#2f6fed; --primary-dark:#1e56c8; --primary-light:#eef4fd;
+      --bg:#f4f6fb; --surface:#fff; --border:#e4e9f2;
+      --text:#1f2d3d; --muted:#6b7c93; --light:#adb5bd;
+      --success:#10b981; --warning:#f59e0b; --error:#ef4444;
+      --radius:18px; --radius-sm:12px;
+      --shadow:0 10px 30px rgba(0,0,0,0.08); --shadow-sm:0 4px 16px rgba(0,0,0,0.06);
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#e8edf5;font-family:'Segoe UI',sans-serif;display:flex;justify-content:center;padding:24px 16px;min-height:100vh;}
+    .phone{width:375px;background:var(--bg);border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,0.2);overflow:hidden;min-height:780px;position:relative;}
+    .status-bar{background:var(--primary);height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+    .status-bar span{color:#fff;font-size:11px;font-weight:600;}
+    .header{background:linear-gradient(135deg,var(--primary) 0%,#4a90e2 100%);padding:16px 20px 20px;}
+    .header-top{display:flex;align-items:center;gap:10px;}
+    .back-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .header-title{color:#fff;font-size:17px;font-weight:700;}
+    .save-btn{margin-left:auto;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:13px;font-weight:700;padding:6px 16px;border-radius:20px;cursor:pointer;}
+    .content{padding:20px 16px;overflow-y:auto;max-height:640px;}
+
+    /* 프로필 영역 */
+    .profile-section{display:flex;flex-direction:column;align-items:center;padding:20px;margin-bottom:14px;background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);}
+    .avatar{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--primary),#4a90e2);display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:800;color:#fff;margin-bottom:10px;position:relative;}
+    .avatar-edit{position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--primary);border:2px solid #fff;display:flex;align-items:center;justify-content:center;font-size:12px;}
+    .profile-name{font-size:16px;font-weight:700;color:var(--text);}
+    .profile-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+
+    /* 폼 카드 */
+    .card{background:var(--surface);border-radius:var(--radius);padding:18px;margin-bottom:14px;box-shadow:var(--shadow-sm);border:1px solid var(--border);}
+    .card-title{font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+    .form-group{margin-bottom:14px;}
+    .form-label{font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px;display:block;}
+    .form-input{width:100%;height:46px;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:0 14px;font-size:14px;color:var(--text);background:var(--bg);outline:none;}
+    .form-input:focus{border-color:var(--primary);background:#fff;}
+    .form-input.disabled{background:#f0f0f0;color:var(--muted);}
+
+    /* 파트 선택 */
+    .part-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+    .part-btn{padding:10px 4px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;text-align:center;}
+    .part-btn.active-soprano{border-color:#be185d;background:#fce7f3;color:#be185d;}
+    .part-btn.active-alto{border-color:#7c3aed;background:#ede9fe;color:#7c3aed;}
+    .part-btn.active-tenor{border-color:#1e40af;background:#dbeafe;color:#1e40af;}
+    .part-btn.active-bass{border-color:#065f46;background:#d1fae5;color:#065f46;}
+
+    /* 직책 선택 */
+    .role-wrap{display:flex;flex-wrap:wrap;gap:8px;}
+    .role-btn{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--bg);font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;}
+    .role-btn.active{border-color:var(--primary);background:var(--primary-light);color:var(--primary);}
+
+    /* 상태 토글 */
+    .toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;}
+    .toggle-info{}
+    .toggle-label{font-size:14px;font-weight:600;color:var(--text);}
+    .toggle-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .toggle{width:48px;height:28px;border-radius:14px;background:var(--primary);position:relative;cursor:pointer;}
+    .toggle-dot{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);}
+
+    /* 하단 버튼 */
+    .bottom-actions{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);padding:12px 16px;display:flex;gap:10px;}
+    .btn{flex:1;height:48px;border-radius:var(--radius-sm);border:none;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .btn-outline{background:var(--bg);color:var(--text);border:1.5px solid var(--border);}
+    .btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;box-shadow:0 4px 12px rgba(47,111,237,0.3);}
+    .btn-danger{background:#fef2f2;color:var(--error);border:1.5px solid #fecaca;}
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar"><span>9:41</span><span>LTE ●●●</span></div>
+  <div class="header">
+    <div class="header-top">
+      <button class="back-btn">←</button>
+      <span class="header-title">회원 정보 수정</span>
+      <button class="save-btn">저장</button>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- 프로필 -->
+    <div class="profile-section">
+      <div class="avatar">홍<div class="avatar-edit">📷</div></div>
+      <div class="profile-name">홍길동</div>
+      <div class="profile-sub">테너 · 일반단원</div>
+    </div>
+
+    <!-- 기본 정보 -->
+    <div class="card">
+      <div class="card-title">👤 기본 정보</div>
+      <div class="form-group">
+        <label class="form-label">이름</label>
+        <input class="form-input" type="text" value="홍길동"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">전화번호</label>
+        <input class="form-input" type="tel" value="010-1234-5678"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">이메일 <span style="font-size:11px;color:var(--muted);">(변경 불가)</span></label>
+        <input class="form-input disabled" type="email" value="hong@example.com" disabled/>
+      </div>
+    </div>
+
+    <!-- 찬양대 정보 -->
+    <div class="card">
+      <div class="card-title">🎵 찬양대 정보</div>
+      <div class="form-group">
+        <label class="form-label">파트</label>
+        <div class="part-grid">
+          <button class="part-btn">소프라노</button>
+          <button class="part-btn">알토</button>
+          <button class="part-btn active-tenor">테너</button>
+          <button class="part-btn">베이스</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">직책</label>
+        <div class="role-wrap">
+          <button class="role-btn active">일반단원</button>
+          <button class="role-btn">대장</button>
+          <button class="role-btn">총무</button>
+          <button class="role-btn">서기</button>
+          <button class="role-btn">회계</button>
+          <button class="role-btn">악보장</button>
+          <button class="role-btn">파트장</button>
+          <button class="role-btn">지휘자</button>
+          <button class="role-btn">반주자</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 상태 설정 -->
+    <div class="card">
+      <div class="card-title">⚙️ 상태 설정</div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">활동 중</div>
+          <div class="toggle-sub">비활성화 시 출석 체크에서 제외</div>
+        </div>
+        <div class="toggle"><div class="toggle-dot"></div></div>
+      </div>
+      <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-label">공지 수신</div>
+          <div class="toggle-sub">앱 푸시 알림 수신 여부</div>
+        </div>
+        <div class="toggle"><div class="toggle-dot"></div></div>
+      </div>
+    </div>
+
+    <!-- 메모 -->
+    <div class="card">
+      <div class="card-title">📝 메모 (관리자용)</div>
+      <textarea class="form-input" rows="3" style="height:auto;padding:12px;resize:none;line-height:1.5;">목요일 연습 참석 어려운 경우 있음</textarea>
+    </div>
+
+    <!-- 탈퇴 -->
+    <div style="margin-bottom:80px;">
+      <button class="btn btn-danger" style="width:100%;height:44px;border-radius:12px;">🚫 찬양대에서 내보내기</button>
+    </div>
+
+  </div>
+  <div class="bottom-actions">
+    <button class="btn btn-outline">취소</button>
+    <button class="btn btn-primary">✅ 저장하기</button>
+  </div>
+</div>
+</body>
+</html>

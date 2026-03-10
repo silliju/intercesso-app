@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>관리자 설정</title>
+  <style>
+    :root{--primary:#2f6fed;--primary-dark:#1e56c8;--primary-light:#eef4fd;--bg:#f4f6fb;--surface:#fff;--border:#e4e9f2;--text:#1f2d3d;--muted:#6b7c93;--light:#adb5bd;--success:#10b981;--warning:#f59e0b;--error:#ef4444;--radius:18px;--radius-sm:12px;--shadow-sm:0 4px 16px rgba(0,0,0,0.06);}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{background:#e8edf5;font-family:'Segoe UI',sans-serif;display:flex;justify-content:center;padding:24px 16px;min-height:100vh;}
+    .phone{width:375px;background:var(--bg);border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,0.2);overflow:hidden;min-height:780px;}
+    .status-bar{background:var(--primary);height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;}
+    .status-bar span{color:#fff;font-size:11px;font-weight:600;}
+    .header{background:linear-gradient(135deg,var(--primary),#4a90e2);padding:16px 20px 20px;}
+    .header-top{display:flex;align-items:center;gap:10px;}
+    .back-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);border:none;color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+    .header-title{color:#fff;font-size:17px;font-weight:700;}
+    .content{padding:16px;overflow-y:auto;max-height:650px;}
+
+    /* 관리자 프로필 */
+    .admin-card{background:linear-gradient(135deg,var(--primary),#4a90e2);border-radius:var(--radius);padding:18px;margin-bottom:14px;display:flex;align-items:center;gap:14px;box-shadow:0 8px 24px rgba(47,111,237,0.25);}
+    .admin-avatar{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;}
+    .admin-name{color:#fff;font-size:16px;font-weight:800;}
+    .admin-role{color:rgba(255,255,255,0.8);font-size:13px;margin-top:2px;}
+    .admin-badge{margin-left:auto;background:rgba(255,255,255,0.2);border-radius:20px;padding:4px 12px;color:#fff;font-size:12px;font-weight:700;}
+
+    /* 설정 섹션 */
+    .section-label{font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;padding:0 4px;margin:16px 0 8px;}
+    .settings-card{background:var(--surface);border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);box-shadow:var(--shadow-sm);margin-bottom:14px;}
+    .setting-row{display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid var(--bg);}
+    .setting-row:last-child{border-bottom:none;}
+    .setting-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+    .icon-blue{background:var(--primary-light);}
+    .icon-green{background:#d1fae5;}
+    .icon-orange{background:#fff7ed;}
+    .icon-red{background:#fee2e2;}
+    .icon-purple{background:#ede9fe;}
+    .icon-yellow{background:#fef3c7;}
+    .setting-info{flex:1;}
+    .setting-title{font-size:14px;font-weight:600;color:var(--text);}
+    .setting-sub{font-size:12px;color:var(--muted);margin-top:2px;}
+    .setting-right{color:var(--light);font-size:18px;}
+
+    /* 토글 */
+    .toggle{width:44px;height:26px;border-radius:13px;position:relative;cursor:pointer;flex-shrink:0;}
+    .toggle-on{background:var(--primary);}
+    .toggle-off{background:#d1d5db;}
+    .toggle-dot{position:absolute;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 2px 4px rgba(0,0,0,0.2);transition:left 0.2s;}
+    .toggle-on .toggle-dot{right:3px;}
+    .toggle-off .toggle-dot{left:3px;}
+
+    /* 관리자 목록 */
+    .admin-list-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--bg);}
+    .admin-list-item:last-child{border-bottom:none;}
+    .mini-avatar{width:36px;height:36px;border-radius:50%;background:var(--primary-light);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--primary);}
+    .admin-item-info{flex:1;}
+    .admin-item-name{font-size:14px;font-weight:600;color:var(--text);}
+    .admin-item-role{font-size:12px;color:var(--muted);}
+    .role-tag{padding:3px 10px;border-radius:10px;font-size:11px;font-weight:700;}
+    .tag-master{background:#fef3c7;color:#92400e;}
+    .tag-admin{background:var(--primary-light);color:var(--primary);}
+
+    /* 위험 영역 */
+    .danger-card{background:#fff5f5;border:1px solid #fecaca;border-radius:var(--radius);padding:16px;margin-bottom:14px;}
+    .danger-title{font-size:13px;font-weight:700;color:var(--error);margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+    .danger-btn{width:100%;height:44px;border-radius:var(--radius-sm);background:#fee2e2;border:1.5px solid #fecaca;color:var(--error);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;}
+
+    /* 하단 탭 */
+    .bottom-nav{position:sticky;bottom:0;background:var(--surface);border-top:1px solid var(--border);display:flex;height:58px;}
+    .nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:10px;color:var(--light);font-weight:500;}
+    .nav-item.active{color:var(--primary);}
+    .nav-icon{font-size:20px;}
+  </style>
+</head>
+<body>
+<div class="phone">
+  <div class="status-bar"><span>9:41</span><span>LTE ●●●</span></div>
+  <div class="header">
+    <div class="header-top">
+      <button class="back-btn">←</button>
+      <span class="header-title">관리자 설정</span>
+    </div>
+  </div>
+  <div class="content">
+
+    <!-- 내 관리자 카드 -->
+    <div class="admin-card">
+      <div class="admin-avatar">김</div>
+      <div>
+        <div class="admin-name">김대표</div>
+        <div class="admin-role">사랑교회 · 주일 찬양대</div>
+      </div>
+      <div class="admin-badge">🔑 대장</div>
+    </div>
+
+    <!-- 알림 설정 -->
+    <div class="section-label">🔔 알림 설정</div>
+    <div class="settings-card">
+      <div class="setting-row">
+        <div class="setting-icon icon-blue">📩</div>
+        <div class="setting-info">
+          <div class="setting-title">가입 신청 알림</div>
+          <div class="setting-sub">새 가입 요청 시 푸시 알림</div>
+        </div>
+        <div class="toggle toggle-on"><div class="toggle-dot"></div></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon icon-green">✅</div>
+        <div class="setting-info">
+          <div class="setting-title">출석 체크 알림</div>
+          <div class="setting-sub">예배 당일 출석 체크 알림</div>
+        </div>
+        <div class="toggle toggle-on"><div class="toggle-dot"></div></div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon icon-yellow">📢</div>
+        <div class="setting-info">
+          <div class="setting-title">공지 발송 확인</div>
+          <div class="setting-sub">공지 발송 완료 알림</div>
+        </div>
+        <div class="toggle toggle-off"><div class="toggle-dot"></div></div>
+      </div>
+    </div>
+
+    <!-- 권한 관리 -->
+    <div class="section-label">👥 관리자 권한</div>
+    <div class="settings-card">
+      <div class="admin-list-item">
+        <div class="mini-avatar">김</div>
+        <div class="admin-item-info">
+          <div class="admin-item-name">김대표</div>
+          <div class="admin-item-role">010-1234-5678</div>
+        </div>
+        <span class="role-tag tag-master">대장</span>
+      </div>
+      <div class="admin-list-item">
+        <div class="mini-avatar">이</div>
+        <div class="admin-item-info">
+          <div class="admin-item-name">이총무</div>
+          <div class="admin-item-role">010-5678-1234</div>
+        </div>
+        <span class="role-tag tag-admin">총무</span>
+      </div>
+      <div class="admin-list-item">
+        <div class="mini-avatar">박</div>
+        <div class="admin-item-info">
+          <div class="admin-item-name">박지휘</div>
+          <div class="admin-item-role">010-9999-1111</div>
+        </div>
+        <span class="role-tag tag-admin">지휘자</span>
+      </div>
+      <div class="setting-row" style="border-bottom:none;">
+        <div class="setting-icon icon-blue">➕</div>
+        <div class="setting-info">
+          <div class="setting-title">관리자 추가</div>
+          <div class="setting-sub">기존 단원에게 관리 권한 부여</div>
+        </div>
+        <div class="setting-right">›</div>
+      </div>
+    </div>
+
+    <!-- 운영 설정 -->
+    <div class="section-label">⚙️ 운영 설정</div>
+    <div class="settings-card">
+      <div class="setting-row">
+        <div class="setting-icon icon-purple">🔒</div>
+        <div class="setting-info">
+          <div class="setting-title">가입 승인 방식</div>
+          <div class="setting-sub">관리자 승인 후 가입</div>
+        </div>
+        <div class="setting-right">›</div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon icon-orange">📅</div>
+        <div class="setting-info">
+          <div class="setting-title">출석 체크 시간</div>
+          <div class="setting-sub">예배 시작 30분 전 활성화</div>
+        </div>
+        <div class="setting-right">›</div>
+      </div>
+      <div class="setting-row">
+        <div class="setting-icon icon-green">📊</div>
+        <div class="setting-info">
+          <div class="setting-title">통계 공개 범위</div>
+          <div class="setting-sub">단원 전체 공개</div>
+        </div>
+        <div class="setting-right">›</div>
+      </div>
+    </div>
+
+    <!-- 위험 영역 -->
+    <div class="section-label">⚠️ 위험 영역</div>
+    <div class="danger-card">
+      <div class="danger-title">⚠️ 주의가 필요한 작업</div>
+      <button class="danger-btn">🗑️ 찬양대 데이터 초기화</button>
+      <button class="danger-btn">🚫 찬양대 비활성화</button>
+    </div>
+
+    <div style="height:70px;"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item"><div class="nav-icon">🏠</div>홈</div>
+    <div class="nav-item"><div class="nav-icon">📅</div>일정</div>
+    <div class="nav-item"><div class="nav-icon">👥</div>회원</div>
+    <div class="nav-item"><div class="nav-icon">✅</div>출석</div>
+    <div class="nav-item active"><div class="nav-icon">⚙️</div>관리</div>
+  </div>
+</div>
+</body>
+</html>
