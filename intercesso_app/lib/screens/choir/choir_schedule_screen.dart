@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
 import '../../models/choir_models.dart';
+import '../../utils/url_utils.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 일정 목록 화면
@@ -786,8 +787,11 @@ class _ChoirScheduleDetailScreenState
                     ),
                   ),
                   if (e.value.youtubeUrl != null)
-                    const Icon(Icons.play_circle_outline,
-                        size: 18, color: Color(0xFFFF0000)),
+                    GestureDetector(
+                      onTap: () => openYoutube(context, e.value.youtubeUrl!),
+                      child: const Icon(Icons.play_circle_outline,
+                          size: 18, color: Color(0xFFFF0000)),
+                    ),
                 ],
               ),
             );

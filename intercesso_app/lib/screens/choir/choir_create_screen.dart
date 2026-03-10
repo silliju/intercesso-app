@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
-import '../../models/choir_models.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 찬양대 생성 화면
@@ -526,37 +525,37 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
     setState(() => _isLoading = true);
     try {
       final choir = context.read<ChoirProvider>();
-      // TODO: 실제 API 호출로 교체
-      final newChoir = ChoirModel(
-        id: 'choir_${DateTime.now().millisecondsSinceEpoch}',
+      final newChoir = await choir.createChoir(
         name: _nameController.text.trim(),
         description: _descController.text.trim().isEmpty
             ? null
             : _descController.text.trim(),
-        churchName: _churchController.text.trim(),
+        churchName: _churchController.text.trim().isEmpty
+            ? null
+            : _churchController.text.trim(),
         worshipType: _worshipTypeController.text.trim().isEmpty
             ? null
             : _worshipTypeController.text.trim(),
-        ownerId: 'current_user',
-        inviteCode: 'CODE${DateTime.now().millisecondsSinceEpoch % 10000}',
-        inviteLinkActive: true,
-        memberCount: 1,
-        createdAt: DateTime.now().toIso8601String(),
       );
 
-      choir.myChoirs.add(newChoir);
-      choir.selectChoir(newChoir);
+      if (!mounted) return;
 
-      if (mounted) {
-        // 성공 스낵바
+      if (newChoir != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('🎉 ${newChoir.name} 찬양대가 생성됐어요!'),
             backgroundColor: const Color(0xFF10B981),
           ),
         );
-        // 찬양대 홈으로 이동
         context.go('/choir');
+      } else {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('찬양대 생성에 실패했어요. 다시 시도해 주세요.'),
+            backgroundColor: Color(0xFFEF4444),
+          ),
+        );
       }
     } catch (e) {
       setState(() => _isLoading = false);

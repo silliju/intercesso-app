@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
 import '../../models/choir_models.dart';
+import '../../utils/url_utils.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 자료실 화면 (악보 + 영상 + 파일)
@@ -261,10 +262,7 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
     }
   }
 
-  void _openUrl(String url) {
-    // TODO: url_launcher 패키지로 실제 URL 열기
-    debugPrint('Opening URL: $url');
-  }
+  void _openUrl(String url) => openUrl(context, url);
 
   void _showUploadSheet(BuildContext context) {
     showModalBottomSheet(

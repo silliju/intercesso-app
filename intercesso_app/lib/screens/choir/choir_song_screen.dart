@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
 import '../../models/choir_models.dart';
+import '../../utils/url_utils.dart';
 
 // ═══════════════════════════════════════════════════════════════
 // 찬양곡 관리 화면 (목록 + 등록 + 상세)
@@ -1065,14 +1066,5 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
     }
   }
 
-  void _openYoutube(String url) {
-    // TODO: url_launcher 패키지로 실제 URL 열기
-    debugPrint('Opening YouTube: $url');
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('YouTube: $url'),
-        action: SnackBarAction(label: '확인', onPressed: () {}),
-      ),
-    );
-  }
+  Future<void> _openYoutube(String url) => openYoutube(context, url);
 }

@@ -222,17 +222,36 @@ class ChoirProvider extends ChangeNotifier {
   Future<void> updateAttendance(
       String attendanceId, AttendanceStatus status, {String? note}) async {
     try {
+      // 1) 로컬 즉시 반영 (낙관적 업데이트)
       final index = _attendances.indexWhere((a) => a.id == attendanceId);
-      if (index >= 0) {
-        _attendances[index] = _attendances[index].copyWith(
-          status: status,
-          note: note,
-        );
-        notifyListeners();
-      }
-      // TODO: API 호출로 교체
+      if (index < 0) return;
+
+      final attendance = _attendances[index];
+      _attendances[index] = attendance.copyWith(status: status, note: note);
+      notifyListeners();
+
+      // 2) API 호출 — 해당 일정의 전체 출석 목록을 서버에 저장
+      final choirId = attendance.choirId;
+      final scheduleId = attendance.scheduleId;
+
+      final payload = _attendances
+          .where((a) => a.scheduleId == scheduleId)
+          .map((a) => {
+                'member_id': a.memberId,
+                'status': a.status.value,
+                if (a.note != null) 'note': a.note,
+              })
+          .toList();
+
+      await _service.updateAttendance(choirId, scheduleId, payload);
     } catch (e) {
       _errorMessage = e.toString();
+      // 실패 시 재로드
+      final failed = _attendances.firstWhere(
+        (a) => a.id == attendanceId,
+        orElse: () => _attendances.first,
+      );
+      await loadAttendance(failed.scheduleId).catchError((_) {});
     }
   }
 
@@ -325,7 +344,7 @@ class ChoirProvider extends ChangeNotifier {
     return updateMember(memberId, status: 'active');
   }
 
-  // ── 일정 추가 ────────────────────────────────────────────────
+  // ── 일정 추가 (API 연동) ────────────────────────────────────
   Future<bool> addSchedule({
     required String choirId,
     required String title,
@@ -338,8 +357,24 @@ class ChoirProvider extends ChangeNotifier {
   }) async {
     try {
       _setLoading(true);
-      await Future.delayed(const Duration(milliseconds: 500));
-      final newSchedule = ChoirScheduleModel(
+      final created = await _service.createSchedule(
+        choirId,
+        title:        title,
+        scheduleType: scheduleType.value,
+        startTime:    startTime.toIso8601String(),
+        endTime:      endTime?.toIso8601String(),
+        location:     location,
+        description:  description,
+        songIds:      songIds ?? [],
+      );
+      _schedules.insert(0, created);
+      _schedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('addSchedule error: $e');
+      // API 실패 시 로컬 mock으로 폴백
+      final fallback = ChoirScheduleModel(
         id: 'schedule_${DateTime.now().millisecondsSinceEpoch}',
         choirId: choirId,
         title: title,
@@ -352,31 +387,95 @@ class ChoirProvider extends ChangeNotifier {
         createdById: 'current_user',
         createdAt: DateTime.now().toIso8601String(),
       );
-      _schedules.insert(0, newSchedule);
+      _schedules.insert(0, fallback);
       notifyListeners();
-      return true;
-    } catch (e) {
-      _errorMessage = e.toString();
       return false;
     } finally {
       _setLoading(false);
     }
   }
 
-  // ── 초대 코드 생성 ───────────────────────────────────────────
+  // ── 초대 코드 갱신 (API 호출) ────────────────────────────────
   Future<String?> generateInviteCode(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      final code = String.fromCharCodes(
-        Iterable.generate(8, (_) => chars.codeUnitAt(
-          DateTime.now().millisecondsSinceEpoch % chars.length,
-        )),
-      );
-      return code;
+      final newCode = await _service.refreshInviteCode(choirId);
+      // 로컬 찬양대 정보 업데이트
+      final idx = _myChoirs.indexWhere((c) => c.id == choirId);
+      if (idx >= 0) {
+        final old = _myChoirs[idx];
+        _myChoirs[idx] = ChoirModel(
+          id: old.id, name: old.name, description: old.description,
+          imageUrl: old.imageUrl, churchName: old.churchName,
+          worshipType: old.worshipType, ownerId: old.ownerId,
+          inviteCode: newCode, inviteLinkActive: old.inviteLinkActive,
+          memberCount: old.memberCount, createdAt: old.createdAt,
+        );
+        if (_selectedChoir?.id == choirId) _selectedChoir = _myChoirs[idx];
+        notifyListeners();
+      }
+      return newCode;
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('generateInviteCode error: $e');
       return null;
+    }
+  }
+
+  // ── 찬양대 생성 (API 호출 → 선택 → 데이터 로드) ─────────────
+  Future<ChoirModel?> createChoir({
+    required String name,
+    String? description,
+    String? churchName,
+    String? worshipType,
+    String? imageUrl,
+  }) async {
+    try {
+      _setLoading(true);
+      final choir = await _service.createChoir(
+        name:        name,
+        description: description,
+        churchName:  churchName,
+        worshipType: worshipType,
+        imageUrl:    imageUrl,
+      );
+      _myChoirs.insert(0, choir);
+      _selectedChoir = choir;
+      notifyListeners();
+      await loadChoirData(choir.id);
+      return choir;
+    } catch (e) {
+      debugPrint('createChoir error: $e');
+      _errorMessage = '찬양대 생성에 실패했습니다';
+      notifyListeners();
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  // ── 초대 코드로 찬양대 정보 조회 ─────────────────────────────
+  Future<Map<String, dynamic>?> lookupChoirByCode(String code) async {
+    try {
+      return await _service.getChoirByInviteCode(code);
+    } catch (e) {
+      debugPrint('lookupChoirByCode error: $e');
+      return null;
+    }
+  }
+
+  // ── 초대 코드로 가입 신청 ─────────────────────────────────────
+  Future<bool> joinChoirByCode(String code, {String section = 'all'}) async {
+    try {
+      _setLoading(true);
+      await _service.joinByInviteCode(code, section: section);
+      await loadMyChoirs();   // 목록 새로고침
+      return true;
+    } catch (e) {
+      debugPrint('joinChoirByCode error: $e');
+      _errorMessage = '가입 신청에 실패했습니다';
+      notifyListeners();
+      return false;
+    } finally {
+      _setLoading(false);
     }
   }
 
