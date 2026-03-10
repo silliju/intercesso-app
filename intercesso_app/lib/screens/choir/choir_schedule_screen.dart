@@ -18,7 +18,6 @@ class ChoirSchedulesScreen extends StatefulWidget {
 class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  ScheduleType? _filterType;
 
   @override
   void initState() {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../screens/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
@@ -20,11 +19,14 @@ import '../screens/gratitude/gratitude_feed_screen.dart';
 import '../screens/gratitude/gratitude_calendar_screen.dart';
 import '../screens/gratitude/create_gratitude_screen.dart';
 import '../screens/choir/choir_home_screen.dart';
+import '../screens/choir/choir_create_screen.dart';
+import '../screens/choir/choir_join_screen.dart';
 import '../screens/choir/choir_schedule_screen.dart';
 import '../screens/choir/choir_members_screen.dart';
 import '../screens/choir/choir_attendance_screen.dart';
 import '../screens/choir/choir_library_screen.dart';
 import '../screens/choir/choir_management_screen.dart';
+import '../screens/choir/choir_song_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -110,6 +112,17 @@ GoRouter createRouter(AuthProvider authProvider) {
         builder: (ctx, state) => const ChoirHomeScreen(),
       ),
       GoRoute(
+        path: '/choir/create',
+        builder: (ctx, state) => const ChoirCreateScreen(),
+      ),
+      GoRoute(
+        path: '/choir/join',
+        builder: (ctx, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return ChoirJoinScreen(initialCode: extra?['code']);
+        },
+      ),
+      GoRoute(
         path: '/choir/schedules',
         builder: (ctx, state) => const ChoirSchedulesScreen(),
       ),
@@ -140,6 +153,10 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/choir/management',
         builder: (ctx, state) => const ChoirManagementScreen(),
+      ),
+      GoRoute(
+        path: '/choir/songs',
+        builder: (ctx, state) => const ChoirSongScreen(),
       ),
     ],
   );

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/intercession_service.dart';
@@ -190,7 +188,6 @@ class _IntercessionScreenState extends State<IntercessionScreen>
 
   Widget _buildReceivedCard(IntercessionModel req) {
     final isPending = req.status == 'pending';
-    final isAccepted = req.status == 'accepted';
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),

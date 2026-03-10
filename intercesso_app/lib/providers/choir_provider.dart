@@ -491,6 +491,79 @@ class ChoirProvider extends ChangeNotifier {
         ChoirSongModel(id: 'song4', choirId: choirId, title: '은혜로다', composer: '정은혜', youtubeUrl: 'https://youtu.be/example4', genre: '현대 찬양', difficulty: 'easy', parts: ['soprano', 'alto'], createdById: 'u2', createdAt: '2024-02-10'),
       ];
 
+  // ── 찬양곡 CRUD ─────────────────────────────────────────────
+  Future<void> addSong({
+    required String title,
+    String? composer,
+    String? arranger,
+    String? hymnBookRef,
+    String? youtubeUrl,
+    String? genre,
+    String? difficulty,
+    List<String> parts = const [],
+    String? notes,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    final choirId = _selectedChoir?.id ?? 'default';
+    final newSong = ChoirSongModel(
+      id: 'song_${DateTime.now().millisecondsSinceEpoch}',
+      choirId: choirId,
+      title: title,
+      composer: composer,
+      arranger: arranger,
+      hymnBookRef: hymnBookRef,
+      youtubeUrl: youtubeUrl,
+      genre: genre,
+      difficulty: difficulty,
+      notes: notes,
+      parts: parts,
+      createdById: 'currentUser',
+      createdAt: DateTime.now().toIso8601String(),
+    );
+    _songs = [newSong, ..._songs];
+    notifyListeners();
+  }
+
+  Future<void> updateSong({
+    required String songId,
+    required String title,
+    String? composer,
+    String? arranger,
+    String? hymnBookRef,
+    String? youtubeUrl,
+    String? genre,
+    String? difficulty,
+    List<String> parts = const [],
+    String? notes,
+  }) async {
+    await Future.delayed(const Duration(milliseconds: 400));
+    _songs = _songs.map((s) {
+      if (s.id != songId) return s;
+      return ChoirSongModel(
+        id: s.id,
+        choirId: s.choirId,
+        title: title,
+        composer: composer,
+        arranger: arranger,
+        hymnBookRef: hymnBookRef,
+        youtubeUrl: youtubeUrl,
+        genre: genre,
+        difficulty: difficulty,
+        notes: notes,
+        parts: parts,
+        createdById: s.createdById,
+        createdAt: s.createdAt,
+      );
+    }).toList();
+    notifyListeners();
+  }
+
+  Future<void> deleteSong(String songId) async {
+    await Future.delayed(const Duration(milliseconds: 300));
+    _songs = _songs.where((s) => s.id != songId).toList();
+    notifyListeners();
+  }
+
   List<ChoirNoticeModel> _mockNotices(String choirId) => [
         ChoirNoticeModel(id: 'n1', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '이번 주 연습 공지', content: '토요일 오후 7시 찬양실에서 연습합니다. 악보 꼭 준비해 오세요!', isPinned: true, createdAt: DateTime.now().subtract(const Duration(hours: 2)).toIso8601String()),
         ChoirNoticeModel(id: 'n2', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '주일예배 찬양곡 안내', content: '3월 10일 주일예배 찬양곡: 주님의 은혜, 주를 찬양', isPinned: false, createdAt: DateTime.now().subtract(const Duration(days: 1)).toIso8601String()),

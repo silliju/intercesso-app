@@ -574,6 +574,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
       _QuickMenuItem(icon: Icons.people, label: '회원', color: const Color(0xFF10B981), route: '/choir/members'),
       _QuickMenuItem(icon: Icons.how_to_reg, label: '출석', color: const Color(0xFFF59E0B), route: '/choir/attendance'),
       _QuickMenuItem(icon: Icons.library_music, label: '자료실', color: const Color(0xFF885CF6), route: '/choir/library'),
+      _QuickMenuItem(icon: Icons.queue_music, label: '곡 관리', color: const Color(0xFFEC4899), route: '/choir/songs'),
     ];
 
     return Column(
