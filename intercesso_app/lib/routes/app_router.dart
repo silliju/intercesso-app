@@ -19,6 +19,12 @@ import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/gratitude/gratitude_feed_screen.dart';
 import '../screens/gratitude/gratitude_calendar_screen.dart';
 import '../screens/gratitude/create_gratitude_screen.dart';
+import '../screens/choir/choir_home_screen.dart';
+import '../screens/choir/choir_schedule_screen.dart';
+import '../screens/choir/choir_members_screen.dart';
+import '../screens/choir/choir_attendance_screen.dart';
+import '../screens/choir/choir_library_screen.dart';
+import '../screens/choir/choir_management_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -97,6 +103,43 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/gratitude/create',
         builder: (ctx, state) => const CreateGratitudeScreen(),
+      ),
+      // ── 찬양대 모듈 라우트 ──────────────────────────────
+      GoRoute(
+        path: '/choir',
+        builder: (ctx, state) => const ChoirHomeScreen(),
+      ),
+      GoRoute(
+        path: '/choir/schedules',
+        builder: (ctx, state) => const ChoirSchedulesScreen(),
+      ),
+      GoRoute(
+        path: '/choir/schedule/:id',
+        builder: (ctx, state) => ChoirScheduleDetailScreen(
+          scheduleId: state.pathParameters['id']!,
+        ),
+      ),
+      GoRoute(
+        path: '/choir/members',
+        builder: (ctx, state) => const ChoirMembersScreen(),
+      ),
+      GoRoute(
+        path: '/choir/attendance/:scheduleId',
+        builder: (ctx, state) => ChoirAttendanceScreen(
+          scheduleId: state.pathParameters['scheduleId']!,
+        ),
+      ),
+      GoRoute(
+        path: '/choir/stats',
+        builder: (ctx, state) => const ChoirAttendanceStatsScreen(),
+      ),
+      GoRoute(
+        path: '/choir/library',
+        builder: (ctx, state) => const ChoirLibraryScreen(),
+      ),
+      GoRoute(
+        path: '/choir/management',
+        builder: (ctx, state) => const ChoirManagementScreen(),
       ),
     ],
   );
