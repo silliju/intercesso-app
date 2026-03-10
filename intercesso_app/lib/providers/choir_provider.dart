@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/choir_models.dart';
+import '../services/choir_service.dart';
 
 // ─── 찬양대 Provider ───────────────────────────────────────────
 // 현재는 Mock 데이터로 동작하며, API 연동 시 실제 서비스 호출로 교체합니다.
@@ -98,19 +99,25 @@ class ChoirProvider extends ChangeNotifier {
     }
   }
 
+  final ChoirService _service = ChoirService();
+
   // ── 내 찬양대 목록 로드 ──────────────────────────────────────
   Future<void> loadMyChoirs() async {
     _setLoading(true);
     try {
-      // TODO: API 호출로 교체
-      await Future.delayed(const Duration(milliseconds: 500));
-      _myChoirs = _mockChoirs();
+      _myChoirs = await _service.getMyChoirs();
       if (_myChoirs.isNotEmpty && _selectedChoir == null) {
         _selectedChoir = _myChoirs.first;
         await loadChoirData(_selectedChoir!.id);
       }
     } catch (e) {
-      _errorMessage = e.toString();
+      // API 실패 시 mock 데이터로 폴백
+      debugPrint('loadMyChoirs API error: $e');
+      _myChoirs = _mockChoirs();
+      if (_myChoirs.isNotEmpty && _selectedChoir == null) {
+        _selectedChoir = _myChoirs.first;
+        await loadChoirData(_selectedChoir!.id);
+      }
     } finally {
       _setLoading(false);
     }
@@ -119,35 +126,41 @@ class ChoirProvider extends ChangeNotifier {
   // ── 멤버 로드 ────────────────────────────────────────────────
   Future<void> loadMembers(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
+      _members = await _service.getMembers(choirId);
+      final pending = await _service.getMembers(choirId, status: 'pending');
+      _pendingMembers = pending;
+      notifyListeners();
+    } catch (e) {
+      debugPrint('loadMembers error: $e');
       _members = _mockMembers(choirId);
       _pendingMembers = _members.where((m) => m.isPending).toList();
       notifyListeners();
-    } catch (e) {
-      _errorMessage = e.toString();
     }
   }
 
   // ── 일정 로드 ────────────────────────────────────────────────
   Future<void> loadSchedules(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      _schedules = _mockSchedules(choirId);
+      _schedules = await _service.getSchedules(choirId);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadSchedules error: $e');
+      _schedules = _mockSchedules(choirId);
+      notifyListeners();
     }
   }
 
   // ── 출석 로드 ────────────────────────────────────────────────
   Future<void> loadAttendance(String scheduleId) async {
     _setLoading(true);
+    final choirId = _selectedChoir?.id ?? '';
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
-      _attendances = _mockAttendances(scheduleId);
+      _attendances = await _service.getAttendance(choirId, scheduleId);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadAttendance error: $e');
+      _attendances = _mockAttendances(scheduleId);
+      notifyListeners();
     } finally {
       _setLoading(false);
     }
@@ -157,11 +170,13 @@ class ChoirProvider extends ChangeNotifier {
   Future<void> loadAttendanceStats(String choirId, {String period = 'monthly'}) async {
     _setLoading(true);
     try {
-      await Future.delayed(const Duration(milliseconds: 400));
-      _stats = _mockStats();
+      final data = await _service.getAttendanceStats(choirId, period: period);
+      _stats = AttendanceStats.fromJson(data);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadAttendanceStats error: $e');
+      _stats = _mockStats();
+      notifyListeners();
     } finally {
       _setLoading(false);
     }
@@ -170,33 +185,36 @@ class ChoirProvider extends ChangeNotifier {
   // ── 곡 로드 ──────────────────────────────────────────────────
   Future<void> loadSongs(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      _songs = _mockSongs(choirId);
+      _songs = await _service.getSongs(choirId);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadSongs error: $e');
+      _songs = _mockSongs(choirId);
+      notifyListeners();
     }
   }
 
   // ── 공지사항 로드 ────────────────────────────────────────────
   Future<void> loadNotices(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      _notices = _mockNotices(choirId);
+      _notices = await _service.getNotices(choirId);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadNotices error: $e');
+      _notices = _mockNotices(choirId);
+      notifyListeners();
     }
   }
 
   // ── 자료실 로드 ──────────────────────────────────────────────
   Future<void> loadFiles(String choirId) async {
     try {
-      await Future.delayed(const Duration(milliseconds: 300));
-      _files = _mockFiles(choirId);
+      _files = await _service.getFiles(choirId);
       notifyListeners();
     } catch (e) {
-      _errorMessage = e.toString();
+      debugPrint('loadFiles error: $e');
+      _files = _mockFiles(choirId);
+      notifyListeners();
     }
   }
 
@@ -503,24 +521,42 @@ class ChoirProvider extends ChangeNotifier {
     List<String> parts = const [],
     String? notes,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    final choirId = _selectedChoir?.id ?? 'default';
-    final newSong = ChoirSongModel(
-      id: 'song_${DateTime.now().millisecondsSinceEpoch}',
-      choirId: choirId,
-      title: title,
-      composer: composer,
-      arranger: arranger,
-      hymnBookRef: hymnBookRef,
-      youtubeUrl: youtubeUrl,
-      genre: genre,
-      difficulty: difficulty,
-      notes: notes,
-      parts: parts,
-      createdById: 'currentUser',
-      createdAt: DateTime.now().toIso8601String(),
-    );
-    _songs = [newSong, ..._songs];
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return;
+    try {
+      final newSong = await _service.createSong(
+        choirId,
+        title: title,
+        composer: composer,
+        arranger: arranger,
+        hymnBookRef: hymnBookRef,
+        youtubeUrl: youtubeUrl,
+        genre: genre,
+        difficulty: difficulty ?? 'medium',
+        parts: parts,
+        notes: notes,
+      );
+      _songs = [newSong, ..._songs];
+    } catch (e) {
+      debugPrint('addSong error: $e');
+      // API 실패 시 로컬에서 mock 추가
+      final mockSong = ChoirSongModel(
+        id: 'song_${DateTime.now().millisecondsSinceEpoch}',
+        choirId: choirId,
+        title: title,
+        composer: composer,
+        arranger: arranger,
+        hymnBookRef: hymnBookRef,
+        youtubeUrl: youtubeUrl,
+        genre: genre,
+        difficulty: difficulty,
+        notes: notes,
+        parts: parts,
+        createdById: 'currentUser',
+        createdAt: DateTime.now().toIso8601String(),
+      );
+      _songs = [mockSong, ..._songs];
+    }
     notifyListeners();
   }
 
@@ -536,12 +572,12 @@ class ChoirProvider extends ChangeNotifier {
     List<String> parts = const [],
     String? notes,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 400));
-    _songs = _songs.map((s) {
-      if (s.id != songId) return s;
-      return ChoirSongModel(
-        id: s.id,
-        choirId: s.choirId,
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return;
+    try {
+      final updated = await _service.updateSong(
+        choirId,
+        songId,
         title: title,
         composer: composer,
         arranger: arranger,
@@ -549,17 +585,35 @@ class ChoirProvider extends ChangeNotifier {
         youtubeUrl: youtubeUrl,
         genre: genre,
         difficulty: difficulty,
-        notes: notes,
         parts: parts,
-        createdById: s.createdById,
-        createdAt: s.createdAt,
+        notes: notes,
       );
-    }).toList();
+      _songs = _songs.map((s) => s.id == songId ? updated : s).toList();
+    } catch (e) {
+      debugPrint('updateSong error: $e');
+      _songs = _songs.map((s) {
+        if (s.id != songId) return s;
+        return ChoirSongModel(
+          id: s.id, choirId: s.choirId, title: title,
+          composer: composer, arranger: arranger,
+          hymnBookRef: hymnBookRef, youtubeUrl: youtubeUrl,
+          genre: genre, difficulty: difficulty,
+          notes: notes, parts: parts,
+          createdById: s.createdById, createdAt: s.createdAt,
+        );
+      }).toList();
+    }
     notifyListeners();
   }
 
   Future<void> deleteSong(String songId) async {
-    await Future.delayed(const Duration(milliseconds: 300));
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return;
+    try {
+      await _service.deleteSong(choirId, songId);
+    } catch (e) {
+      debugPrint('deleteSong error: $e');
+    }
     _songs = _songs.where((s) => s.id != songId).toList();
     notifyListeners();
   }

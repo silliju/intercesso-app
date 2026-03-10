@@ -13,6 +13,7 @@ import intercessionRoutes from './routes/intercession.routes';
 import notificationRoutes from './routes/notification.routes';
 import statisticsRoutes from './routes/statistics.routes';
 import gratitudeRoutes from './routes/gratitude.routes';
+import choirRoutes from './routes/choir.routes';
 import { getAnswerFeed } from './controllers/prayer_answer.controller';
 import { optionalAuth } from './middleware/auth';
 
@@ -288,6 +289,7 @@ app.use('/api/intercessions', intercessionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/statistics', statisticsRoutes);
 app.use('/api/gratitude', gratitudeRoutes);
+app.use('/api/choir', choirRoutes);
 // 기도 응답 피드
 app.get('/api/answers/feed', optionalAuth as any, getAnswerFeed as any);
 

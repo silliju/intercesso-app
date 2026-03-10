@@ -17,6 +17,7 @@ const intercession_routes_1 = __importDefault(require("./routes/intercession.rou
 const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 const statistics_routes_1 = __importDefault(require("./routes/statistics.routes"));
 const gratitude_routes_1 = __importDefault(require("./routes/gratitude.routes"));
+const choir_routes_1 = __importDefault(require("./routes/choir.routes"));
 const prayer_answer_controller_1 = require("./controllers/prayer_answer.controller");
 const auth_1 = require("./middleware/auth");
 dotenv_1.default.config();
@@ -278,6 +279,7 @@ app.use('/api/intercessions', intercession_routes_1.default);
 app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/statistics', statistics_routes_1.default);
 app.use('/api/gratitude', gratitude_routes_1.default);
+app.use('/api/choir', choir_routes_1.default);
 // 기도 응답 피드
 app.get('/api/answers/feed', auth_1.optionalAuth, prayer_answer_controller_1.getAnswerFeed);
 // 404 핸들러
