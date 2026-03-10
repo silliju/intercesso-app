@@ -48,9 +48,9 @@ class _GratitudeCalendarScreenState extends State<GratitudeCalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppTheme.background,
       appBar: AppBar(
-        backgroundColor: _gratitudeColor,
+        backgroundColor: AppTheme.gamsa,
         foregroundColor: Colors.white,
         title: const Text('감사 캘린더'),
         elevation: 0,

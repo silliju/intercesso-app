@@ -54,6 +54,10 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
       _selectedEmotion = e.emotion;
       _scope = e.scope;
       _linkedPrayerId = e.linkedPrayerId;
+      // 연결된 기도 제목도 함께 로드
+      if (e.linkedPrayer != null) {
+        _linkedPrayerTitle = e.linkedPrayer!['title']?.toString();
+      }
     }
   }
 

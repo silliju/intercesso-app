@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../models/models.dart';
 import '../../providers/gratitude_provider.dart';
 import '../../providers/auth_provider.dart';
 import 'gratitude_detail_screen.dart';
-import 'create_gratitude_screen.dart';
 
 class GratitudeFeedScreen extends StatefulWidget {
   const GratitudeFeedScreen({super.key});
@@ -44,7 +44,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppTheme.background,
       body: NestedScrollView(
         headerSliverBuilder: (_, __) => [
           _buildAppBar(),
@@ -56,7 +56,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
           children: _tabs.map((tab) => _FeedTabView(tab: tab)).toList(),
         ),
       ),
-      floatingActionButton: _buildFAB(),
+      // FAB는 MainTabScreen에서 관리 (중복 방지)
     );
   }
 
@@ -95,7 +95,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
                       const Spacer(),
                       IconButton(
                         icon: const Icon(Icons.calendar_month_outlined, color: Colors.white),
-                        onPressed: () => Navigator.pushNamed(context, '/gratitude/calendar'),
+                        onPressed: () => context.push('/gratitude/calendar'),
                       ),
                     ],
                   ),
@@ -199,36 +199,6 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
     );
   }
 
-  Widget _buildFAB() {
-    return Consumer<GratitudeProvider>(
-      builder: (_, provider, __) {
-        return FloatingActionButton.extended(
-          onPressed: () async {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => CreateGratitudeScreen(existing: provider.todayJournal),
-              ),
-            );
-            if (result == true) {
-              // 피드 갱신
-              provider.loadFeed('group', refresh: true);
-            }
-          },
-          backgroundColor: _gratitudeColor,
-          foregroundColor: Colors.white,
-          icon: Text(
-            provider.hasTodayJournal ? '✏️' : '✨',
-            style: const TextStyle(fontSize: 18),
-          ),
-          label: Text(
-            provider.hasTodayJournal ? '오늘 일기 수정' : '감사일기 쓰기',
-            style: const TextStyle(fontWeight: FontWeight.w700),
-          ),
-        );
-      },
-    );
-  }
 }
 
 // ── 탭 뷰 ─────────────────────────────────────────────────────
@@ -306,8 +276,6 @@ class _GratitudeFeedCard extends StatelessWidget {
   final GratitudeModel journal;
   final String tab;
   const _GratitudeFeedCard({required this.journal, required this.tab});
-
-  static const _gratitudeColor = Color(0xFFF59E0B);
 
   @override
   Widget build(BuildContext context) {

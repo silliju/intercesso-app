@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intercesso 프로젝트 개발 이력 보고서</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  
+  body {
+    font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    font-size: 11pt;
+    line-height: 1.7;
+    color: #1a1a2e;
+    background: white;
+  }
+  
+  /* 표지 */
+  .cover {
+    width: 100%;
+    height: 100vh;
+    background: linear-gradient(135deg, #00AAFF 0%, #0066CC 50%, #003399 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    page-break-after: always;
+    padding: 60px;
+  }
+  .cover-logo {
+    font-size: 72pt;
+    margin-bottom: 20px;
+  }
+  .cover-title {
+    font-size: 32pt;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -1px;
+    margin-bottom: 10px;
+  }
+  .cover-subtitle {
+    font-size: 16pt;
+    color: rgba(255,255,255,0.85);
+    margin-bottom: 40px;
+    font-weight: 300;
+  }
+  .cover-divider {
+    width: 80px;
+    height: 4px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 2px;
+    margin: 30px auto;
+  }
+  .cover-info {
+    font-size: 13pt;
+    color: rgba(255,255,255,0.9);
+    line-height: 2;
+  }
+  .cover-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid rgba(255,255,255,0.4);
+    border-radius: 30px;
+    padding: 10px 28px;
+    color: white;
+    font-size: 13pt;
+    font-weight: 700;
+    margin-top: 20px;
+  }
+  
+  /* 본문 */
+  .page {
+    padding: 50px 55px;
+    page-break-after: always;
+  }
+  .page:last-child { page-break-after: auto; }
+  
+  /* 섹션 헤더 */
+  .section-header {
+    border-left: 6px solid #00AAFF;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #EBF8FF, #F0F9FF);
+    border-radius: 0 12px 12px 0;
+    margin-bottom: 24px;
+    margin-top: 36px;
+  }
+  .section-header:first-child { margin-top: 0; }
+  .section-num {
+    font-size: 10pt;
+    font-weight: 700;
+    color: #00AAFF;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 4px;
+  }
+  .section-title {
+    font-size: 18pt;
+    font-weight: 900;
+    color: #0066CC;
+    letter-spacing: -0.5px;
+  }
+  
+  /* 카드 */
+  .card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .card-title {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #0066CC;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body {
+    font-size: 10.5pt;
+    color: #4A5568;
+    line-height: 1.8;
+  }
+  
+  /* 상태 배지 */
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 20px;
+    font-size: 9pt;
+    font-weight: 700;
+  }
+  .badge-done { background: #D1FAE5; color: #059669; }
+  .badge-pending { background: #FEF3C7; color: #D97706; }
+  .badge-error { background: #FEE2E2; color: #DC2626; }
+  .badge-info { background: #DBEAFE; color: #2563EB; }
+  
+  /* 테이블 */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 10pt;
+  }
+  th {
+    background: #00AAFF;
+    color: white;
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 10pt;
+  }
+  th:first-child { border-radius: 8px 0 0 0; }
+  th:last-child { border-radius: 0 8px 0 0; }
+  td {
+    padding: 9px 14px;
+    border-bottom: 1px solid #E2E8F0;
+    color: #4A5568;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #F8FAFC; }
+  tr:last-child td:first-child { border-radius: 0 0 0 8px; }
+  tr:last-child td:last-child { border-radius: 0 0 8px 0; }
+  
+  /* 타임라인 */
+  .timeline-item {
+    display: flex;
+    margin-bottom: 20px;
+    gap: 16px;
+  }
+  .timeline-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #00AAFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 14pt;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .timeline-dot.done { background: #059669; }
+  .timeline-dot.error { background: #DC2626; }
+  .timeline-dot.warn { background: #D97706; }
+  .timeline-content {
+    flex: 1;
+  }
+  .timeline-title {
+    font-size: 12pt;
+    font-weight: 700;
+    color: #1A202C;
+    margin-bottom: 4px;
+  }
+  .timeline-desc {
+    font-size: 10pt;
+    color: #6B7280;
+    line-height: 1.7;
+  }
+  
+  /* 코드 블록 */
+  .code-block {
+    background: #1E2A3A;
+    color: #E2E8F0;
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 9.5pt;
+    line-height: 1.6;
+    margin: 12px 0;
+    overflow: hidden;
+  }
+  .code-comment { color: #68D391; }
+  .code-keyword { color: #90CDF4; }
+  .code-string { color: #F6AD55; }
+  
+  /* 하이라이트 박스 */
+  .highlight-box {
+    border: 2px solid #00AAFF;
+    background: #EBF8FF;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .highlight-title {
+    font-weight: 700;
+    color: #0066CC;
+    margin-bottom: 8px;
+    font-size: 11pt;
+  }
+  .highlight-body {
+    font-size: 10pt;
+    color: #2C5282;
+    line-height: 1.8;
+  }
+  
+  /* 경고 박스 */
+  .warning-box {
+    border: 2px solid #F59E0B;
+    background: #FFFBEB;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .warning-title {
+    font-weight: 700;
+    color: #92400E;
+    margin-bottom: 6px;
+  }
+  
+  /* 에러 박스 */
+  .error-box {
+    border: 2px solid #EF4444;
+    background: #FEF2F2;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .error-title {
+    font-weight: 700;
+    color: #991B1B;
+    margin-bottom: 6px;
+  }
+  
+  /* 성공 박스 */
+  .success-box {
+    border: 2px solid #10B981;
+    background: #ECFDF5;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .success-title {
+    font-weight: 700;
+    color: #065F46;
+    margin-bottom: 6px;
+  }
+  
+  /* DB 스키마 테이블 */
+  .schema-table th { background: #0066CC; }
+  .schema-table td code {
+    background: #EBF8FF;
+    color: #0066CC;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 9pt;
+  }
+  
+  /* 2열 그리드 */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  
+  /* 구분선 */
+  .divider {
+    border: none;
+    border-top: 2px solid #E2E8F0;
+    margin: 28px 0;
+  }
+  
+  /* 페이지 번호 */
+  @page {
+    margin: 0;
+    size: A4;
+  }
+  
+  p { margin-bottom: 8px; }
+  ul { padding-left: 22px; margin-bottom: 10px; }
+  li { margin-bottom: 4px; color: #4A5568; font-size: 10.5pt; }
+  
+  .text-blue { color: #0066CC; font-weight: 700; }
+  .text-green { color: #059669; font-weight: 700; }
+  .text-orange { color: #D97706; font-weight: 700; }
+  .text-red { color: #DC2626; font-weight: 700; }
+  
+  .mt-16 { margin-top: 16px; }
+  .mb-8 { margin-bottom: 8px; }
+  
+  h3 {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #1A202C;
+    margin: 20px 0 10px 0;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #E2E8F0;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================== 표지 ============================== -->
+<div class="cover">
+  <div class="cover-logo">🙏</div>
+  <div class="cover-title">Intercesso</div>
+  <div class="cover-subtitle">함께 기도하는 공동체 앱</div>
+  <div class="cover-divider"></div>
+  <div class="cover-info">
+    프로젝트 개발 이력 및 기술 보고서<br>
+    AI 개발 세션 전체 작업 내역 정리
+  </div>
+  <div class="cover-badge">📋 Project Development Report</div>
+  <div style="color: rgba(255,255,255,0.7); font-size: 11pt; margin-top: 30px;">
+    작성일: 2026년 3월 7일 &nbsp;|&nbsp; 플랫폼: Flutter (Android/iOS) + Web
+  </div>
+</div>
+
+<!-- ============================== 목차 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Table of Contents</div>
+    <div class="section-title">목차</div>
+  </div>
+  
+  <table>
+    <tr>
+      <th style="width:8%">No.</th>
+      <th style="width:60%">항목</th>
+      <th style="width:32%">비고</th>
+    </tr>
+    <tr><td>1</td><td>프로젝트 개요</td><td><span class="badge badge-info">개요</span></td></tr>
+    <tr><td>2</td><td>기술 스택 및 아키텍처</td><td><span class="badge badge-info">기술</span></td></tr>
+    <tr><td>3</td><td>주요 기능 구현 현황</td><td><span class="badge badge-done">완료</span></td></tr>
+    <tr><td>4</td><td>세션별 작업 이력 (타임라인)</td><td><span class="badge badge-info">이력</span></td></tr>
+    <tr><td>5</td><td>버그 수정 이력</td><td><span class="badge badge-done">완료</span></td></tr>
+    <tr><td>6</td><td>UI/UX 변경 이력</td><td><span class="badge badge-done">완료</span></td></tr>
+    <tr><td>7</td><td>DB 스키마 전체 정리 (한글 주석)</td><td><span class="badge badge-info">스키마</span></td></tr>
+    <tr><td>8</td><td>미완성 항목 및 권장 차기 작업</td><td><span class="badge badge-pending">보류</span></td></tr>
+    <tr><td>9</td><td>API 엔드포인트 목록</td><td><span class="badge badge-info">API</span></td></tr>
+  </table>
+</div>
+
+<!-- ============================== 1. 프로젝트 개요 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 01</div>
+    <div class="section-title">프로젝트 개요</div>
+  </div>
+  
+  <div class="card">
+    <div class="card-title">🎯 프로젝트 목표</div>
+    <div class="card-body">
+      <p>Intercesso는 <strong>기독교 신앙 커뮤니티</strong>를 위한 기도 공유 앱입니다. "함께 기도하는 공동체"를 슬로건으로, 개인 기도제목 관리부터 중보기도 요청, 감사일기, 그룹 기도까지 통합적인 신앙 생활을 지원합니다.</p>
+    </div>
+  </div>
+  
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">📱 Flutter 앱</div>
+      <div class="card-body">
+        <ul>
+          <li>Flutter 3.27.4 (Dart 3.6.2)</li>
+          <li>Android / iOS 크로스플랫폼</li>
+          <li>Provider 상태관리</li>
+          <li>GoRouter 네비게이션</li>
+          <li>릴리즈 APK: 28.6MB</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🌐 Web 앱</div>
+      <div class="card-body">
+        <ul>
+          <li>Vanilla HTML/CSS/JavaScript</li>
+          <li>Node.js + Express 서버</li>
+          <li>단일 SPA 구조 (index.html)</li>
+          <li>Flutter 앱과 동일한 UI/UX</li>
+          <li>포트: 4000 (개발 서버)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title">⚙️ 백엔드</div>
+      <div class="card-body">
+        <ul>
+          <li>Node.js + Express</li>
+          <li>Railway 배포 (Production)</li>
+          <li>Supabase (PostgreSQL)</li>
+          <li>JWT 인증</li>
+          <li>REST API 방식</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🗄️ 데이터베이스</div>
+      <div class="card-body">
+        <ul>
+          <li>Supabase (PostgreSQL 기반)</li>
+          <li>RLS (Row Level Security)</li>
+          <li>16개 핵심 테이블</li>
+          <li>UUID 기본키 사용</li>
+          <li>자동 updated_at 트리거</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  
+  <div class="highlight-box">
+    <div class="highlight-title">🔗 접속 정보</div>
+    <div class="highlight-body">
+      <strong>웹 앱:</strong> https://4000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai<br>
+      <strong>백엔드 (Production):</strong> https://intercesso-backend-production-5f72.up.railway.app<br>
+      <strong>APK 다운로드:</strong> https://4000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/intercesso.apk<br>
+      <strong>테스트 계정:</strong> admin@intercesso.app / Admin1234!
+    </div>
+  </div>
+</div>
+
+<!-- ============================== 2. 기술 스택 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 02</div>
+    <div class="section-title">기술 스택 및 아키텍처</div>
+  </div>
+  
+  <h3>Flutter 앱 패키지</h3>
+  <table>
+    <tr>
+      <th>패키지명</th>
+      <th>용도</th>
+      <th>버전</th>
+    </tr>
+    <tr><td>flutter / dart</td><td>프레임워크 기반</td><td>3.27.4 / 3.6.2</td></tr>
+    <tr><td>provider</td><td>상태 관리 (기도·감사·인증 Provider)</td><td>최신</td></tr>
+    <tr><td>go_router</td><td>화면 네비게이션 라우팅</td><td>최신</td></tr>
+    <tr><td>http</td><td>REST API 통신</td><td>최신</td></tr>
+    <tr><td>shared_preferences</td><td>토큰·사용자 정보 로컬 저장</td><td>최신</td></tr>
+    <tr><td>google_sign_in</td><td>구글 소셜 로그인</td><td>최신</td></tr>
+    <tr><td>kakao_flutter_sdk_user</td><td>카카오 소셜 로그인</td><td>최신</td></tr>
+    <tr><td>firebase_messaging</td><td>FCM 푸시 알림</td><td>최신</td></tr>
+    <tr><td>flutter_local_notifications</td><td>로컬 알림 표시</td><td>최신</td></tr>
+    <tr><td>image_picker</td><td>프로필 이미지 선택</td><td>최신</td></tr>
+  </table>
+  
+  <h3>백엔드 구조</h3>
+  <div class="code-block">
+<span class="code-comment">// 백엔드 디렉토리 구조</span>
+backend/
+├── routes/
+│   ├── auth.js          <span class="code-comment">// 로그인·회원가입·토큰 갱신</span>
+│   ├── prayers.js       <span class="code-comment">// 기도제목 CRUD + 참여</span>
+│   ├── intercession.js  <span class="code-comment">// 중보기도 요청 관리</span>
+│   ├── groups.js        <span class="code-comment">// 그룹 생성·가입·관리</span>
+│   ├── gratitude.js     <span class="code-comment">// 감사일기 CRUD + 피드</span>
+│   ├── notifications.js <span class="code-comment">// 알림 목록·읽음처리</span>
+│   ├── statistics.js    <span class="code-comment">// 대시보드 통계</span>
+│   └── users.js         <span class="code-comment">// 프로필·연결·검색</span>
+├── middleware/
+│   └── auth.js          <span class="code-comment">// JWT 인증 미들웨어</span>
+├── schema.sql           <span class="code-comment">// DB 스키마 (한글 주석 포함)</span>
+└── server.js            <span class="code-comment">// Express 앱 엔트리포인트</span>
+  </div>
+  
+  <h3>앱 색상 팔레트</h3>
+  <table>
+    <tr><th>이름</th><th>Hex 코드</th><th>용도</th></tr>
+    <tr><td>primary</td><td>#00AAFF</td><td>주 색상 - 버튼·탭·링크</td></tr>
+    <tr><td>secondary</td><td>#00C9A7</td><td>보조 색상 - 말씀 카드</td></tr>
+    <tr><td>gamsa (감사)</td><td>#F59E0B</td><td>감사일기 전용 황금색</td></tr>
+    <tr><td>success</td><td>#10B981</td><td>완료·응답 상태</td></tr>
+    <tr><td>error</td><td>#EF4444</td><td>오류·경고</td></tr>
+    <tr><td>background</td><td>#F8F9FA</td><td>앱 배경색</td></tr>
+  </table>
+</div>
+
+<!-- ============================== 3. 기능 구현 현황 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 03</div>
+    <div class="section-title">주요 기능 구현 현황</div>
+  </div>
+  
+  <table>
+    <tr>
+      <th style="width:5%">순</th>
+      <th style="width:20%">기능 영역</th>
+      <th style="width:38%">세부 기능</th>
+      <th style="width:12%">앱 상태</th>
+      <th style="width:12%">웹 상태</th>
+      <th style="width:13%">비고</th>
+    </tr>
+    <tr>
+      <td>1</td><td><strong>인증</strong></td>
+      <td>이메일 로그인, 회원가입, 구글/카카오 소셜 로그인, 토큰 갱신</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td>JWT 기반</td>
+    </tr>
+    <tr>
+      <td>2</td><td><strong>홈</strong></td>
+      <td>개인/교회 모드 토글, 인사말 카드, 빠른 액션 버튼, 오늘의 말씀, 기도·감사 피드 탭</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td>이번 세션 재설계</td>
+    </tr>
+    <tr>
+      <td>3</td><td><strong>기도 목록</strong></td>
+      <td>전체공개·내 기도·지인·기도중 탭, 카테고리 필터, 기도 작성/수정/삭제</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>4</td><td><strong>중보기도</strong></td>
+      <td>받은 요청·보낸 요청·전체 공개 탭, 요청 수락/거절</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>5</td><td><strong>감사일기</strong></td>
+      <td>하루 1개 작성, 감정태그, 내 일기·그룹 피드·캘린더 탭, 반응(은혜·공감), 스트릭</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-pending">부분구현</span></td>
+      <td>웹 캘린더 미완</td>
+    </tr>
+    <tr>
+      <td>6</td><td><strong>그룹</strong></td>
+      <td>그룹 생성·가입, 초대코드, 그룹 기도제목</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>7</td><td><strong>프로필</strong></td>
+      <td>프로필 수정, 기도 통계, 연결(친구), 알림 설정</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>8</td><td><strong>알림</strong></td>
+      <td>중보요청·참여·댓글·응답·그룹 초대 알림, FCM 푸시</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-pending">부분구현</span></td>
+      <td>웹 FCM 미적용</td>
+    </tr>
+    <tr>
+      <td>9</td><td><strong>언약기도</strong></td>
+      <td>7/21/40/50/100일 목표, 일별 체크인, 진행률 표시</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td><span class="badge badge-pending">미구현</span></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>10</td><td><strong>APK 배포</strong></td>
+      <td>릴리즈 빌드, 웹서버 다운로드 엔드포인트</td>
+      <td><span class="badge badge-done">완료</span></td>
+      <td>-</td>
+      <td>28.6MB</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================== 4. 세션별 작업 이력 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 04</div>
+    <div class="section-title">세션별 작업 이력 (타임라인)</div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">1</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🏗️ 프로젝트 초기 구축</div>
+      <div class="timeline-desc">
+        Flutter 앱 기본 구조 설계, Node.js 백엔드 구축, Supabase PostgreSQL 스키마 설계.
+        16개 테이블 정의, JWT 인증 시스템 구현, REST API 라우터 작성.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">2</div>
+    <div class="timeline-content">
+      <div class="timeline-title">📱 Flutter 핵심 화면 구현</div>
+      <div class="timeline-desc">
+        기도 목록, 기도 상세, 기도 작성 화면 구현. Provider 패턴으로 상태 관리.
+        GoRouter 기반 네비게이션 설정. 중보기도 요청 화면 구현.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">3</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🌸 감사일기 모듈 추가</div>
+      <div class="timeline-desc">
+        감사일기 테이블 마이그레이션(005_gratitude_journal.sql) 작성. Flutter 감사일기 작성 화면,
+        피드 탭(내 일기·그룹 피드·캘린더), 스트릭 추적 기능 구현.
+        감정 태그(기쁨·평안·감동·감사) 및 반응(은혜·공감) 기능 추가.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">4</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🌐 웹 앱 (index.html) 개발</div>
+      <div class="timeline-desc">
+        3,869 라인 규모의 단일 HTML SPA 웹 앱 제작. 온보딩, 로그인, 회원가입, 홈, 기도목록,
+        중보기도, 감사일기, 그룹, 프로필 화면 구현. Express 서버로 정적 파일 서빙.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot">5</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🎨 웹 UI/UX 개선 (탭바 재정렬)</div>
+      <div class="timeline-desc">
+        Flutter 앱과 탭바 순서 불일치 수정. 기존 [홈·기도·감사·중보·그룹·My] →
+        [홈·기도·중보·감사·그룹·프로필]로 변경. 감사 탭 색상 녹색(#10B981) → 황금색(#F59E0B)으로 변경.
+        탭바 활성 스타일에 배경 박스 효과 추가. 배경색 #F5F5F5 → #F8F9FA로 통일.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot">6</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🏠 Flutter 홈 화면 재설계 (1차)</div>
+      <div class="timeline-desc">
+        Flutter 홈 화면에 개인/교회 모드 토글, 인사말 카드(아바타·시간별 인사·스트릭 배지),
+        빠른 액션 버튼 2개(기도 작성·감사일기), 오늘의 말씀 카드(날짜별 성경구절), 기도/감사 피드 탭 추가.
+        NestedScrollView + SliverPersistentHeader + TabBarView 구조로 설계.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot error">7</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🐛 기도 피드 회색 빈 화면 버그 발생</div>
+      <div class="timeline-desc">
+        홈 화면 기도 피드 영역이 회색으로 렌더링되는 문제 발생.
+        원인: SliverFillRemaining → TabBarView → ListView.builder 중첩으로 인한 높이 계산 충돌.
+        Flutter에서 SliverFillRemaining 안의 TabBarView는 내부 ListView의 높이를 0으로 계산하여
+        회색 빈 화면이 표시됨.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot">8</div>
+    <div class="timeline-content">
+      <div class="timeline-title">🔧 기도 피드 수정 시도 1 (NestedScrollView 적용)</div>
+      <div class="timeline-desc">
+        CustomScrollView + SliverFillRemaining을 NestedScrollView로 교체 시도.
+        NestedScrollView.body에 TabBarView를 배치하는 공식 Flutter 패턴 적용.
+        내부 ListView에 shrinkWrap·NeverScrollableScrollPhysics 설정.
+        결과: 여전히 동일한 회색 빈 화면 증상 지속.
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">9</div>
+    <div class="timeline-content">
+      <div class="timeline-title">✅ 홈 화면 근본 재설계 (TabBarView 완전 제거)</div>
+      <div class="timeline-desc">
+        TabBarView를 완전히 제거하고 setState 기반 탭 전환 방식으로 교체.
+        CustomScrollView + SliverList 직접 렌더링으로 구조 단순화.
+        기도 피드와 감사 피드를 _showPrayerFeed 불리언으로 전환.
+        피드 탭 버튼을 AnimatedContainer로 구현. 스크롤 충돌 완전 해결.
+        APK 빌드 성공 (28.6MB, 빌드 시간 ~200초).
+      </div>
+    </div>
+  </div>
+  
+  <div class="timeline-item">
+    <div class="timeline-dot done">10</div>
+    <div class="timeline-content">
+      <div class="timeline-title">📦 APK 빌드 및 배포</div>
+      <div class="timeline-desc">
+        flutter build apk --release 명령으로 릴리즈 APK 생성.
+        웹 서버 /intercesso.apk 엔드포인트로 다운로드 제공.
+        테스트 환경: Android SDK 34.0.0, Flutter 3.27.4.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================== 5. 버그 수정 이력 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 05</div>
+    <div class="section-title">버그 수정 이력</div>
+  </div>
+  
+  <div class="error-box">
+    <div class="error-title">🐛 BUG-001: 홈 화면 기도 피드 회색 빈 화면</div>
+    <p><strong>증상:</strong> 홈 화면 기도 피드 / 감사 피드 탭 영역이 회색 빈 화면으로 표시됨</p>
+    <p><strong>원인:</strong> Flutter의 CustomScrollView → SliverFillRemaining → TabBarView → ListView.builder 중첩 구조에서 내부 위젯의 높이가 0으로 계산됨</p>
+    <p><strong>시도 1:</strong> ListView.builder → SingleChildScrollView + Column 변경 (미해결)</p>
+    <p><strong>시도 2:</strong> NestedScrollView.body에 TabBarView 배치 (미해결)</p>
+    <p><strong>최종 해결:</strong> TabBarView 완전 제거 → setState 불리언 기반 탭 전환 + SliverList 직접 렌더링</p>
+  </div>
+  
+  <div class="success-box">
+    <div class="success-title">✅ BUG-001 해결 코드 구조</div>
+    <div class="code-block">
+<span class="code-comment">// 이전 구조 (버그 발생)</span>
+CustomScrollView(slivers: [
+  ...headerSlivers,
+  SliverFillRemaining(
+    child: TabBarView(children: [ListView(...), ListView(...)]),
+  ),
+]);
+
+<span class="code-comment">// 최종 해결 구조</span>
+CustomScrollView(slivers: [
+  ...headerSlivers,
+  SliverToBoxAdapter(child: _buildFeedTabToggle()), <span class="code-comment">// 탭 전환 버튼</span>
+  if (_showPrayerFeed) _buildPrayerFeedSliver(...)  <span class="code-comment">// SliverList 직접 렌더</span>
+  else _buildGratitudeFeedSliver(...),
+  SliverToBoxAdapter(child: SizedBox(height: 100)), <span class="code-comment">// 하단 여백</span>
+]);
+    </div>
+  </div>
+  
+  <div class="warning-box">
+    <div class="warning-title">⚠️ ISSUE-001: 백엔드 URL 하드코딩 문제</div>
+    <p><strong>내용:</strong> APK 빌드 시 constants.dart의 baseUrl이 샌드박스 URL로 하드코딩됨</p>
+    <p><strong>권장 조치:</strong> --dart-define=API_BASE_URL=https://intercesso-backend-production-5f72.up.railway.app/api 옵션으로 빌드</p>
+    <p><strong>현재 상태:</strong> 샌드박스 URL과 Railway URL 모두 정상 응답 확인됨 (임시 해결)</p>
+  </div>
+  
+  <div class="warning-box">
+    <div class="warning-title">⚠️ ISSUE-002: 웹 앱 감사(Gratitude) 페이지 누락</div>
+    <p><strong>내용:</strong> index.html에 page-gratitude 섹션이 일부 미구현 (캘린더 탭)</p>
+    <p><strong>권장 조치:</strong> 감사일기 캘린더 뷰 HTML 추가 구현 필요</p>
+  </div>
+  
+  <div class="warning-box">
+    <div class="warning-title">⚠️ ISSUE-003: DB 스키마 불일치</div>
+    <p><strong>내용:</strong> users 테이블에 일부 버전에서 password_hash, profile_id 컬럼 누락</p>
+    <p><strong>권장 조치:</strong> Supabase에서 스키마 마이그레이션 재실행 또는 누락 컬럼 ALTER TABLE로 추가</p>
+  </div>
+</div>
+
+<!-- ============================== 6. UI/UX 변경 이력 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 06</div>
+    <div class="section-title">UI/UX 변경 이력</div>
+  </div>
+  
+  <h3>탭바 순서 변경</h3>
+  <table>
+    <tr><th>구분</th><th>이전</th><th>변경 후 (현재)</th></tr>
+    <tr>
+      <td>탭 순서</td>
+      <td>홈 · 기도 · <span class="text-orange">감사</span> · 중보 · 그룹 · My</td>
+      <td>홈 · 기도 · 중보 · <span class="text-orange">감사</span> · 그룹 · 프로필</td>
+    </tr>
+    <tr>
+      <td>감사 탭 색상</td>
+      <td><span class="text-green">녹색 #10B981</span></td>
+      <td><span class="text-orange">황금색 #F59E0B</span></td>
+    </tr>
+    <tr>
+      <td>감사 탭 배경</td>
+      <td>#ECFDF5 (초록 계열)</td>
+      <td>#FFFBEB (황금 계열)</td>
+    </tr>
+    <tr>
+      <td>탭 활성 스타일</td>
+      <td>텍스트 색상 변경만</td>
+      <td>배경 박스 + 색상 변경 (AnimatedContainer)</td>
+    </tr>
+    <tr>
+      <td>배경색</td>
+      <td>#F5F5F5</td>
+      <td>#F8F9FA (Flutter 앱과 통일)</td>
+    </tr>
+  </table>
+  
+  <h3>홈 화면 재설계</h3>
+  <table>
+    <tr><th>컴포넌트</th><th>이전</th><th>현재</th></tr>
+    <tr>
+      <td>상단 영역</td>
+      <td>단순 텍스트 인사말</td>
+      <td>개인/교회 모드 토글 + 아바타 그라디언트 인사말 카드 + 스트릭 배지</td>
+    </tr>
+    <tr>
+      <td>빠른 액션</td>
+      <td>없음</td>
+      <td>기도 제목 쓰기 (파란 그라디언트) + 감사일기 쓰기 (황금/녹색 그라디언트)</td>
+    </tr>
+    <tr>
+      <td>말씀 카드</td>
+      <td>없음</td>
+      <td>날짜별 성경구절 (초록 그라디언트, bible_verses_data.dart 연동)</td>
+    </tr>
+    <tr>
+      <td>피드 영역</td>
+      <td>기도 목록 단순 표시</td>
+      <td>기도 피드 / 감사 피드 탭 전환 (AnimatedContainer 버튼)</td>
+    </tr>
+    <tr>
+      <td>렌더링 방식</td>
+      <td>TabBarView (스크롤 충돌)</td>
+      <td>SliverList 직접 렌더 + setState 전환 (정상 작동)</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================== 7. DB 스키마 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 07</div>
+    <div class="section-title">DB 스키마 전체 정리</div>
+  </div>
+  
+  <h3>테이블 목록 및 역할</h3>
+  <table class="schema-table">
+    <tr><th>#</th><th>테이블명</th><th>한글명</th><th>역할 설명</th></tr>
+    <tr><td>1</td><td><code>users</code></td><td>사용자</td><td>앱 사용자 계정, 프로필, 교회 정보 저장</td></tr>
+    <tr><td>2</td><td><code>groups</code></td><td>그룹</td><td>교회·셀·소모임·가족 등 기도 커뮤니티 단위 관리</td></tr>
+    <tr><td>3</td><td><code>prayers</code></td><td>기도제목</td><td>기도제목 본문, 카테고리, 공개범위, 언약기도 관리</td></tr>
+    <tr><td>4</td><td><code>prayer_participations</code></td><td>기도참여</td><td>"함께 기도하기" 참여 기록 저장</td></tr>
+    <tr><td>5</td><td><code>comments</code></td><td>댓글</td><td>기도제목에 달린 응원·위로 댓글 관리</td></tr>
+    <tr><td>6</td><td><code>intercession_requests</code></td><td>중보기도요청</td><td>특정 사용자에게 중보기도 요청·수락·거절 관리</td></tr>
+    <tr><td>7</td><td><code>group_members</code></td><td>그룹멤버</td><td>그룹 소속·역할(관리자/멤버) 관리</td></tr>
+    <tr><td>8</td><td><code>connections</code></td><td>친구관계</td><td>사용자 간 친구·팔로우 관계 저장</td></tr>
+    <tr><td>9</td><td><code>notifications</code></td><td>알림</td><td>중보요청·참여·댓글·응답·그룹초대 알림 메시지</td></tr>
+    <tr><td>10</td><td><code>notification_preferences</code></td><td>알림설정</td><td>사용자별 알림 유형 ON/OFF 설정</td></tr>
+    <tr><td>11</td><td><code>covenant_checkins</code></td><td>언약체크인</td><td>언약기도 일별 체크인 기록</td></tr>
+    <tr><td>12</td><td><code>blocked_users</code></td><td>차단사용자</td><td>사용자 차단 목록 관리</td></tr>
+    <tr><td>13</td><td><code>reports</code></td><td>신고</td><td>부적절한 기도·댓글·사용자 신고 접수</td></tr>
+    <tr><td>14</td><td><code>user_statistics</code></td><td>통계</td><td>사용자별 기도 통계 캐시 (대시보드용)</td></tr>
+    <tr><td>15</td><td><code>prayer_answers</code></td><td>기도응답간증</td><td>응답받은 기도의 감사 간증문 저장</td></tr>
+    <tr><td>16</td><td><code>prayer_answer_comments</code></td><td>간증댓글</td><td>응답 간증에 달린 댓글</td></tr>
+    <tr><td>17</td><td><code>gratitude_journals</code></td><td>감사일기</td><td>하루 1개 감사일기, 감사 3가지 항목 저장</td></tr>
+    <tr><td>18</td><td><code>gratitude_reactions</code></td><td>감사반응</td><td>감사일기에 대한 은혜·공감 반응</td></tr>
+    <tr><td>19</td><td><code>gratitude_comments</code></td><td>감사댓글</td><td>감사일기에 달린 댓글</td></tr>
+    <tr><td>20</td><td><code>gratitude_streaks</code></td><td>감사스트릭</td><td>연속 작성 일수·최장 기록 추적</td></tr>
+  </table>
+</div>
+
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 07 - 계속</div>
+    <div class="section-title">주요 테이블 필드 상세</div>
+  </div>
+  
+  <h3>users 테이블 (사용자)</h3>
+  <table class="schema-table">
+    <tr><th>필드명</th><th>타입</th><th>설명</th><th>제약</th></tr>
+    <tr><td><code>id</code></td><td>UUID</td><td>사용자 고유 식별자</td><td>PK, 자동생성</td></tr>
+    <tr><td><code>email</code></td><td>VARCHAR(255)</td><td>이메일 주소 (로그인 ID)</td><td>UNIQUE, NOT NULL</td></tr>
+    <tr><td><code>nickname</code></td><td>VARCHAR(50)</td><td>닉네임 (화면 표시명)</td><td>NOT NULL</td></tr>
+    <tr><td><code>profile_image_url</code></td><td>TEXT</td><td>프로필 이미지 URL</td><td>-</td></tr>
+    <tr><td><code>church_name</code></td><td>VARCHAR(100)</td><td>소속 교회명</td><td>-</td></tr>
+    <tr><td><code>denomination</code></td><td>VARCHAR(50)</td><td>교단명</td><td>-</td></tr>
+    <tr><td><code>bio</code></td><td>TEXT</td><td>자기소개 문구</td><td>-</td></tr>
+    <tr><td><code>last_login</code></td><td>TIMESTAMP</td><td>마지막 로그인 일시</td><td>-</td></tr>
+  </table>
+  
+  <h3>prayers 테이블 (기도제목)</h3>
+  <table class="schema-table">
+    <tr><th>필드명</th><th>타입</th><th>설명</th><th>제약</th></tr>
+    <tr><td><code>id</code></td><td>UUID</td><td>기도제목 고유 식별자</td><td>PK</td></tr>
+    <tr><td><code>user_id</code></td><td>UUID</td><td>작성자 사용자 ID</td><td>FK → users</td></tr>
+    <tr><td><code>title</code></td><td>VARCHAR(255)</td><td>기도제목 제목</td><td>NOT NULL</td></tr>
+    <tr><td><code>content</code></td><td>TEXT</td><td>기도제목 본문</td><td>NOT NULL</td></tr>
+    <tr><td><code>category</code></td><td>VARCHAR(50)</td><td>카테고리 (건강/가정/진로/영적/사업/기타)</td><td>기본값: 기타</td></tr>
+    <tr><td><code>scope</code></td><td>VARCHAR(20)</td><td>공개범위 (public/friends/community/private)</td><td>기본값: public</td></tr>
+    <tr><td><code>status</code></td><td>VARCHAR(20)</td><td>상태 (praying/answered/grateful)</td><td>기본값: praying</td></tr>
+    <tr><td><code>is_covenant</code></td><td>BOOLEAN</td><td>언약기도 여부</td><td>기본값: false</td></tr>
+    <tr><td><code>covenant_days</code></td><td>INTEGER</td><td>언약 목표 일수 (7/21/40/50/100)</td><td>-</td></tr>
+    <tr><td><code>views_count</code></td><td>INTEGER</td><td>조회 수</td><td>기본값: 0</td></tr>
+    <tr><td><code>prayer_count</code></td><td>INTEGER</td><td>함께 기도한 인원 수</td><td>기본값: 0</td></tr>
+  </table>
+  
+  <h3>gratitude_journals 테이블 (감사일기)</h3>
+  <table class="schema-table">
+    <tr><th>필드명</th><th>타입</th><th>설명</th><th>제약</th></tr>
+    <tr><td><code>id</code></td><td>UUID</td><td>감사일기 고유 식별자</td><td>PK</td></tr>
+    <tr><td><code>user_id</code></td><td>UUID</td><td>작성자 사용자 ID</td><td>FK → users</td></tr>
+    <tr><td><code>gratitude_1</code></td><td>TEXT</td><td>첫 번째 감사 내용</td><td>NOT NULL</td></tr>
+    <tr><td><code>gratitude_2</code></td><td>TEXT</td><td>두 번째 감사 내용</td><td>-</td></tr>
+    <tr><td><code>gratitude_3</code></td><td>TEXT</td><td>세 번째 감사 내용</td><td>-</td></tr>
+    <tr><td><code>emotion</code></td><td>VARCHAR(20)</td><td>감정 태그 (joy/peace/moved/thankful)</td><td>-</td></tr>
+    <tr><td><code>linked_prayer_id</code></td><td>UUID</td><td>연결된 기도제목 ID (응답 기도 연결)</td><td>FK → prayers</td></tr>
+    <tr><td><code>scope</code></td><td>VARCHAR(20)</td><td>공개범위 (private/group/public)</td><td>기본값: private</td></tr>
+    <tr><td><code>journal_date</code></td><td>DATE</td><td>작성 날짜 (하루 1개 제한 기준)</td><td>UNIQUE(user+date)</td></tr>
+  </table>
+</div>
+
+<!-- ============================== 8. 미완성 항목 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 08</div>
+    <div class="section-title">미완성 항목 및 차기 권장 작업</div>
+  </div>
+  
+  <table>
+    <tr>
+      <th>우선순위</th>
+      <th>항목</th>
+      <th>영역</th>
+      <th>설명</th>
+    </tr>
+    <tr>
+      <td><span class="badge badge-error">HIGH</span></td>
+      <td>APK 프로덕션 URL 적용</td>
+      <td>Flutter</td>
+      <td>--dart-define으로 Railway URL 주입 후 재빌드 필요</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-error">HIGH</span></td>
+      <td>DB 스키마 일치 검증</td>
+      <td>Backend</td>
+      <td>Supabase 실제 테이블 vs schema.sql 불일치 항목 확인 및 마이그레이션 적용</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-pending">MED</span></td>
+      <td>웹 감사일기 캘린더 탭</td>
+      <td>Web</td>
+      <td>감사일기 캘린더 뷰 HTML/JS 구현 필요 (Flutter 앱에는 존재)</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-pending">MED</span></td>
+      <td>웹 FCM 푸시 알림</td>
+      <td>Web</td>
+      <td>Service Worker 기반 웹 푸시 알림 구현 필요</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-pending">MED</span></td>
+      <td>언약기도 웹 구현</td>
+      <td>Web</td>
+      <td>7/21/40/50/100일 언약기도 체크인 UI 웹 버전 구현</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td>APK 서명 (Keystore)</td>
+      <td>Flutter</td>
+      <td>Google Play 배포를 위한 keystore 서명 작업 필요</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td>iOS 빌드</td>
+      <td>Flutter</td>
+      <td>macOS 환경에서 Xcode를 통한 iOS IPA 빌드 필요</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td>웹 앱 Cloudflare 배포</td>
+      <td>Web</td>
+      <td>현재 개발 서버 상태. Cloudflare Pages 정식 배포 필요</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td>성가대 모듈 Flutter 화면</td>
+      <td>Flutter</td>
+      <td>DB 스키마(004_choir_module.sql)는 작성되었으나 Flutter UI 미구현</td>
+    </tr>
+    <tr>
+      <td><span class="badge badge-info">LOW</span></td>
+      <td>App Store / Play Store 메타데이터</td>
+      <td>배포</td>
+      <td>앱 설명, 스크린샷, 아이콘 등 스토어 등록 준비</td>
+    </tr>
+  </table>
+  
+  <div class="highlight-box">
+    <div class="highlight-title">💡 개발 권장 순서</div>
+    <div class="highlight-body">
+      1️⃣ DB 스키마 Supabase 재적용 → 2️⃣ APK 프로덕션 URL 빌드 → 
+      3️⃣ 웹 캘린더 탭 구현 → 4️⃣ APK 서명 → 5️⃣ Google Play 등록
+    </div>
+  </div>
+</div>
+
+<!-- ============================== 9. API 목록 ============================== -->
+<div class="page">
+  <div class="section-header">
+    <div class="section-num">Section 09</div>
+    <div class="section-title">API 엔드포인트 목록</div>
+  </div>
+  
+  <h3>인증 (Auth)</h3>
+  <table>
+    <tr><th>Method</th><th>경로</th><th>설명</th></tr>
+    <tr><td>POST</td><td>/api/auth/register</td><td>이메일 회원가입</td></tr>
+    <tr><td>POST</td><td>/api/auth/login</td><td>이메일 로그인 (JWT 발급)</td></tr>
+    <tr><td>POST</td><td>/api/auth/refresh</td><td>액세스 토큰 갱신</td></tr>
+    <tr><td>POST</td><td>/api/auth/google</td><td>구글 소셜 로그인</td></tr>
+    <tr><td>POST</td><td>/api/auth/kakao</td><td>카카오 소셜 로그인</td></tr>
+  </table>
+  
+  <h3>기도제목 (Prayers)</h3>
+  <table>
+    <tr><th>Method</th><th>경로</th><th>설명</th></tr>
+    <tr><td>GET</td><td>/api/prayers</td><td>기도 목록 조회 (scope, category, status 필터)</td></tr>
+    <tr><td>POST</td><td>/api/prayers</td><td>기도제목 작성</td></tr>
+    <tr><td>GET</td><td>/api/prayers/:id</td><td>기도제목 상세 조회</td></tr>
+    <tr><td>PUT</td><td>/api/prayers/:id</td><td>기도제목 수정</td></tr>
+    <tr><td>DELETE</td><td>/api/prayers/:id</td><td>기도제목 삭제</td></tr>
+    <tr><td>POST</td><td>/api/prayers/:id/participate</td><td>함께 기도하기 참여</td></tr>
+    <tr><td>DELETE</td><td>/api/prayers/:id/participate</td><td>기도 참여 취소</td></tr>
+    <tr><td>POST</td><td>/api/prayers/:id/comments</td><td>댓글 작성</td></tr>
+    <tr><td>POST</td><td>/api/prayers/:id/checkin</td><td>언약기도 일별 체크인</td></tr>
+  </table>
+  
+  <h3>감사일기 (Gratitude)</h3>
+  <table>
+    <tr><th>Method</th><th>경로</th><th>설명</th></tr>
+    <tr><td>GET</td><td>/api/gratitude/today</td><td>오늘 작성한 감사일기 조회</td></tr>
+    <tr><td>POST</td><td>/api/gratitude</td><td>감사일기 작성</td></tr>
+    <tr><td>GET</td><td>/api/gratitude/feed</td><td>감사 피드 (tab: group/public)</td></tr>
+    <tr><td>GET</td><td>/api/gratitude/streak</td><td>연속 작성 스트릭 조회</td></tr>
+    <tr><td>POST</td><td>/api/gratitude/:id/react</td><td>감사일기 반응 (grace/empathy)</td></tr>
+  </table>
+  
+  <h3>통계 및 기타</h3>
+  <table>
+    <tr><th>Method</th><th>경로</th><th>설명</th></tr>
+    <tr><td>GET</td><td>/api/statistics/dashboard</td><td>홈 대시보드 통계 (총 기도수, 응답수, 참여수, 스트릭)</td></tr>
+    <tr><td>GET</td><td>/api/users/me</td><td>내 프로필 조회</td></tr>
+    <tr><td>PUT</td><td>/api/users/me</td><td>내 프로필 수정</td></tr>
+    <tr><td>GET</td><td>/api/notifications</td><td>알림 목록 조회</td></tr>
+    <tr><td>PUT</td><td>/api/notifications/read-all</td><td>알림 전체 읽음 처리</td></tr>
+    <tr><td>GET</td><td>/api/groups</td><td>그룹 목록 조회</td></tr>
+    <tr><td>POST</td><td>/api/groups</td><td>그룹 생성</td></tr>
+    <tr><td>POST</td><td>/api/groups/join</td><td>초대 코드로 그룹 가입</td></tr>
+  </table>
+  
+  <div class="success-box">
+    <div class="success-title">📊 API 동작 확인 결과</div>
+    <p><strong>Railway 프로덕션:</strong> /api/prayers?scope=public&amp;limit=3 → HTTP 200 ✅</p>
+    <p><strong>로컬 샌드박스:</strong> http://localhost:3000/api/prayers → HTTP 200 ✅</p>
+    <p><strong>APK 다운로드:</strong> /intercesso.apk → HTTP 200 (28.6MB) ✅</p>
+  </div>
+</div>
+
+</body>
+</html>

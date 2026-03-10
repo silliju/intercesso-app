@@ -80,8 +80,8 @@ export const getMyGratitudeJournals = async (req: AuthRequest, res: Response): P
       .select(`
         *,
         linked_prayer:prayers(id, title, status),
-        gratitude_reactions(reaction_type, count()),
-        gratitude_comments(count())
+        gratitude_reactions(reaction_type),
+        gratitude_comments(id)
       `, { count: 'exact' })
       .eq('user_id', userId)
       .order('journal_date', { ascending: false })
@@ -89,7 +89,23 @@ export const getMyGratitudeJournals = async (req: AuthRequest, res: Response): P
 
     if (error) { sendError(res, '조회 실패', 500, 'DB_ERROR', error.message); return; }
 
-    sendPaginated(res, data || [], { page, limit, total: count || 0 }, '내 감사일기 목록');
+    // 반응 수 계산
+    const enriched = (data || []).map((j: any) => {
+      const reactionCounts = { grace: 0, empathy: 0 };
+      j.gratitude_reactions?.forEach((r: any) => {
+        if (r.reaction_type === 'grace') reactionCounts.grace++;
+        if (r.reaction_type === 'empathy') reactionCounts.empathy++;
+      });
+      return {
+        ...j,
+        reaction_counts: reactionCounts,
+        comment_count: j.gratitude_comments?.length || 0,
+        gratitude_reactions: undefined,
+        gratitude_comments: undefined,
+      };
+    });
+
+    sendPaginated(res, enriched, { page, limit, total: count || 0 }, '내 감사일기 목록');
   } catch (err: any) {
     sendError(res, '서버 오류', 500, 'SERVER_ERROR', err.message);
   }
@@ -281,7 +297,7 @@ export const getGratitudeFeed = async (req: AuthRequest, res: Response): Promise
         user:users(id, nickname, profile_image_url, church_name),
         linked_prayer:prayers(id, title, status),
         gratitude_reactions(reaction_type),
-        gratitude_comments(count())
+        gratitude_comments(id)
       `, { count: 'exact' })
       .neq('scope', 'private')
       .order('created_at', { ascending: false })
@@ -355,7 +371,7 @@ export const getGratitudeFeed = async (req: AuthRequest, res: Response): Promise
         if (r.reaction_type === 'grace') reactionCounts.grace++;
         if (r.reaction_type === 'empathy') reactionCounts.empathy++;
       });
-      const commentCount = j.gratitude_comments?.[0]?.count || 0;
+      const commentCount = j.gratitude_comments?.length || 0;
 
       return {
         ...j,

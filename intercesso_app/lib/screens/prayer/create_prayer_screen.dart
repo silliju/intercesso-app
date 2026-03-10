@@ -91,6 +91,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
           ),
         ],
       ),
+      backgroundColor: AppTheme.background,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
         child: Form(
@@ -99,7 +100,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 제목
-              const Text('기도 제목', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('기도 제목', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _titleController,
@@ -112,7 +113,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
               ),
               const SizedBox(height: 16),
               // 내용
-              const Text('기도 내용', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('기도 내용', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
               const SizedBox(height: 8),
               TextFormField(
                 controller: _contentController,
@@ -125,7 +126,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
               ),
               const SizedBox(height: 20),
               // 카테고리
-              const Text('카테고리', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('카테고리', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
               const SizedBox(height: 10),
               Wrap(
                 spacing: 8,
@@ -137,8 +138,11 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primary : const Color(0xFFF0F0F0),
-                        borderRadius: BorderRadius.circular(50),
+                        color: isSelected ? AppTheme.primary : AppTheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isSelected ? AppTheme.primary : AppTheme.border,
+                        ),
                       ),
                       child: Text(
                         cat,
@@ -154,7 +158,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
               ),
               const SizedBox(height: 20),
               // 공개 범위
-              const Text('공개 범위', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+              const Text('공개 범위', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppTheme.textPrimary)),
               const SizedBox(height: 10),
               ...AppConstants.scopeLabels.entries.map((entry) {
                 final isSelected = _selectedScope == entry.key;
@@ -178,13 +182,18 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: _isCovenant
-                      ? AppTheme.primaryLight
-                      : AppTheme.background,
-                  borderRadius: BorderRadius.circular(16),
+                  color: _isCovenant ? AppTheme.primaryLight : AppTheme.surface,
+                  borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: _isCovenant ? AppTheme.primary.withOpacity(0.3) : AppTheme.border,
+                    color: _isCovenant ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.border,
                   ),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color(0x0A000000),
+                      blurRadius: 10,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: Column(
                   children: [

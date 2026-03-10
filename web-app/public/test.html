@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intercesso 기능 테스트</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --primary: #00AAFF;
+  --primary-dark: #0088DD;
+  --primary-light: #E6F6FF;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --gratitude: #F59E0B;
+  --bg: #F0F4F8;
+  --surface: #FFFFFF;
+  --text: #1A1A2E;
+  --text-sub: #6B7280;
+  --border: #E5E7EB;
+  --shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+.header { background: linear-gradient(135deg, #00AAFF, #0055CC); color: white; padding: 20px 24px; }
+.header h1 { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.header p { font-size: 13px; opacity: 0.85; }
+.header .status-bar { margin-top: 12px; display: flex; gap: 12px; flex-wrap: wrap; }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: rgba(255,255,255,0.2); }
+.status-badge.online { background: rgba(16,185,129,0.3); }
+.status-badge.offline { background: rgba(239,68,68,0.3); }
+.container { max-width: 900px; margin: 0 auto; padding: 20px 16px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab { padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; border: 2px solid var(--border); background: var(--surface); color: var(--text-sub); transition: all 0.2s; }
+.tab.active { background: var(--primary); border-color: var(--primary); color: white; }
+.panel { display: none; }
+.panel.active { display: block; }
+.section { background: var(--surface); border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+.section h2 { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.section h2 .badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.badge-blue { background: var(--primary-light); color: var(--primary-dark); }
+.badge-green { background: #DCFCE7; color: #15803D; }
+.badge-yellow { background: #FEF3C7; color: #92400E; }
+.form-row { margin-bottom: 12px; }
+.form-row label { display: block; font-size: 12px; font-weight: 600; color: var(--text-sub); margin-bottom: 4px; }
+input, textarea, select {
+  width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 14px; color: var(--text); background: #F9FAFB; outline: none; transition: border 0.2s;
+  font-family: inherit;
+}
+input:focus, textarea:focus, select:focus { border-color: var(--primary); background: white; }
+textarea { resize: vertical; min-height: 80px; }
+.btn { padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #059669; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-warning:hover { background: #D97706; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-danger:hover { background: #DC2626; }
+.btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
+.btn-outline:hover { background: var(--primary-light); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.result-box {
+  margin-top: 12px; padding: 12px 14px; border-radius: 10px; font-size: 12px;
+  font-family: 'Courier New', monospace; background: #1E1E2E; color: #A6E3A1;
+  max-height: 300px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  display: none;
+}
+.result-box.error { color: #F38BA8; }
+.result-box.show { display: block; }
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
+.info-card { background: #F9FAFB; border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+.info-card .label { font-size: 11px; color: var(--text-sub); font-weight: 600; margin-bottom: 4px; }
+.info-card .value { font-size: 15px; font-weight: 700; color: var(--text); word-break: break-all; }
+.token-display { font-size: 11px; color: var(--success); background: #F0FDF4; border: 1px solid #BBF7D0; padding: 8px 12px; border-radius: 8px; word-break: break-all; margin-top: 8px; }
+.error-alert { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 8px; }
+.success-alert { background: #F0FDF4; border: 1px solid #BBF7D0; color: #15803D; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 8px; }
+.spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; }
+.spinner.show { display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.feed-card { border: 1.5px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: #FAFAFA; }
+.feed-card .user { font-weight: 700; font-size: 14px; color: var(--text); margin-bottom: 6px; }
+.feed-card .content { font-size: 13px; color: var(--text-sub); line-height: 1.5; }
+.feed-card .meta { font-size: 11px; color: #ADB5BD; margin-top: 6px; }
+.prayer-card { border-left: 4px solid var(--primary); }
+.gratitude-card { border-left: 4px solid var(--gratitude); }
+.tab-switcher { display: flex; gap: 4px; margin-bottom: 12px; }
+.tab-btn { padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1.5px solid var(--border); background: white; color: var(--text-sub); transition: all 0.15s; }
+.tab-btn.active { background: var(--primary); border-color: var(--primary); color: white; }
+.tab-btn.yellow.active { background: var(--gratitude); border-color: var(--gratitude); }
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🧪 Intercesso 기능 테스트</h1>
+  <p>API 기능을 웹에서 직접 테스트할 수 있습니다</p>
+  <div class="status-bar">
+    <span class="status-badge" id="backendStatus">⏳ 백엔드 확인 중...</span>
+    <span class="status-badge" id="authStatus">🔒 미로그인</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ── 탭 ── -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('auth')">🔐 인증</div>
+    <div class="tab" onclick="switchTab('prayer')">🙏 기도</div>
+    <div class="tab" onclick="switchTab('gratitude')">🌸 감사일기</div>
+    <div class="tab" onclick="switchTab('feed')">📰 피드</div>
+    <div class="tab" onclick="switchTab('group')">👥 그룹</div>
+    <div class="tab" onclick="switchTab('debug')">🐛 디버그</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- AUTH 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-auth" class="panel active">
+
+    <div class="section">
+      <h2>🔐 로그인 <span class="badge badge-blue">POST /api/auth/login</span></h2>
+      <div class="form-row">
+        <label>이메일</label>
+        <input type="email" id="loginEmail" placeholder="user@example.com" value="test@intercesso.app">
+      </div>
+      <div class="form-row">
+        <label>비밀번호</label>
+        <input type="password" id="loginPassword" placeholder="비밀번호" value="Test1234!">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="doLogin()">
+          <span class="spinner" id="loginSpinner"></span> 로그인
+        </button>
+        <button class="btn btn-outline" onclick="doLogout()">로그아웃</button>
+      </div>
+      <div id="loginResult" class="result-box"></div>
+    </div>
+
+    <div class="section">
+      <h2>📝 회원가입 <span class="badge badge-blue">POST /api/auth/register</span></h2>
+      <div class="form-row">
+        <label>이메일</label>
+        <input type="email" id="regEmail" placeholder="newuser@example.com">
+      </div>
+      <div class="form-row">
+        <label>닉네임</label>
+        <input type="text" id="regNickname" placeholder="닉네임">
+      </div>
+      <div class="form-row">
+        <label>비밀번호</label>
+        <input type="password" id="regPassword" placeholder="비밀번호 (최소 6자)">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="doRegister()">회원가입</button>
+      </div>
+      <div id="regResult" class="result-box"></div>
+    </div>
+
+    <div class="section">
+      <h2>👤 내 프로필 <span class="badge badge-green">GET /api/users/me</span></h2>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="getProfile()">프로필 조회</button>
+      </div>
+      <div id="profileResult" class="result-box"></div>
+    </div>
+
+  </div><!-- /panel-auth -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- PRAYER 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-prayer" class="panel">
+
+    <div class="section">
+      <h2>🙏 기도제목 작성 <span class="badge badge-blue">POST /api/prayers</span></h2>
+      <div class="form-row">
+        <label>제목</label>
+        <input type="text" id="prayerTitle" placeholder="기도제목 제목" value="테스트 기도제목">
+      </div>
+      <div class="form-row">
+        <label>내용</label>
+        <textarea id="prayerContent" placeholder="기도 내용을 입력하세요">이것은 테스트 기도제목입니다. 하나님의 은혜가 임하기를 기도합니다.</textarea>
+      </div>
+      <div class="form-row">
+        <label>카테고리</label>
+        <select id="prayerCategory">
+          <option value="">선택 안함</option>
+          <option value="개인">개인</option>
+          <option value="가족">가족</option>
+          <option value="교회">교회</option>
+          <option value="나라">나라</option>
+          <option value="선교">선교</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>공개 범위</label>
+        <select id="prayerScope">
+          <option value="private">나만 보기</option>
+          <option value="group">그룹 공개</option>
+          <option value="public" selected>전체 공개</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="createPrayer()">기도제목 작성</button>
+        <button class="btn btn-outline" onclick="loadMyPrayers()">내 기도 목록</button>
+      </div>
+      <div id="prayerResult" class="result-box"></div>
+    </div>
+
+    <div class="section">
+      <h2>📋 공개 기도 피드 <span class="badge badge-green">GET /api/prayers/public</span></h2>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="loadPublicPrayers()">공개 기도 목록 불러오기</button>
+      </div>
+      <div id="publicPrayerFeed" style="margin-top:12px;"></div>
+      <div id="publicPrayerResult" class="result-box"></div>
+    </div>
+
+  </div><!-- /panel-prayer -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- GRATITUDE 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-gratitude" class="panel">
+
+    <div class="section">
+      <h2>🌸 감사일기 작성 <span class="badge badge-yellow">POST /api/gratitude</span></h2>
+      <p style="font-size:12px;color:var(--text-sub);margin-bottom:12px;">오늘 날짜에 하루 1개 작성 (upsert). 이미 작성한 경우 수정됩니다.</p>
+      <div class="form-row">
+        <label>감사 1 (필수)</label>
+        <input type="text" id="g1" placeholder="오늘 감사한 첫 번째 일" value="오늘 테스트가 잘 되어서 감사합니다">
+      </div>
+      <div class="form-row">
+        <label>감사 2 (선택)</label>
+        <input type="text" id="g2" placeholder="두 번째 감사한 일" value="건강하게 하루를 보낼 수 있어서 감사합니다">
+      </div>
+      <div class="form-row">
+        <label>감사 3 (선택)</label>
+        <input type="text" id="g3" placeholder="세 번째 감사한 일" value="좋은 팀원들과 함께 일할 수 있어서 감사합니다">
+      </div>
+      <div class="form-row">
+        <label>감정</label>
+        <select id="gEmotion">
+          <option value="">선택 안함</option>
+          <option value="joy">기쁨 😊</option>
+          <option value="peace">평안 🕊️</option>
+          <option value="moved">감격 😭</option>
+          <option value="thankful">감사 🙌</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>공개 범위</label>
+        <select id="gScope">
+          <option value="private">나만 보기</option>
+          <option value="group" selected>그룹 공개</option>
+          <option value="public">전체 공개</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-warning" onclick="createGratitude()">
+          <span class="spinner" id="gratSpinner"></span>
+          🙌 감사 기록하기
+        </button>
+        <button class="btn btn-outline" onclick="getTodayGratitude()">오늘 일기 조회</button>
+        <button class="btn btn-outline" onclick="getStreak()">스트릭 확인</button>
+      </div>
+      <div id="gratitudeResult" class="result-box"></div>
+    </div>
+
+    <div class="section">
+      <h2>📅 내 감사일기 목록 <span class="badge badge-yellow">GET /api/gratitude/my</span></h2>
+      <div class="btn-group">
+        <button class="btn btn-warning" onclick="loadMyGratitude()">내 감사일기 불러오기</button>
+      </div>
+      <div id="myGratitudeFeed" style="margin-top:12px;"></div>
+      <div id="myGratitudeResult" class="result-box"></div>
+    </div>
+
+  </div><!-- /panel-gratitude -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- FEED 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-feed" class="panel">
+
+    <div class="section">
+      <h2>📰 통합 피드</h2>
+      <div class="tab-switcher">
+        <div class="tab-btn active" onclick="switchFeedTab('prayer-public')">🙏 기도 피드</div>
+        <div class="tab-btn yellow" onclick="switchFeedTab('gratitude-group')">🌸 감사 피드 (그룹)</div>
+        <div class="tab-btn yellow" onclick="switchFeedTab('gratitude-public')">🌐 감사 피드 (전체)</div>
+      </div>
+      <div class="btn-group" style="margin-top:0;">
+        <button class="btn btn-primary" onclick="loadCurrentFeed()">피드 불러오기</button>
+      </div>
+      <div id="feedCards" style="margin-top:12px;"></div>
+      <div id="feedResult" class="result-box"></div>
+    </div>
+
+  </div><!-- /panel-feed -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- GROUP 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-group" class="panel">
+
+    <div class="section">
+      <h2>👥 그룹 목록 <span class="badge badge-green">GET /api/groups</span></h2>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="loadGroups()">내 그룹 목록</button>
+        <button class="btn btn-outline" onclick="loadPublicGroups()">공개 그룹 목록</button>
+      </div>
+      <div id="groupFeed" style="margin-top:12px;"></div>
+      <div id="groupResult" class="result-box"></div>
+    </div>
+
+    <div class="section">
+      <h2>✨ 그룹 만들기 <span class="badge badge-blue">POST /api/groups</span></h2>
+      <div class="form-row">
+        <label>그룹 이름</label>
+        <input type="text" id="groupName" placeholder="그룹 이름" value="테스트 기도 모임">
+      </div>
+      <div class="form-row">
+        <label>설명</label>
+        <textarea id="groupDesc" placeholder="그룹 설명" style="min-height:60px">함께 기도하는 테스트 그룹입니다</textarea>
+      </div>
+      <div class="form-row">
+        <label>그룹 유형</label>
+        <select id="groupType">
+          <option value="gathering">소모임</option>
+          <option value="church">교회</option>
+          <option value="cell">셀/구역</option>
+          <option value="family">가족</option>
+        </select>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-success" onclick="createGroup()">그룹 만들기</button>
+      </div>
+      <div id="createGroupResult" class="result-box"></div>
+    </div>
+
+  </div><!-- /panel-group -->
+
+  <!-- ══════════════════════════════════════════════════════ -->
+  <!-- DEBUG 패널 -->
+  <!-- ══════════════════════════════════════════════════════ -->
+  <div id="panel-debug" class="panel">
+
+    <div class="section">
+      <h2>🐛 API 직접 호출</h2>
+      <div class="form-row">
+        <label>Method</label>
+        <select id="debugMethod">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>Path (예: /api/users/me)</label>
+        <input type="text" id="debugPath" placeholder="/api/users/me" value="/api/users/me">
+      </div>
+      <div class="form-row">
+        <label>Body (JSON, POST/PUT 일 때)</label>
+        <textarea id="debugBody" placeholder='{"key": "value"}' style="min-height:60px;font-family:monospace;font-size:12px"></textarea>
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="debugCall()">요청 전송</button>
+        <button class="btn btn-outline" onclick="clearDebug()">지우기</button>
+      </div>
+      <div id="debugResult" class="result-box show" style="min-height:100px">// 여기에 응답이 표시됩니다</div>
+    </div>
+
+    <div class="section">
+      <h2>📋 빠른 API 테스트</h2>
+      <div class="btn-group">
+        <button class="btn btn-outline" onclick="quickTest('/api/users/me', 'GET')">GET /me</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/gratitude/today', 'GET')">오늘 감사일기</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/gratitude/streak', 'GET')">스트릭</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/gratitude/feed?tab=group&page=1&limit=5', 'GET')">감사피드(그룹)</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/gratitude/feed?tab=public&page=1&limit=5', 'GET')">감사피드(전체)</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/prayers?page=1&limit=5', 'GET')">내 기도목록</button>
+        <button class="btn btn-outline" onclick="quickTest('/api/groups', 'GET')">내 그룹</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>🔑 현재 인증 상태</h2>
+      <div id="authInfo" style="font-size:13px; color:var(--text-sub)">로그인이 필요합니다.</div>
+    </div>
+
+  </div><!-- /panel-debug -->
+
+</div><!-- /container -->
+
+<script>
+// ════════════════════════════════════════════════════
+// 상태
+// ════════════════════════════════════════════════════
+let authToken = localStorage.getItem('intercesso_token') || '';
+let currentUser = null;
+let currentFeedTab = 'prayer-public';
+
+// 페이지 로드 시 초기화
+window.onload = async () => {
+  checkBackend();
+  updateAuthUI();
+  if (authToken) {
+    try {
+      await getProfile(true);
+    } catch(e) {}
+  }
+};
+
+// ════════════════════════════════════════════════════
+// 탭 전환
+// ════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function switchFeedTab(tab) {
+  currentFeedTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// ════════════════════════════════════════════════════
+// API 헬퍼
+// ════════════════════════════════════════════════════
+async function api(method, path, body) {
+  const headers = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+  const opts = { method, headers };
+  if (body && method !== 'GET') opts.body = JSON.stringify(body);
+  const resp = await fetch(path, opts);
+  const data = await resp.json();
+  return { ok: resp.ok, status: resp.status, data };
+}
+
+function showResult(id, data, isError) {
+  const el = document.getElementById(id);
+  el.classList.add('show');
+  el.classList.toggle('error', !!isError);
+  el.textContent = JSON.stringify(data, null, 2);
+}
+
+function setSpinner(id, show) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('show', show);
+}
+
+// ════════════════════════════════════════════════════
+// 백엔드 상태 확인
+// ════════════════════════════════════════════════════
+async function checkBackend() {
+  try {
+    const r = await fetch('/api/prayers/public?limit=1');
+    const statusEl = document.getElementById('backendStatus');
+    if (r.ok || r.status === 404) {
+      statusEl.textContent = '✅ 백엔드 온라인';
+      statusEl.className = 'status-badge online';
+    } else {
+      statusEl.textContent = '⚠️ 백엔드 이상 (' + r.status + ')';
+      statusEl.className = 'status-badge offline';
+    }
+  } catch(e) {
+    document.getElementById('backendStatus').textContent = '❌ 백엔드 오프라인';
+    document.getElementById('backendStatus').className = 'status-badge offline';
+  }
+}
+
+// ════════════════════════════════════════════════════
+// 인증 UI 업데이트
+// ════════════════════════════════════════════════════
+function updateAuthUI() {
+  const authEl = document.getElementById('authStatus');
+  const authInfoEl = document.getElementById('authInfo');
+  if (authToken && currentUser) {
+    authEl.textContent = '✅ ' + (currentUser.nickname || currentUser.email);
+    authEl.className = 'status-badge online';
+    if (authInfoEl) {
+      authInfoEl.innerHTML = `
+        <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:10px;padding:12px;">
+          <div style="font-weight:700;font-size:14px;color:#15803D;margin-bottom:8px;">✅ 로그인됨</div>
+          <div><b>닉네임:</b> ${currentUser.nickname || '-'}</div>
+          <div><b>이메일:</b> ${currentUser.email || '-'}</div>
+          <div><b>ID:</b> <span style="font-size:11px;color:#6B7280">${currentUser.id || '-'}</span></div>
+          <div style="margin-top:8px;font-size:11px;color:#6B7280"><b>토큰:</b> ${authToken.substring(0,30)}...</div>
+        </div>`;
+    }
+  } else if (authToken) {
+    authEl.textContent = '🔑 토큰 있음 (정보 로딩 중)';
+    authEl.className = 'status-badge';
+    if (authInfoEl) authInfoEl.textContent = '프로필을 로드하는 중...';
+  } else {
+    authEl.textContent = '🔒 미로그인';
+    authEl.className = 'status-badge';
+    if (authInfoEl) authInfoEl.innerHTML = `<div style="color:var(--danger);font-size:13px">로그인이 필요합니다. 인증 탭에서 로그인해주세요.</div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pw = document.getElementById('loginPassword').value;
+  if (!email || !pw) return alert('이메일과 비밀번호를 입력하세요');
+  setSpinner('loginSpinner', true);
+  try {
+    const r = await api('POST', '/api/auth/login', { email, password: pw });
+    showResult('loginResult', r.data, !r.ok);
+    if (r.ok && r.data.data?.token) {
+      authToken = r.data.data.token;
+      localStorage.setItem('intercesso_token', authToken);
+      await getProfile(true);
+    }
+  } catch(e) {
+    showResult('loginResult', { error: e.message }, true);
+  }
+  setSpinner('loginSpinner', false);
+}
+
+async function doLogout() {
+  authToken = '';
+  currentUser = null;
+  localStorage.removeItem('intercesso_token');
+  updateAuthUI();
+  showResult('loginResult', { message: '로그아웃 완료' }, false);
+}
+
+async function doRegister() {
+  const email = document.getElementById('regEmail').value;
+  const nickname = document.getElementById('regNickname').value;
+  const pw = document.getElementById('regPassword').value;
+  if (!email || !nickname || !pw) return alert('모든 필드를 입력하세요');
+  try {
+    const r = await api('POST', '/api/auth/register', { email, nickname, password: pw });
+    showResult('regResult', r.data, !r.ok);
+    if (r.ok && r.data.data?.token) {
+      authToken = r.data.data.token;
+      localStorage.setItem('intercesso_token', authToken);
+      await getProfile(true);
+    }
+  } catch(e) {
+    showResult('regResult', { error: e.message }, true);
+  }
+}
+
+async function getProfile(silent) {
+  if (!authToken) { if (!silent) alert('먼저 로그인하세요'); return; }
+  try {
+    const r = await api('GET', '/api/users/me');
+    if (!silent) showResult('profileResult', r.data, !r.ok);
+    if (r.ok && r.data.data) {
+      currentUser = r.data.data;
+      updateAuthUI();
+    }
+  } catch(e) {
+    if (!silent) showResult('profileResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// PRAYER
+// ════════════════════════════════════════════════════
+async function createPrayer() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  const title = document.getElementById('prayerTitle').value;
+  const content = document.getElementById('prayerContent').value;
+  if (!title || !content) return alert('제목과 내용을 입력하세요');
+  try {
+    const body = {
+      title,
+      content,
+      scope: document.getElementById('prayerScope').value,
+    };
+    const cat = document.getElementById('prayerCategory').value;
+    if (cat) body.category = cat;
+    const r = await api('POST', '/api/prayers', body);
+    showResult('prayerResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('prayerResult', { error: e.message }, true);
+  }
+}
+
+async function loadMyPrayers() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  try {
+    const r = await api('GET', '/api/prayers?page=1&limit=10');
+    showResult('prayerResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('prayerResult', { error: e.message }, true);
+  }
+}
+
+async function loadPublicPrayers() {
+  try {
+    const r = await api('GET', '/api/prayers/public?page=1&limit=10');
+    const container = document.getElementById('publicPrayerFeed');
+    if (r.ok && r.data.data) {
+      const items = r.data.data;
+      if (items.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px">공개 기도가 없습니다</div>';
+      } else {
+        container.innerHTML = items.map(p => `
+          <div class="feed-card prayer-card">
+            <div class="user">🙏 ${p.user?.nickname || '사용자'} <span style="font-size:11px;color:var(--text-sub)">${p.category || ''}</span></div>
+            <div style="font-weight:700;margin-bottom:4px">${p.title}</div>
+            <div class="content">${(p.content||'').substring(0,100)}${(p.content||'').length>100?'...':''}</div>
+            <div class="meta">${p.prayer_count||0}명 기도중 · 댓글 ${p.comment_count||0}</div>
+          </div>`).join('');
+      }
+    }
+    showResult('publicPrayerResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('publicPrayerResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// GRATITUDE
+// ════════════════════════════════════════════════════
+async function createGratitude() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  const g1 = document.getElementById('g1').value;
+  if (!g1.trim()) return alert('첫 번째 감사 내용을 입력하세요');
+  setSpinner('gratSpinner', true);
+  try {
+    const body = {
+      gratitude_1: g1.trim(),
+      scope: document.getElementById('gScope').value,
+    };
+    const g2 = document.getElementById('g2').value.trim();
+    const g3 = document.getElementById('g3').value.trim();
+    const em = document.getElementById('gEmotion').value;
+    if (g2) body.gratitude_2 = g2;
+    if (g3) body.gratitude_3 = g3;
+    if (em) body.emotion = em;
+    const r = await api('POST', '/api/gratitude', body);
+    showResult('gratitudeResult', r.data, !r.ok);
+    if (r.ok) {
+      const alert_el = document.createElement('div');
+      alert_el.className = 'success-alert';
+      alert_el.textContent = '🙌 감사일기가 저장되었어요!';
+      document.getElementById('gratitudeResult').before(alert_el);
+      setTimeout(() => alert_el.remove(), 3000);
+    }
+  } catch(e) {
+    showResult('gratitudeResult', { error: e.message }, true);
+  }
+  setSpinner('gratSpinner', false);
+}
+
+async function getTodayGratitude() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  try {
+    const r = await api('GET', '/api/gratitude/today');
+    showResult('gratitudeResult', r.data, !r.ok);
+    if (r.ok && r.data.data) {
+      const j = r.data.data;
+      document.getElementById('g1').value = j.gratitude_1 || '';
+      document.getElementById('g2').value = j.gratitude_2 || '';
+      document.getElementById('g3').value = j.gratitude_3 || '';
+      document.getElementById('gEmotion').value = j.emotion || '';
+      document.getElementById('gScope').value = j.scope || 'private';
+    }
+  } catch(e) {
+    showResult('gratitudeResult', { error: e.message }, true);
+  }
+}
+
+async function getStreak() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  try {
+    const r = await api('GET', '/api/gratitude/streak');
+    showResult('gratitudeResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('gratitudeResult', { error: e.message }, true);
+  }
+}
+
+async function loadMyGratitude() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  try {
+    const r = await api('GET', '/api/gratitude/my?page=1&limit=10');
+    const container = document.getElementById('myGratitudeFeed');
+    if (r.ok && r.data.data) {
+      const items = r.data.data;
+      if (items.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--text-sub);padding:20px">감사일기가 없습니다</div>';
+      } else {
+        container.innerHTML = items.map(j => `
+          <div class="feed-card gratitude-card">
+            <div class="meta" style="margin-bottom:6px">${j.journal_date} · ${scopeLabel(j.scope)}</div>
+            <div>1. ${j.gratitude_1}</div>
+            ${j.gratitude_2 ? `<div>2. ${j.gratitude_2}</div>` : ''}
+            ${j.gratitude_3 ? `<div>3. ${j.gratitude_3}</div>` : ''}
+            ${j.emotion ? `<div class="meta">${emotionEmoji(j.emotion)}</div>` : ''}
+          </div>`).join('');
+      }
+    }
+    showResult('myGratitudeResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('myGratitudeResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// FEED
+// ════════════════════════════════════════════════════
+async function loadCurrentFeed() {
+  const container = document.getElementById('feedCards');
+  const resultEl = document.getElementById('feedResult');
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-sub)">⏳ 로딩 중...</div>';
+
+  try {
+    let r;
+    if (currentFeedTab === 'prayer-public') {
+      r = await api('GET', '/api/prayers/public?page=1&limit=10');
+      if (r.ok && r.data.data) {
+        const items = r.data.data;
+        container.innerHTML = items.length === 0
+          ? '<div style="text-align:center;color:var(--text-sub);padding:20px">🙏 공개 기도가 없습니다</div>'
+          : items.map(p => `
+              <div class="feed-card prayer-card">
+                <div class="user">🙏 ${p.user?.nickname || '사용자'}</div>
+                <div style="font-weight:700;margin-bottom:4px">${p.title}</div>
+                <div class="content">${(p.content||'').substring(0,100)}${(p.content||'').length>100?'...':''}</div>
+                <div class="meta">${p.prayer_count||0}명 기도 중 · 댓글 ${p.comment_count||0}</div>
+              </div>`).join('');
+      }
+    } else {
+      if (!authToken) {
+        container.innerHTML = '<div style="color:var(--danger);padding:12px">감사 피드는 로그인이 필요합니다</div>';
+        return;
+      }
+      const tab = currentFeedTab === 'gratitude-group' ? 'group' : 'public';
+      r = await api('GET', `/api/gratitude/feed?tab=${tab}&page=1&limit=10`);
+      if (r.ok && r.data.data) {
+        const items = r.data.data;
+        container.innerHTML = items.length === 0
+          ? '<div style="text-align:center;color:var(--text-sub);padding:20px">🌸 감사일기가 없습니다</div>'
+          : items.map(j => `
+              <div class="feed-card gratitude-card">
+                <div class="user">🌸 ${j.user?.nickname || '사용자'} ${j.emotion ? emotionEmoji(j.emotion) : ''}</div>
+                <div>1. ${j.gratitude_1}</div>
+                ${j.gratitude_2 ? `<div>2. ${j.gratitude_2}</div>` : ''}
+                ${j.gratitude_3 ? `<div>3. ${j.gratitude_3}</div>` : ''}
+                <div class="meta">🙏 ${j.reaction_counts?.grace||0} · 🤍 ${j.reaction_counts?.empathy||0} · 💬 ${j.comment_count||0}</div>
+              </div>`).join('');
+      }
+    }
+    if (r) showResult('feedResult', r.data, !r.ok);
+  } catch(e) {
+    container.innerHTML = '<div style="color:var(--danger);padding:12px">오류: ' + e.message + '</div>';
+    showResult('feedResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// GROUP
+// ════════════════════════════════════════════════════
+async function loadGroups() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  try {
+    const r = await api('GET', '/api/groups');
+    const container = document.getElementById('groupFeed');
+    if (r.ok && r.data.data) {
+      const items = r.data.data;
+      container.innerHTML = items.length === 0
+        ? '<div style="color:var(--text-sub);padding:12px">소속 그룹이 없습니다</div>'
+        : items.map(g => `
+            <div class="feed-card">
+              <div class="user">${g.group_type_emoji || '👥'} ${g.name}</div>
+              <div class="content">${g.description || '설명 없음'}</div>
+              <div class="meta">멤버 ${g.member_count || 0}명 · ${g.group_type || ''}</div>
+            </div>`).join('');
+    }
+    showResult('groupResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('groupResult', { error: e.message }, true);
+  }
+}
+
+async function loadPublicGroups() {
+  try {
+    const r = await api('GET', '/api/groups/public?page=1&limit=10');
+    const container = document.getElementById('groupFeed');
+    if (r.ok && r.data.data) {
+      const items = r.data.data;
+      container.innerHTML = items.length === 0
+        ? '<div style="color:var(--text-sub);padding:12px">공개 그룹이 없습니다</div>'
+        : items.map(g => `
+            <div class="feed-card">
+              <div class="user">👥 ${g.name}</div>
+              <div class="content">${g.description || '설명 없음'}</div>
+              <div class="meta">멤버 ${g.member_count || 0}명 · ${g.group_type || ''}</div>
+            </div>`).join('');
+    }
+    showResult('groupResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('groupResult', { error: e.message }, true);
+  }
+}
+
+async function createGroup() {
+  if (!authToken) return alert('먼저 로그인하세요');
+  const name = document.getElementById('groupName').value.trim();
+  const desc = document.getElementById('groupDesc').value.trim();
+  const type = document.getElementById('groupType').value;
+  if (!name) return alert('그룹 이름을 입력하세요');
+  try {
+    const r = await api('POST', '/api/groups', { name, description: desc, group_type: type });
+    showResult('createGroupResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('createGroupResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// DEBUG
+// ════════════════════════════════════════════════════
+async function debugCall() {
+  const method = document.getElementById('debugMethod').value;
+  const path = document.getElementById('debugPath').value;
+  const bodyStr = document.getElementById('debugBody').value.trim();
+  let body = null;
+  if (bodyStr) {
+    try { body = JSON.parse(bodyStr); } catch(e) { return alert('JSON 파싱 오류: ' + e.message); }
+  }
+  try {
+    const r = await api(method, path, body);
+    showResult('debugResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('debugResult', { error: e.message }, true);
+  }
+}
+
+function clearDebug() {
+  document.getElementById('debugResult').textContent = '// 여기에 응답이 표시됩니다';
+  document.getElementById('debugResult').classList.remove('error');
+}
+
+async function quickTest(path, method) {
+  document.getElementById('debugPath').value = path;
+  document.getElementById('debugMethod').value = method;
+  try {
+    const r = await api(method, path);
+    showResult('debugResult', r.data, !r.ok);
+  } catch(e) {
+    showResult('debugResult', { error: e.message }, true);
+  }
+}
+
+// ════════════════════════════════════════════════════
+// 유틸
+// ════════════════════════════════════════════════════
+function scopeLabel(scope) {
+  return { private: '🔒 나만', group: '👥 그룹', public: '🌐 전체' }[scope] || scope;
+}
+function emotionEmoji(e) {
+  return { joy: '😊 기쁨', peace: '🕊️ 평안', moved: '😭 감격', thankful: '🙌 감사' }[e] || e;
+}
+</script>
+</body>
+</html>

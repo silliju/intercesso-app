@@ -41,7 +41,24 @@ app.use('/api', (req, res) => {
 });
 
 // ─── 정적 파일 ───────────────────────────────────────────────
-app.use(express.static(publicDir));
+// index.html은 캐시 없이 항상 최신 버전 제공
+app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.sendFile(path.join(publicDir, 'index.html'));
+});
+
+app.use(express.static(publicDir, {
+  etag: false,
+  lastModified: false,
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+    }
+  }
+}));
 
 // APK 다운로드 직접 처리
 app.get('/intercesso.apk', (req, res) => {
