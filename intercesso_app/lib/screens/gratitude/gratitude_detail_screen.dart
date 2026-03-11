@@ -5,6 +5,7 @@ import '../../models/models.dart';
 import '../../providers/gratitude_provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/gratitude_service.dart';
+import '../../services/api_service.dart';
 import 'create_gratitude_screen.dart';
 
 class GratitudeDetailScreen extends StatefulWidget {
@@ -28,6 +29,8 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
   static const _gratitudeColor = Color(0xFF885CF6);
   static const _gratitudeLightColor = Color(0xFFEDE9FE);
 
+  final ApiService _apiService = ApiService();
+
   @override
   void initState() {
     super.initState();
@@ -44,11 +47,18 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
   Future<void> _loadJournal() async {
     setState(() => _isLoading = true);
     try {
-      final journal = await _service.getJournalById(widget.journalId);
-      // 댓글 분리
-      final data = await _service.getJournalById(widget.journalId);
+      final response = await _apiService.get('/gratitude/${widget.journalId}');
+      final data = response['data'];
       setState(() {
-        _journal = journal;
+        _journal = GratitudeModel.fromJson(data);
+        _comments = List<Map<String, dynamic>>.from(
+          (data['gratitude_comments'] as List? ?? []).map((c) => {
+            'id': c['id'],
+            'content': c['content'],
+            'created_at': c['created_at'],
+            'user': c['user'],
+          })
+        );
         _isLoading = false;
       });
     } catch (e) {
@@ -62,7 +72,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
 
     setState(() => _isSendingComment = true);
     try {
-      final result = await _service.addComment(widget.journalId, content);
+      await _service.addComment(widget.journalId, content);
       _commentController.clear();
       // 리로드
       await _loadJournal();
@@ -505,14 +515,11 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
   }
 
   Widget _buildCommentsSection(GratitudeModel journal) {
-    // 댓글은 journal 데이터에서 가져옴
-    final comments = (journal as dynamic).gratitudeComments as List? ?? [];
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '댓글 ${journal.commentCount > 0 ? journal.commentCount : ''}',
+          '댓글 ${_comments.isNotEmpty ? _comments.length : ''}',
           style: const TextStyle(
             fontSize: 15,
             fontWeight: FontWeight.w700,
@@ -520,7 +527,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        if (journal.commentCount == 0)
+        if (_comments.isEmpty)
           Center(
             child: Padding(
               padding: const EdgeInsets.all(20),
@@ -529,9 +536,96 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                 style: TextStyle(color: Colors.grey.shade400, fontSize: 14),
               ),
             ),
+          )
+        else
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: _comments.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 8),
+            itemBuilder: (_, i) {
+              final c = _comments[i];
+              final user = c['user'] as Map<String, dynamic>? ?? {};
+              final nickname = user['nickname'] as String? ?? '익명';
+              final content = c['content'] as String? ?? '';
+              final createdAt = c['created_at'] as String? ?? '';
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _gratitudeLightColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      radius: 16,
+                      backgroundColor: _gratitudeColor.withOpacity(0.2),
+                      child: Text(
+                        nickname.isNotEmpty ? nickname[0] : '?',
+                        style: const TextStyle(
+                          color: _gratitudeColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                nickname,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Color(0xFF1A1A2E),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                _formatCommentTime(createdAt),
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: Colors.grey.shade500,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            content,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Color(0xFF374151),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
       ],
     );
+  }
+
+  String _formatCommentTime(String isoString) {
+    try {
+      final dt = DateTime.parse(isoString).toLocal();
+      final diff = DateTime.now().difference(dt);
+      if (diff.inMinutes < 1) return '방금';
+      if (diff.inHours < 1) return '${diff.inMinutes}분 전';
+      if (diff.inDays < 1) return '${diff.inHours}시간 전';
+      return '${dt.month}/${dt.day}';
+    } catch (_) {
+      return '';
+    }
   }
 
   Widget _buildCommentInput() {

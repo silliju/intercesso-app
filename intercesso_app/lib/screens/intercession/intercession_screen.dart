@@ -21,8 +21,6 @@ class _IntercessionScreenState extends State<IntercessionScreen>
   List<IntercessionModel> _sent = [];
   bool _isLoadingReceived = false;
   bool _isLoadingSent = false;
-  String? _error;
-
   @override
   void initState() {
     super.initState();
@@ -41,13 +39,13 @@ class _IntercessionScreenState extends State<IntercessionScreen>
   }
 
   Future<void> _loadReceived() async {
-    setState(() { _isLoadingReceived = true; _error = null; });
+    setState(() { _isLoadingReceived = true; });
     try {
       final list = await _service.getReceivedRequests();
       if (mounted) setState(() { _received = list; _isLoadingReceived = false; });
     } catch (e) {
       debugPrint('[Intercession] 받은 요청 로드 오류: $e');
-      if (mounted) setState(() { _isLoadingReceived = false; _error = e.toString(); });
+      if (mounted) setState(() { _isLoadingReceived = false; });
     }
   }
 

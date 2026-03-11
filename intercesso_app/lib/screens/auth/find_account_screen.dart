@@ -109,15 +109,6 @@ class _FindAccountScreenState extends State<FindAccountScreen>
     }
   }
 
-  void _snack(String msg, {bool error = false}) {
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: error ? AppTheme.error : AppTheme.primary,
-      behavior: SnackBarBehavior.floating,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    ));
-  }
 
   @override
   Widget build(BuildContext context) {

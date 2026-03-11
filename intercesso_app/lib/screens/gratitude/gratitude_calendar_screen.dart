@@ -82,7 +82,6 @@ class _GratitudeCalendarScreenState extends State<GratitudeCalendarScreen> {
             ),
           );
           if (result == true) {
-            final now = DateTime.now();
             provider.loadCalendar(year: _year, month: _month);
             provider.loadStreak();
           }

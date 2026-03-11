@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/prayer_service.dart';
-import '../../models/models.dart';
 
 class PrayerEditScreen extends StatefulWidget {
   final String prayerId;
@@ -17,7 +16,6 @@ class _PrayerEditScreenState extends State<PrayerEditScreen> {
   final PrayerService _service = PrayerService();
   final _titleController = TextEditingController();
   final _contentController = TextEditingController();
-  PrayerModel? _prayer;
   bool _isLoading = true;
   bool _isSubmitting = false;
   String _category = '기타';
@@ -51,9 +49,8 @@ class _PrayerEditScreenState extends State<PrayerEditScreen> {
       _titleController.text = prayer.title;
       _contentController.text = prayer.content;
       setState(() {
-        _prayer = prayer;
         _category = prayer.category ?? '기타';
-        _scope = prayer.scope ?? 'public';
+        _scope = prayer.scope;
         _isLoading = false;
       });
     } catch (e) {

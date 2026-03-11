@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/api_service.dart';
-import '../../services/group_service.dart';
 import '../../models/models.dart';
 
 class GroupsScreen extends StatefulWidget {
@@ -16,7 +15,6 @@ class GroupsScreen extends StatefulWidget {
 
 class _GroupsScreenState extends State<GroupsScreen> {
   final ApiService _api = ApiService();
-  final GroupService _groupService = GroupService();
   List<GroupModel> _groups = [];
   bool _isLoading = true;
   String? _error;
