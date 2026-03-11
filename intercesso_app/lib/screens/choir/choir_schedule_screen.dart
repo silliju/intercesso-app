@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
@@ -629,7 +630,7 @@ class _ChoirScheduleDetailScreenState
         if (isAdmin)
           IconButton(
             icon: const Icon(Icons.edit_outlined, color: Colors.white),
-            onPressed: () {},
+            onPressed: () => _showEditScheduleSheet(context, schedule),
           ),
       ],
       flexibleSpace: FlexibleSpaceBar(
@@ -876,7 +877,7 @@ class _ChoirScheduleDetailScreenState
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton.icon(
-        onPressed: () {},
+        onPressed: () => _shareSchedule(context, schedule),
         icon: const Icon(Icons.share),
         label: const Text('일정 공유'),
         style: ElevatedButton.styleFrom(
@@ -888,5 +889,302 @@ class _ChoirScheduleDetailScreenState
         ),
       ),
     );
+  }
+
+  void _showEditScheduleSheet(
+      BuildContext context, ChoirScheduleModel schedule) {
+    final choir = context.read<ChoirProvider>();
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) =>
+          _EditScheduleSheet(choir: choir, schedule: schedule),
+    );
+  }
+
+  void _shareSchedule(
+      BuildContext context, ChoirScheduleModel schedule) {
+    final date =
+        '${schedule.startTime.year}년 ${schedule.startTime.month}월 ${schedule.startTime.day}일';
+    final time =
+        '${schedule.startTime.hour.toString().padLeft(2, '0')}:${schedule.startTime.minute.toString().padLeft(2, '0')}';
+    final location =
+        schedule.location != null ? '\n장소: ${schedule.location}' : '';
+    final desc =
+        schedule.description != null ? '\n내용: ${schedule.description}' : '';
+    final text =
+        '📅 [찬양대 일정]\n${schedule.scheduleType.emoji} ${schedule.title}\n날짜: $date $time$location$desc';
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('일정 정보가 클립보드에 복사되었어요'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+}
+
+// ───────────────────────────────────────────────────────────────
+// 일정 수정 바텀시트
+// ───────────────────────────────────────────────────────────────
+class _EditScheduleSheet extends StatefulWidget {
+  final ChoirProvider choir;
+  final ChoirScheduleModel schedule;
+  const _EditScheduleSheet(
+      {required this.choir, required this.schedule});
+
+  @override
+  State<_EditScheduleSheet> createState() => _EditScheduleSheetState();
+}
+
+class _EditScheduleSheetState extends State<_EditScheduleSheet> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _locationController;
+  late final TextEditingController _descController;
+  late ScheduleType _type;
+  late DateTime _date;
+  late TimeOfDay _time;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController =
+        TextEditingController(text: widget.schedule.title);
+    _locationController =
+        TextEditingController(text: widget.schedule.location ?? '');
+    _descController =
+        TextEditingController(text: widget.schedule.description ?? '');
+    _type = widget.schedule.scheduleType;
+    _date = widget.schedule.startTime;
+    _time = TimeOfDay(
+        hour: widget.schedule.startTime.hour,
+        minute: widget.schedule.startTime.minute);
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _locationController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Text(
+                  '일정 수정',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                  labelText: '일정 제목 *',
+                  hintText: '예) 주일예배 찬양'),
+            ),
+            const SizedBox(height: 12),
+            const Text('일정 종류',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.textSecondary)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: ScheduleType.values.map((type) {
+                final selected = _type == type;
+                return ChoiceChip(
+                  label: Text('${type.emoji} ${type.label}'),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _type = type),
+                  selectedColor:
+                      const Color(0xFF885CF6).withOpacity(0.15),
+                  labelStyle: TextStyle(
+                    color: selected
+                        ? const Color(0xFF885CF6)
+                        : AppTheme.textSecondary,
+                    fontWeight: selected
+                        ? FontWeight.w700
+                        : FontWeight.w400,
+                    fontSize: 12,
+                  ),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _date,
+                        firstDate: DateTime.now()
+                            .subtract(const Duration(days: 365)),
+                        lastDate: DateTime.now()
+                            .add(const Duration(days: 365)),
+                      );
+                      if (picked != null) {
+                        setState(() => _date = picked);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.border),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.calendar_today,
+                              size: 16,
+                              color: AppTheme.textSecondary),
+                          const SizedBox(width: 8),
+                          Text('${_date.month}/${_date.day}',
+                              style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final picked = await showTimePicker(
+                        context: context,
+                        initialTime: _time,
+                      );
+                      if (picked != null) {
+                        setState(() => _time = picked);
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: AppTheme.border),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.access_time,
+                              size: 16,
+                              color: AppTheme.textSecondary),
+                          const SizedBox(width: 8),
+                          Text(_time.format(context),
+                              style: const TextStyle(fontSize: 14)),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _locationController,
+              decoration: const InputDecoration(
+                  labelText: '장소', hintText: '예) 본당, 찬양실'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descController,
+              maxLines: 2,
+              decoration: const InputDecoration(
+                labelText: '내용 (선택)',
+                hintText: '연습 곡목이나 안내사항을 입력하세요',
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF885CF6),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white))
+                    : const Text('수정 완료',
+                        style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _submit() async {
+    if (_titleController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('일정 제목을 입력해주세요')),
+      );
+      return;
+    }
+    setState(() => _isLoading = true);
+    final startTime = DateTime(
+      _date.year,
+      _date.month,
+      _date.day,
+      _time.hour,
+      _time.minute,
+    );
+    final ok = await widget.choir.updateSchedule(
+      scheduleId: widget.schedule.id,
+      title: _titleController.text.trim(),
+      scheduleType: _type,
+      startTime: startTime,
+      location: _locationController.text.trim().isEmpty
+          ? null
+          : _locationController.text.trim(),
+      description: _descController.text.trim().isEmpty
+          ? null
+          : _descController.text.trim(),
+    );
+    setState(() => _isLoading = false);
+    if (ok && mounted) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('일정이 수정되었습니다')),
+      );
+    }
   }
 }

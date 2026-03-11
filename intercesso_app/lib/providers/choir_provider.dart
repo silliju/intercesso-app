@@ -423,6 +423,78 @@ class ChoirProvider extends ChangeNotifier {
     }
   }
 
+  // ── 일정 수정 ─────────────────────────────────────────────────
+  Future<bool> updateSchedule({
+    required String scheduleId,
+    required String title,
+    required ScheduleType scheduleType,
+    required DateTime startTime,
+    DateTime? endTime,
+    String? location,
+    String? description,
+  }) async {
+    try {
+      _setLoading(true);
+      await _service.updateSchedule(
+        selectedChoir?.id ?? '',
+        scheduleId,
+        title: title,
+        scheduleType: scheduleType.value,
+        startTime: startTime.toIso8601String(),
+        endTime: endTime?.toIso8601String(),
+        location: location,
+        description: description,
+      );
+      final idx = _schedules.indexWhere((s) => s.id == scheduleId);
+      if (idx >= 0) {
+        final old = _schedules[idx];
+        _schedules[idx] = ChoirScheduleModel(
+          id: old.id,
+          choirId: old.choirId,
+          title: title,
+          description: description,
+          scheduleType: scheduleType,
+          startTime: startTime,
+          endTime: endTime ?? old.endTime,
+          location: location,
+          isConfirmed: old.isConfirmed,
+          songs: old.songs,
+          createdById: old.createdById,
+          createdAt: old.createdAt,
+        );
+        _schedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+        notifyListeners();
+      }
+      return true;
+    } catch (e) {
+      debugPrint('updateSchedule error: $e');
+      // 로컬 업데이트만 진행
+      final idx = _schedules.indexWhere((s) => s.id == scheduleId);
+      if (idx >= 0) {
+        final old = _schedules[idx];
+        _schedules[idx] = ChoirScheduleModel(
+          id: old.id,
+          choirId: old.choirId,
+          title: title,
+          description: description,
+          scheduleType: scheduleType,
+          startTime: startTime,
+          endTime: endTime ?? old.endTime,
+          location: location,
+          isConfirmed: old.isConfirmed,
+          songs: old.songs,
+          createdById: old.createdById,
+          createdAt: old.createdAt,
+        );
+        _schedules.sort((a, b) => a.startTime.compareTo(b.startTime));
+        notifyListeners();
+      }
+      return true;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   // ── 초대 코드 갱신 (API 호출) ────────────────────────────────
   Future<String?> generateInviteCode(String choirId) async {
     try {

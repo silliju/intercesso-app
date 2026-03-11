@@ -65,7 +65,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.white),
-            onPressed: () {},
+            onPressed: () => context.push('/choir/management'),
           ),
         ],
       ),
