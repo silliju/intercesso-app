@@ -251,7 +251,19 @@ class ChoirManagementScreen extends StatelessWidget {
               width: double.infinity,
               child: OutlinedButton.icon(
                 onPressed: () {
-                  // TODO: 공유 기능
+                  final choir = context.read<ChoirProvider>();
+                  final selected = choir.selectedChoir;
+                  final code = selected?.inviteCode;
+                  if (code != null) {
+                    final shareText = '🎵 ${selected!.name} 찬양대에 함께해요!\n초대 코드: $code\n\nIntercesso 앱에서 참여하세요.';
+                    Clipboard.setData(ClipboardData(text: shareText));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('📋 초대 링크가 복사됐어요! 공유해 보세요'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  }
                 },
                 icon: const Icon(Icons.share, size: 16),
                 label: const Text('초대 링크 공유하기'),

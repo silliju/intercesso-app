@@ -271,51 +271,179 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
   void _showUploadSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: AppTheme.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (_) {
-        return Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '자료 등록',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const SizedBox(height: 20),
-              ...[
-                ('🎵', '악보 업로드', '악보 파일을 업로드합니다', 'score'),
-                ('🎬', '영상 링크', 'YouTube 링크를 등록합니다', 'video'),
-                ('📄', '문서 업로드', '공지나 문서를 업로드합니다', 'document'),
-                ('🎧', '음원 등록', '반주나 연습 음원을 등록합니다', 'audio'),
-              ].map((item) {
-                return ListTile(
-                  leading: Text(item.$1,
-                      style: const TextStyle(fontSize: 28)),
-                  title: Text(item.$2,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.w600)),
-                  subtitle: Text(item.$3,
-                      style: const TextStyle(fontSize: 12)),
-                  onTap: () {
-                    Navigator.pop(context);
-                    // TODO: 파일 업로드 처리
-                  },
-                );
-              }),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
+      builder: (ctx) {
+        final choir = context.read<ChoirProvider>();
+        return _UploadFileSheet(choir: choir);
       },
+    );
+  }
+}
+
+// ── 자료 등록 바텀시트 ─────────────────────────────────────────
+class _UploadFileSheet extends StatefulWidget {
+  final ChoirProvider choir;
+  const _UploadFileSheet({required this.choir});
+
+  @override
+  State<_UploadFileSheet> createState() => _UploadFileSheetState();
+}
+
+class _UploadFileSheetState extends State<_UploadFileSheet> {
+  final _titleCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  final _urlCtrl = TextEditingController();
+  String _fileType = 'score';
+  bool _isLoading = false;
+
+  static const _types = [
+    ('score', '🎵 악보'),
+    ('video', '🎬 영상'),
+    ('document', '📄 문서'),
+    ('audio', '🎧 음원'),
+  ];
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _descCtrl.dispose();
+    _urlCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_titleCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('제목을 입력해주세요')));
+      return;
+    }
+    if (_urlCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('링크 또는 URL을 입력해주세요')));
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    final isVideo = _fileType == 'video';
+    final ok = await widget.choir.createFile(
+      title: _titleCtrl.text.trim(),
+      fileType: _fileType,
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
+      youtubeUrl: isVideo ? _urlCtrl.text.trim() : null,
+      fileUrl: isVideo ? null : _urlCtrl.text.trim(),
+    );
+
+    setState(() => _isLoading = false);
+    if (!mounted) return;
+
+    if (ok) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('✅ 자료가 등록됐어요!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(widget.choir.errorMessage ?? '등록에 실패했어요')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20, right: 20, top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Text('자료 등록',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
+                const Spacer(),
+                IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close)),
+              ],
+            ),
+            const SizedBox(height: 12),
+            // 유형 선택
+            const Text('자료 유형',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
+                    color: AppTheme.textSecondary)),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: _types.map((t) {
+                final selected = _fileType == t.$1;
+                return ChoiceChip(
+                  label: Text(t.$2,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: selected ? const Color(0xFF885CF6) : AppTheme.textSecondary,
+                        fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                      )),
+                  selected: selected,
+                  onSelected: (_) => setState(() => _fileType = t.$1),
+                  selectedColor: const Color(0xFF885CF6).withOpacity(0.12),
+                );
+              }).toList(),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _titleCtrl,
+              decoration: const InputDecoration(labelText: '제목 *'),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _urlCtrl,
+              decoration: InputDecoration(
+                labelText: _fileType == 'video' ? 'YouTube URL *' : '파일 URL *',
+                hintText: _fileType == 'video'
+                    ? 'https://youtu.be/...'
+                    : 'https://drive.google.com/...',
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descCtrl,
+              decoration: const InputDecoration(
+                labelText: '설명 (선택)',
+                hintText: '파트별 설명 등',
+              ),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _submit,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF885CF6),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12)),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        width: 20, height: 20,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : const Text('자료 등록',
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

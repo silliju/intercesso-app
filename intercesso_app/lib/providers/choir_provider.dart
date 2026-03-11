@@ -817,6 +817,53 @@ class ChoirProvider extends ChangeNotifier {
     }
   }
 
+  // ── 자료실 CRUD ───────────────────────────────────────────────
+  Future<bool> createFile({
+    required String title,
+    required String fileType,
+    String? description,
+    String? fileUrl,
+    String? youtubeUrl,
+    String? targetSection,
+  }) async {
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return false;
+    try {
+      final created = await _service.createFile(
+        choirId,
+        title: title,
+        fileType: fileType,
+        description: description,
+        fileUrl: fileUrl,
+        youtubeUrl: youtubeUrl,
+        targetSection: targetSection,
+      );
+      _files = [created, ..._files];
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('createFile error: $e');
+      _errorMessage = '자료 등록에 실패했습니다';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<void> deleteFile(String fileId) async {
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return;
+    final backup = List<ChoirFileModel>.from(_files);
+    _files = _files.where((f) => f.id != fileId).toList();
+    notifyListeners();
+    try {
+      await _service.deleteFile(choirId, fileId);
+    } catch (e) {
+      debugPrint('deleteFile error: $e');
+      _files = backup;
+      notifyListeners();
+    }
+  }
+
   List<ChoirNoticeModel> _mockNotices(String choirId) => [
         ChoirNoticeModel(id: 'n1', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '이번 주 연습 공지', content: '토요일 오후 7시 찬양실에서 연습합니다. 악보 꼭 준비해 오세요!', isPinned: true, createdAt: DateTime.now().subtract(const Duration(hours: 2)).toIso8601String()),
         ChoirNoticeModel(id: 'n2', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '주일예배 찬양곡 안내', content: '3월 10일 주일예배 찬양곡: 주님의 은혜, 주를 찬양', isPinned: false, createdAt: DateTime.now().subtract(const Duration(days: 1)).toIso8601String()),
