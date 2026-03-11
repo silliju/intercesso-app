@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/choir_models.dart';
 
 // ═══════════════════════════════════════════════════════════════
@@ -19,10 +20,13 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
   late TabController _tabController;
   String _searchQuery = '';
   ChoirSection _filterSection = ChoirSection.all;
+  String? _currentUserId;
+  bool _adminMode = false;
 
   @override
   void initState() {
     super.initState();
+    // 탭 수는 권한에 따라 달라지므로 최대값(2)으로 초기화
     _tabController = TabController(length: 2, vsync: this);
   }
 
@@ -34,12 +38,14 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChoirProvider>(
-      builder: (context, choir, _) {
+    return Consumer2<ChoirProvider, AuthProvider>(
+      builder: (context, choir, auth, _) {
+        _currentUserId = auth.user?.id;
+        _adminMode = choir.isAdmin(_currentUserId) || choir.isOwner(_currentUserId);
         return Scaffold(
           backgroundColor: AppTheme.background,
           appBar: AppBar(
-            title: const Text('단원 관리'),
+            title: Text(_adminMode ? '단원 관리' : '단원 목록'),
             backgroundColor: AppTheme.surface,
             elevation: 0,
             bottom: TabBar(
@@ -49,22 +55,25 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
               indicatorColor: const Color(0xFF10B981),
               tabs: [
                 Tab(text: '단원 (${choir.activeMembers.length})'),
-                Tab(text: '가입 대기 (${choir.pendingMembers.length})'),
+                if (_adminMode)
+                  Tab(text: '가입 대기 (${choir.pendingMembers.length})'),
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddMemberSheet(context, choir),
-            backgroundColor: const Color(0xFF10B981),
-            icon: const Icon(Icons.person_add, color: Colors.white),
-            label: const Text('단원 추가',
-                style: TextStyle(color: Colors.white)),
-          ),
+          floatingActionButton: _adminMode
+              ? FloatingActionButton.extended(
+                  onPressed: () => _showAddMemberSheet(context, choir),
+                  backgroundColor: const Color(0xFF10B981),
+                  icon: const Icon(Icons.person_add, color: Colors.white),
+                  label: const Text('단원 추가',
+                      style: TextStyle(color: Colors.white)),
+                )
+              : null,
           body: TabBarView(
             controller: _tabController,
             children: [
               _buildMemberList(context, choir),
-              _buildPendingList(context, choir),
+              if (_adminMode) _buildPendingList(context, choir),
             ],
           ),
         );
@@ -300,20 +309,38 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
           style: const TextStyle(
               fontSize: 12, color: AppTheme.textSecondary),
         ),
-        trailing: PopupMenuButton<String>(
-          icon: const Icon(Icons.more_vert,
-              size: 18, color: AppTheme.textLight),
-          onSelected: (action) =>
-              _onMemberAction(context, action, member, choir),
-          itemBuilder: (_) => [
-            const PopupMenuItem(value: 'edit', child: Text('수정')),
-            const PopupMenuItem(
-                value: 'remove',
-                child: Text('삭제', style: TextStyle(color: Colors.red))),
-          ],
-        ),
+        trailing: _buildMemberTrailing(context, member, choir),
       ),
     );
+  }
+
+  Widget _buildMemberTrailing(
+      BuildContext context, ChoirMemberModel member, ChoirProvider choir) {
+    final isMe = member.userId == _currentUserId;
+    if (isMe) {
+      return IconButton(
+        icon: const Icon(Icons.edit_outlined,
+            size: 18, color: Color(0xFF885CF6)),
+        tooltip: '내 정보 수정',
+        onPressed: () => _onMemberAction(context, 'edit', member, choir),
+      );
+    }
+    if (_adminMode) {
+      return PopupMenuButton<String>(
+        icon: const Icon(Icons.more_vert,
+            size: 18, color: AppTheme.textLight),
+        onSelected: (action) =>
+            _onMemberAction(context, action, member, choir),
+        itemBuilder: (_) => [
+          const PopupMenuItem(value: 'edit', child: Text('정보 수정')),
+          const PopupMenuItem(
+              value: 'remove',
+              child: Text('내보내기',
+                  style: TextStyle(color: Colors.red))),
+        ],
+      );
+    }
+    return const SizedBox.shrink();
   }
 
   Widget _buildPendingList(BuildContext context, ChoirProvider choir) {

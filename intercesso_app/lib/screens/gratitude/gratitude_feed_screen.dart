@@ -20,7 +20,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
   final _tabs = ['group', 'following', 'public'];
   final _tabLabels = ['🏠 우리 그룹', '👥 팔로우', '🌐 전체'];
 
-  static const _gratitudeColor = Color(0xFFF59E0B);
+  static const _choirPurple = Color(0xFF885CF6);
 
   @override
   void initState() {
@@ -64,7 +64,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
     return SliverAppBar(
       expandedHeight: 120,
       pinned: true,
-      backgroundColor: _gratitudeColor,
+      backgroundColor: _choirPurple,
       foregroundColor: Colors.white,
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -72,7 +72,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
             ),
           ),
           child: SafeArea(
@@ -85,7 +85,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
                   Row(
                     children: [
                       const Text(
-                        '감사 피드 🌸',
+                        '은혜 나눔 🎵',
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: 22,
@@ -100,7 +100,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
                     ],
                   ),
                   const Text(
-                    '오늘 감사한 일을 나눠보세요',
+                    '오늘 받은 은혜를 찬양으로 나눠요',
                     style: TextStyle(color: Colors.white70, fontSize: 13),
                   ),
                 ],
@@ -123,30 +123,30 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFFFF7ED), Color(0xFFFFFBEB)],
+                colors: [Color(0xFFF3F0FF), Color(0xFFEDE9FE)],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFFDE68A)),
+              border: Border.all(color: const Color(0xFFDDD6FE)),
             ),
             child: Row(
               children: [
-                const Text('🔥', style: TextStyle(fontSize: 24)),
+                const Text('🎶', style: TextStyle(fontSize: 24)),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '${streak.currentStreak}일 연속 감사일기 작성 중!',
+                        '${streak.currentStreak}일 연속 은혜 기록 중!',
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: Color(0xFF92400E),
+                          color: Color(0xFF4C1D95),
                         ),
                       ),
                       Text(
-                        '총 ${streak.totalCount}번 감사를 기록했어요',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFFB45309)),
+                        '총 ${streak.totalCount}번 은혜를 기록했어요',
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF6D28D9)),
                       ),
                     ],
                   ),
@@ -154,7 +154,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: _gratitudeColor,
+                    color: _choirPurple,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -181,10 +181,9 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
         TabBar(
           controller: _tabController,
           tabs: _tabLabels.map((l) => Tab(text: l)).toList(),
-          labelColor: _gratitudeColor,
+          labelColor: _choirPurple,
           unselectedLabelColor: AppTheme.textSecondary,
-          indicatorColor: _gratitudeColor,
-          indicatorWeight: 3,
+          indicatorColor: _choirPurple,
           labelStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
           unselectedLabelStyle: const TextStyle(fontSize: 13),
           onTap: (i) {
@@ -223,7 +222,7 @@ class _FeedTabView extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          color: const Color(0xFFF59E0B),
+          color: const Color(0xFF885CF6),
           onRefresh: () => provider.loadFeed(tab, refresh: true),
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),

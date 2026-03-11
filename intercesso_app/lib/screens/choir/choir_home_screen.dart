@@ -172,7 +172,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
                   const SizedBox(height: 24),
 
                   // 빠른 메뉴
-                  _buildQuickMenu(context, selected.id),
+                  _buildQuickMenu(context),
                   const SizedBox(height: 24),
 
                   // 단원 현황
@@ -625,7 +625,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
   }
 
   // ── 빠른 메뉴 ─────────────────────────────────────────────────
-  Widget _buildQuickMenu(BuildContext context, String choirId) {
+  Widget _buildQuickMenu(BuildContext context) {
     final items = [
       _QuickMenuItem(
           icon: Icons.calendar_month,
@@ -641,7 +641,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
           icon: Icons.how_to_reg,
           label: '출석',
           color: const Color(0xFFF59E0B),
-          route: '/choir/attendance/$choirId'),
+          route: '/choir/stats'),
       _QuickMenuItem(
           icon: Icons.library_music,
           label: '자료실',

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/choir_models.dart';
 import '../../utils/url_utils.dart';
 
@@ -34,8 +35,9 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChoirProvider>(
-      builder: (context, choir, _) {
+    return Consumer2<ChoirProvider, AuthProvider>(
+      builder: (context, choir, auth, _) {
+        final isAdmin = choir.isAdmin(auth.user?.id) || choir.isOwner(auth.user?.id);
         return Scaffold(
           backgroundColor: AppTheme.background,
           appBar: AppBar(
@@ -54,11 +56,13 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () => _showUploadSheet(context),
-            backgroundColor: const Color(0xFF885CF6),
-            child: const Icon(Icons.upload, color: Colors.white),
-          ),
+          floatingActionButton: isAdmin
+              ? FloatingActionButton(
+                  onPressed: () => _showUploadSheet(context),
+                  backgroundColor: const Color(0xFF885CF6),
+                  child: const Icon(Icons.upload, color: Colors.white),
+                )
+              : null,
           body: Column(
             children: [
               // 검색창

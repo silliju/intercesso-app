@@ -53,6 +53,27 @@ class ChoirProvider extends ChangeNotifier {
   List<ChoirFileModel> get files => _files;
   List<ChoirMemberModel> get pendingMembers => _pendingMembers;
 
+  // ── 권한 헬퍼 ────────────────────────────────────────────────
+  /// 현재 유저가 관리자(지휘자 or 파트장)인지 여부
+  bool isAdmin(String? currentUserId) {
+    if (currentUserId == null) return false;
+    final me = _members.where((m) => m.userId == currentUserId).firstOrNull;
+    return me?.role == ChoirRole.conductor ||
+        me?.role == ChoirRole.sectionLeader;
+  }
+
+  /// 현재 유저가 해당 찬양대 소유자인지 여부
+  bool isOwner(String? currentUserId) {
+    if (currentUserId == null) return false;
+    return _selectedChoir?.ownerId == currentUserId;
+  }
+
+  /// 현재 유저 자신의 멤버 정보
+  ChoirMemberModel? myMember(String? currentUserId) {
+    if (currentUserId == null) return null;
+    return _members.where((m) => m.userId == currentUserId).firstOrNull;
+  }
+
   // 이번 주 일정
   List<ChoirScheduleModel> get thisWeekSchedules =>
       _schedules.where((s) => s.isThisWeek).toList()

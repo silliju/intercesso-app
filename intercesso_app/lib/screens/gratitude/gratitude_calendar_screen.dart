@@ -15,7 +15,7 @@ class GratitudeCalendarScreen extends StatefulWidget {
 class _GratitudeCalendarScreenState extends State<GratitudeCalendarScreen> {
   late int _year;
   late int _month;
-  static const _gratitudeColor = Color(0xFFF59E0B);
+  static const _gratitudeColor = Color(0xFF885CF6);
 
   @override
   void initState() {
@@ -103,7 +103,7 @@ class _GratitudeCalendarScreenState extends State<GratitudeCalendarScreen> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+          colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
@@ -477,13 +477,13 @@ class _DateCell extends StatelessWidget {
             height: 36,
             decoration: BoxDecoration(
               color: hasEntry
-                  ? const Color(0xFFF59E0B)
+                  ? const Color(0xFF885CF6)
                   : isToday
-                      ? const Color(0xFFFEF3C7)
+                      ? const Color(0xFFF5F3FF)
                       : Colors.transparent,
               shape: BoxShape.circle,
               border: isToday && !hasEntry
-                  ? Border.all(color: const Color(0xFFF59E0B), width: 2)
+                  ? Border.all(color: const Color(0xFF885CF6), width: 2)
                   : null,
             ),
             child: Center(
@@ -500,7 +500,7 @@ class _DateCell extends StatelessWidget {
                         color: hasEntry
                             ? Colors.white
                             : isToday
-                                ? const Color(0xFFD97706)
+                                ? const Color(0xFF6D3FD4)
                                 : const Color(0xFF374151),
                       ),
                     ),
@@ -512,7 +512,7 @@ class _DateCell extends StatelessWidget {
               height: 5,
               margin: const EdgeInsets.only(top: 2),
               decoration: const BoxDecoration(
-                color: Color(0xFFF59E0B),
+                color: Color(0xFF885CF6),
                 shape: BoxShape.circle,
               ),
             ),

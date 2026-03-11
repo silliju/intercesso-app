@@ -25,8 +25,8 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
   bool _isLoading = true;
   bool _isSendingComment = false;
 
-  static const _gratitudeColor = Color(0xFFF59E0B);
-  static const _gratitudeLightColor = Color(0xFFFFFBEB);
+  static const _gratitudeColor = Color(0xFF885CF6);
+  static const _gratitudeLightColor = Color(0xFFEDE9FE);
 
   @override
   void initState() {
@@ -177,10 +177,10 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFFFFF7ED), Color(0xFFFFFBEB)],
+          colors: [Color(0xFFF3F0FF), Color(0xFFEDE9FE)],
         ),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFFDE68A)),
+        border: Border.all(color: const Color(0xFFDDD6FE)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +242,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
               style: const TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: Color(0xFF92400E),
+                color: Color(0xFF4C1D95),
               ),
             ),
           ),
@@ -254,7 +254,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                   '오늘의 감정: ${journal.emotionLabel}',
                   style: const TextStyle(
                     fontSize: 13,
-                    color: Color(0xFFB45309),
+                    color: Color(0xFF7C3AED),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -292,7 +292,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
               ),
               borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
             ),
@@ -333,7 +333,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                         width: 28,
                         height: 28,
                         decoration: BoxDecoration(
-                          color: const Color(0xFFFEF3C7),
+                          color: const Color(0xFFF5F3FF),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Center(
@@ -342,7 +342,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                             style: const TextStyle(
                               fontWeight: FontWeight.w800,
                               fontSize: 13,
-                              color: Color(0xFFD97706),
+                              color: Color(0xFF6D3FD4),
                             ),
                           ),
                         ),
@@ -470,7 +470,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFFFFFBEB) : Colors.transparent,
+          color: isActive ? const Color(0xFFEDE9FE) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Row(
@@ -485,7 +485,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: isActive ? const Color(0xFFD97706) : AppTheme.textSecondary,
+                    color: isActive ? const Color(0xFF6D3FD4) : AppTheme.textSecondary,
                   ),
                 ),
                 if (count > 0)
@@ -493,7 +493,7 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
                     '$count명',
                     style: TextStyle(
                       fontSize: 11,
-                      color: isActive ? const Color(0xFFF59E0B) : AppTheme.textLight,
+                      color: isActive ? const Color(0xFF885CF6) : AppTheme.textLight,
                     ),
                   ),
               ],

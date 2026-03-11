@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/choir_models.dart';
 import '../../utils/url_utils.dart';
 
@@ -25,8 +26,9 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChoirProvider>(
-      builder: (context, choir, _) {
+    return Consumer2<ChoirProvider, AuthProvider>(
+      builder: (context, choir, auth, _) {
+        final isAdmin = choir.isAdmin(auth.user?.id) || choir.isOwner(auth.user?.id);
         final songs = _filtered(choir.songs);
         return Scaffold(
           backgroundColor: AppTheme.background,
@@ -35,11 +37,12 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
             backgroundColor: AppTheme.surface,
             elevation: 0,
             actions: [
-              IconButton(
-                icon: const Icon(Icons.add),
-                onPressed: () => _showAddSongSheet(context, choir),
-                tooltip: '곡 추가',
-              ),
+              if (isAdmin)
+                IconButton(
+                  icon: const Icon(Icons.add),
+                  onPressed: () => _showAddSongSheet(context, choir),
+                  tooltip: '곡 추가',
+                ),
             ],
           ),
           body: Column(
@@ -53,13 +56,15 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
               ),
             ],
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddSongSheet(context, choir),
-            backgroundColor: const Color(0xFF885CF6),
-            icon: const Icon(Icons.music_note, color: Colors.white),
-            label: const Text('곡 추가',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-          ),
+          floatingActionButton: isAdmin
+              ? FloatingActionButton.extended(
+                  onPressed: () => _showAddSongSheet(context, choir),
+                  backgroundColor: const Color(0xFF885CF6),
+                  icon: const Icon(Icons.music_note, color: Colors.white),
+                  label: const Text('곡 추가',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
+                )
+              : null,
         );
       },
     );

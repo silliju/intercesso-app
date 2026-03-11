@@ -38,10 +38,10 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
     {'key': 'public', 'label': '전체 공개', 'icon': Icons.public_outlined},
   ];
 
-  // 감사 색상 (황금빛)
-  static const _gratitudeColor = Color(0xFFF59E0B);
-  static const _gratitudeLightColor = Color(0xFFFFFBEB);
-  static const _gratitudeAccentColor = Color(0xFFD97706);
+  // 은혜 기록 색상 (찬양대 보라)
+  static const _gratitudeColor = Color(0xFF885CF6);
+  static const _gratitudeLightColor = Color(0xFFEDE9FE);
+  static const _gratitudeAccentColor = Color(0xFF6D3FD4);
 
   @override
   void initState() {
@@ -94,7 +94,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
             children: [
               Text('🙏', style: TextStyle(fontSize: 18)),
               SizedBox(width: 8),
-              Text('감사일기가 저장되었어요!', style: TextStyle(fontWeight: FontWeight.w600)),
+              Text('은혜 기록이 저장되었어요! 🎵', style: TextStyle(fontWeight: FontWeight.w600)),
             ],
           ),
           backgroundColor: _gratitudeAccentColor,
@@ -161,7 +161,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
             ),
           ),
           child: SafeArea(
@@ -192,7 +192,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                   ),
                   const SizedBox(height: 8),
                   const Text(
-                    '오늘의 감사일기 ✨',
+                    '오늘의 은혜 기록 🎵',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -200,7 +200,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                     ),
                   ),
                   const Text(
-                    '오늘 감사한 일 3가지를 기록해 보세요',
+                    '오늘 받은 은혜 3가지를 기록해 보세요',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 13,
@@ -235,21 +235,21 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
             _buildGratitudeField(
               controller: _g1Controller,
               number: 1,
-              hint: '오늘 감사한 첫 번째 일을 써보세요',
+              hint: '오늘 받은 첫 번째 은혜를 써보세요',
               required: true,
               showDivider: true,
             ),
             _buildGratitudeField(
               controller: _g2Controller,
               number: 2,
-              hint: '두 번째 감사한 일 (선택)',
+              hint: '두 번째 받은 은혜 (선택)',
               required: false,
               showDivider: true,
             ),
             _buildGratitudeField(
               controller: _g3Controller,
               number: 3,
-              hint: '세 번째 감사한 일 (선택)',
+              hint: '세 번째 받은 은혜 (선택)',
               required: false,
               showDivider: false,
             ),
@@ -278,7 +278,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
+                    colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -623,7 +623,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                   ),
                 )
               : const Text(
-                  '🙌  감사 기록하기',
+                  '🎵 은혜 기록하기',
                   style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w800,

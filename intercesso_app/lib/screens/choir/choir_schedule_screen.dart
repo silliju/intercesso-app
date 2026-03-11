@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../config/theme.dart';
 import '../../providers/choir_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../models/choir_models.dart';
 import '../../utils/url_utils.dart';
 
@@ -34,8 +35,10 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChoirProvider>(
-      builder: (context, choir, _) {
+    return Consumer2<ChoirProvider, AuthProvider>(
+      builder: (context, choir, auth, _) {
+        final currentUserId = auth.user?.id;
+        final isAdmin = choir.isAdmin(currentUserId) || choir.isOwner(currentUserId);
         final now = DateTime.now();
         final upcoming = choir.schedules
             .where((s) => s.startTime.isAfter(now))
@@ -63,13 +66,15 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
-            onPressed: () => _showAddScheduleSheet(context, choir),
-            backgroundColor: const Color(0xFF885CF6),
-            icon: const Icon(Icons.add, color: Colors.white),
-            label: const Text('일정 추가',
-                style: TextStyle(color: Colors.white)),
-          ),
+          floatingActionButton: isAdmin
+              ? FloatingActionButton.extended(
+                  onPressed: () => _showAddScheduleSheet(context, choir),
+                  backgroundColor: const Color(0xFF885CF6),
+                  icon: const Icon(Icons.add, color: Colors.white),
+                  label: const Text('일정 추가',
+                      style: TextStyle(color: Colors.white)),
+                )
+              : null,
           body: TabBarView(
             controller: _tabController,
             children: [
@@ -561,8 +566,9 @@ class _ChoirScheduleDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ChoirProvider>(
-      builder: (context, choir, _) {
+    return Consumer2<ChoirProvider, AuthProvider>(
+      builder: (context, choir, auth, _) {
+        final isAdmin = choir.isAdmin(auth.user?.id) || choir.isOwner(auth.user?.id);
         final schedule = choir.schedules.firstWhere(
           (s) => s.id == widget.scheduleId,
           orElse: () => ChoirScheduleModel(
@@ -580,7 +586,7 @@ class _ChoirScheduleDetailScreenState
           backgroundColor: AppTheme.background,
           body: CustomScrollView(
             slivers: [
-              _buildDetailAppBar(context, schedule),
+              _buildDetailAppBar(context, schedule, isAdmin),
               SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.all(20),
@@ -609,7 +615,7 @@ class _ChoirScheduleDetailScreenState
   }
 
   Widget _buildDetailAppBar(
-      BuildContext context, ChoirScheduleModel schedule) {
+      BuildContext context, ChoirScheduleModel schedule, bool isAdmin) {
     return SliverAppBar(
       expandedHeight: 120,
       pinned: true,
@@ -620,10 +626,11 @@ class _ChoirScheduleDetailScreenState
         onPressed: () => context.pop(),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(Icons.edit_outlined, color: Colors.white),
-          onPressed: () {},
-        ),
+        if (isAdmin)
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, color: Colors.white),
+            onPressed: () {},
+          ),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
@@ -821,25 +828,13 @@ class _ChoirScheduleDetailScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Text(
-                '출석 현황',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-              const Spacer(),
-              TextButton(
-                onPressed: () =>
-                    context.push('/choir/attendance/${widget.scheduleId}'),
-                child: const Text('출석 체크'),
-                style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF885CF6)),
-              ),
-            ],
+          const Text(
+            '📋 출석 현황',
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.textPrimary,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -878,34 +873,20 @@ class _ChoirScheduleDetailScreenState
 
   Widget _buildActionButtons(
       BuildContext context, ChoirScheduleModel schedule) {
-    return Row(
-      children: [
-        Expanded(
-          child: OutlinedButton.icon(
-            onPressed: () =>
-                context.push('/choir/attendance/${schedule.id}'),
-            icon: const Icon(Icons.how_to_reg),
-            label: const Text('출석 체크'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF885CF6),
-              side: const BorderSide(color: Color(0xFF885CF6)),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton.icon(
+        onPressed: () {},
+        icon: const Icon(Icons.share),
+        label: const Text('일정 공유'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF885CF6),
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12)),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton.icon(
-            onPressed: () {},
-            icon: const Icon(Icons.share),
-            label: const Text('공유'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF885CF6),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
