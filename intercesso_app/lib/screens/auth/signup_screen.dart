@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
+import '../../models/church_model.dart';
+import '../../services/church_service.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -19,20 +22,66 @@ class _SignupScreenState extends State<SignupScreen> {
   final _emailCtrl = TextEditingController();
   final _pwCtrl = TextEditingController();
   final _nickCtrl = TextEditingController();
-  final _churchCtrl = TextEditingController();
+  final _churchSearchCtrl = TextEditingController();
   bool _obscurePw = true;
   bool _agreeTerms = false;
   bool _agreePrivacy = false;
+
+  ChurchModel? _selectedChurch;
+  List<ChurchModel> _searchResults = [];
+  bool _searchLoading = false;
+  Timer? _searchDebounce;
+
+  final _churchService = ChurchService();
 
   static final String _termsUrl = AppConstants.termsUrl;
   static final String _privacyUrl = AppConstants.privacyUrl;
 
   @override
+  void initState() {
+    super.initState();
+    _churchSearchCtrl.addListener(_onChurchSearchChanged);
+  }
+
+  void _onChurchSearchChanged() {
+    if (_selectedChurch != null) return;
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 350), () {
+      _performSearch();
+    });
+  }
+
+  Future<void> _performSearch() async {
+    final q = _churchSearchCtrl.text.trim();
+    if (q.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _searchLoading = false;
+      });
+      return;
+    }
+    setState(() => _searchLoading = true);
+    try {
+      final list = await _churchService.search(q);
+      if (mounted) setState(() {
+        _searchResults = list;
+        _searchLoading = false;
+      });
+    } catch (_) {
+      if (mounted) setState(() {
+        _searchResults = [];
+        _searchLoading = false;
+      });
+    }
+  }
+
+  @override
   void dispose() {
+    _searchDebounce?.cancel();
     _emailCtrl.dispose();
     _pwCtrl.dispose();
     _nickCtrl.dispose();
-    _churchCtrl.dispose();
+    _churchSearchCtrl.dispose();
     super.dispose();
   }
 
@@ -62,7 +111,8 @@ class _SignupScreenState extends State<SignupScreen> {
       email: _emailCtrl.text.trim(),
       password: _pwCtrl.text,
       nickname: _nickCtrl.text.trim(),
-      churchName: _churchCtrl.text.isEmpty ? null : _churchCtrl.text.trim(),
+      churchId: _selectedChurch?.churchId,
+      churchName: _selectedChurch?.name,
     );
     if (ok && mounted) {
       context.go('/home');
@@ -194,9 +244,9 @@ class _SignupScreenState extends State<SignupScreen> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      // ── 교회명 (선택)
+                      // ── 교회 (검색 후 선택 또는 직접 등록)
                       Row(children: [
-                        _label('교회명'),
+                        _label('교회'),
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -208,13 +258,96 @@ class _SignupScreenState extends State<SignupScreen> {
                         ),
                       ]),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        controller: _churchCtrl,
-                        decoration: const InputDecoration(
-                          hintText: '출석 교회 이름 (선택사항)',
-                          prefixIcon: Icon(Icons.church_outlined, color: AppTheme.textLight, size: 20),
+                      if (_selectedChurch != null)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryLight.withOpacity(0.3),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: AppTheme.primary.withOpacity(0.3)),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.church, color: AppTheme.primary, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _selectedChurch!.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppTheme.textPrimary,
+                                  ),
+                                ),
+                              ),
+                              TextButton(
+                                onPressed: () => setState(() {
+                                  _selectedChurch = null;
+                                  _churchSearchCtrl.clear();
+                                  _searchResults = [];
+                                }),
+                                child: const Text('취소', style: TextStyle(fontSize: 13)),
+                              ),
+                            ],
+                          ),
+                        )
+                      else
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            TextFormField(
+                              controller: _churchSearchCtrl,
+                              decoration: InputDecoration(
+                                hintText: '교회명 또는 지역으로 검색',
+                                prefixIcon: const Icon(Icons.search, color: AppTheme.textLight, size: 20),
+                                suffixIcon: _searchLoading
+                                    ? const Padding(
+                                        padding: EdgeInsets.all(12),
+                                        child: SizedBox(
+                                          width: 18,
+                                          height: 18,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        ),
+                                      )
+                                    : null,
+                              ),
+                            ),
+                            if (_searchResults.isNotEmpty) ...[
+                              const SizedBox(height: 8),
+                              ConstrainedBox(
+                                constraints: const BoxConstraints(maxHeight: 160),
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: _searchResults.length,
+                                  itemBuilder: (context, i) {
+                                    final c = _searchResults[i];
+                                    return ListTile(
+                                      dense: true,
+                                      leading: const Icon(Icons.church_outlined, size: 20, color: AppTheme.textSecondary),
+                                      title: Text(c.name, style: const TextStyle(fontSize: 14)),
+                                      subtitle: c.addressLine.isNotEmpty
+                                          ? Text(c.addressLine, style: const TextStyle(fontSize: 12), maxLines: 1, overflow: TextOverflow.ellipsis)
+                                          : null,
+                                      onTap: () => setState(() {
+                                        _selectedChurch = c;
+                                        _churchSearchCtrl.clear();
+                                        _searchResults = [];
+                                      }),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
+                            const SizedBox(height: 8),
+                            TextButton.icon(
+                              onPressed: () async {
+                                final church = await context.push<ChurchModel?>('/signup/register-church');
+                                if (church != null && mounted) setState(() => _selectedChurch = church);
+                              },
+                              icon: const Icon(Icons.add_circle_outline, size: 18),
+                              label: const Text('교회가 없어요. 직접 등록하기'),
+                            ),
+                          ],
                         ),
-                      ),
                     ],
                   ),
                 ),

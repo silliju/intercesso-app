@@ -8,6 +8,12 @@ class AppConstants {
     defaultValue: 'https://3000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/api',
   );
 
+  /// 다음 주소 검색 페이지 URL (백엔드에서 제공, WebView 로드용)
+  static String get addressSearchPageUrl {
+    final base = baseUrl.replaceFirst(RegExp(r'/api$'), '');
+    return '$base/address-search-page';
+  }
+
   // ─── 앱 공개 URL ─────────────────────────────────────────
   // 배포 시 실제 도메인으로 교체
   static const String appWebUrl = String.fromEnvironment(

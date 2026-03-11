@@ -27,18 +27,37 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
 export const updateMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const { nickname, church_name, denomination, bio, profile_image_url } = req.body;
+    const { nickname, church_id, church_name, denomination, bio, profile_image_url } = req.body;
+
+    const updatePayload: Record<string, unknown> = {
+      nickname,
+      denomination,
+      bio,
+      profile_image_url,
+      updated_at: new Date().toISOString(),
+    };
+
+    if (church_id != null) {
+      const { data: church } = await supabaseAdmin
+        .from('churches')
+        .select('church_id, name')
+        .eq('church_id', church_id)
+        .in('status', ['approved', 'pending'])
+        .maybeSingle();
+      if (church) {
+        updatePayload.church_id = church.church_id;
+        updatePayload.church_name = church.name;
+      } else {
+        updatePayload.church_id = null;
+        updatePayload.church_name = church_name ?? null;
+      }
+    } else {
+      updatePayload.church_name = church_name ?? undefined;
+    }
 
     const { data: user, error } = await supabaseAdmin
       .from('users')
-      .update({
-        nickname,
-        church_name,
-        denomination,
-        bio,
-        profile_image_url,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updatePayload)
       .eq('id', userId)
       .select()
       .single();

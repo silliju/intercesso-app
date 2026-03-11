@@ -14,6 +14,7 @@ import notificationRoutes from './routes/notification.routes';
 import statisticsRoutes from './routes/statistics.routes';
 import gratitudeRoutes from './routes/gratitude.routes';
 import choirRoutes from './routes/choir.routes';
+import churchRoutes from './routes/church.routes';
 import { getAnswerFeed } from './controllers/prayer_answer.controller';
 import { optionalAuth } from './middleware/auth';
 
@@ -280,6 +281,52 @@ app.get('/privacy', (req, res) => {
 </html>`);
 });
 
+// 다음(카카오) 주소 검색 페이지 (앱 WebView에서 로드, 선택 시 Flutter로 postMessage)
+app.get('/address-search-page', (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>주소 검색</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    #postcode-wrap { width: 100%; height: 100%; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="postcode-wrap"></div>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script>
+    (function() {
+      try {
+        new daum.Postcode({
+          oncomplete: function(data) {
+            var payload = {
+              sido: data.sido || '',
+              sigungu: data.sigungu || '',
+              bname: data.bname || '',
+              roadAddress: data.roadAddress || '',
+              jibunAddress: data.jibunAddress || '',
+              buildingName: data.buildingName || '',
+              zonecode: data.zonecode || ''
+            };
+            if (window.Address && typeof window.Address.postMessage === 'function') {
+              window.Address.postMessage(JSON.stringify(payload));
+            }
+          }
+        }).embed(document.getElementById('postcode-wrap'));
+      } catch (e) {
+        document.getElementById('postcode-wrap').innerHTML = '<p style="padding:20px;">주소 검색을 불러올 수 없습니다.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>`);
+});
+
 // API 라우터
 app.use('/api/auth', authRoutes);
 app.use('/api/prayers', prayerRoutes);
@@ -290,6 +337,7 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/statistics', statisticsRoutes);
 app.use('/api/gratitude', gratitudeRoutes);
 app.use('/api/choir', choirRoutes);
+app.use('/api/churches', churchRoutes);
 // 기도 응답 피드
 app.get('/api/answers/feed', optionalAuth as any, getAnswerFeed as any);
 

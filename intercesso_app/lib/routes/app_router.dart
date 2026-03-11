@@ -5,6 +5,7 @@ import '../screens/splash_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../screens/auth/login_screen.dart';
 import '../screens/auth/signup_screen.dart';
+import '../screens/auth/register_church_screen.dart';
 import '../screens/auth/find_account_screen.dart';
 import '../screens/main/main_tab_screen.dart';
 import '../screens/prayer/prayer_detail_screen.dart';
@@ -41,6 +42,7 @@ GoRouter createRouter(AuthProvider authProvider) {
       final isOnboarding = state.matchedLocation == '/onboarding';
       final isLogin = state.matchedLocation == '/login';
       final isSignup = state.matchedLocation == '/signup';
+      final isSignupRegisterChurch = state.matchedLocation == '/signup/register-church';
 
       if (isSplash) return null;
 
@@ -48,12 +50,12 @@ GoRouter createRouter(AuthProvider authProvider) {
         return '/splash';
       }
 
-      if (!isAuth && !isOnboarding && !isLogin && !isSignup) {
+      if (!isAuth && !isOnboarding && !isLogin && !isSignup && !isSignupRegisterChurch) {
         final isFindAccount = state.matchedLocation == '/find-account';
         if (!isFindAccount) return '/login';
       }
 
-      if (isAuth && (isLogin || isSignup || isOnboarding)) {
+      if (isAuth && (isLogin || isSignup || isSignupRegisterChurch || isOnboarding)) {
         return '/home';
       }
 
@@ -64,7 +66,16 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(path: '/splash', builder: (ctx, state) => const SplashScreen()),
       GoRoute(path: '/onboarding', builder: (ctx, state) => const OnboardingScreen()),
       GoRoute(path: '/login', builder: (ctx, state) => const LoginScreen()),
-      GoRoute(path: '/signup', builder: (ctx, state) => const SignupScreen()),
+      GoRoute(
+        path: '/signup',
+        builder: (ctx, state) => const SignupScreen(),
+        routes: [
+          GoRoute(
+            path: 'register-church',
+            builder: (ctx, state) => const RegisterChurchScreen(),
+          ),
+        ],
+      ),
       GoRoute(
         path: '/find-account',
         builder: (ctx, state) {

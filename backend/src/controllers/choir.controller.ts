@@ -38,11 +38,21 @@ const isChoirOwner = async (choirId: string, userId: string): Promise<boolean> =
 export const createChoir = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const { name, description, church_name, worship_type, image_url } = req.body;
+    const { name, description, church_id, church_name, worship_type, image_url } = req.body;
 
     if (!name) {
       sendError(res, '찬양대 이름은 필수입니다', 400, 'VALIDATION_ERROR');
       return;
+    }
+
+    let resolvedChurchName: string | null = church_name || null;
+    if (church_id) {
+      const { data: church } = await supabaseAdmin
+        .from('churches')
+        .select('name')
+        .eq('church_id', church_id)
+        .maybeSingle();
+      if (church) resolvedChurchName = church.name;
     }
 
     const inviteCode = generateInviteCode();
@@ -54,7 +64,8 @@ export const createChoir = async (req: AuthRequest, res: Response): Promise<void
         id: choirId,
         name,
         description: description || null,
-        church_name: church_name || null,
+        church_id: church_id || null,
+        church_name: resolvedChurchName,
         worship_type: worship_type || null,
         image_url: image_url || null,
         owner_id: userId,
