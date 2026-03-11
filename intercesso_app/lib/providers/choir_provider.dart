@@ -746,6 +746,77 @@ class ChoirProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  // ── 공지사항 CRUD ─────────────────────────────────────────────
+  Future<bool> createNotice({
+    required String title,
+    required String content,
+    bool isPinned = false,
+    String? targetSection,
+  }) async {
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return false;
+    try {
+      final created = await _service.createNotice(
+        choirId,
+        title: title,
+        content: content,
+        isPinned: isPinned,
+        targetSection: targetSection,
+      );
+      _notices = [created, ..._notices];
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('createNotice error: $e');
+      _errorMessage = '공지 등록에 실패했습니다';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> updateNotice(String noticeId, {bool? isPinned}) async {
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return false;
+    try {
+      await _service.updateNotice(choirId, noticeId, isPinned: isPinned);
+      _notices = _notices.map((n) {
+        if (n.id != noticeId) return n;
+        return ChoirNoticeModel(
+          id: n.id,
+          choirId: n.choirId,
+          authorId: n.authorId,
+          authorName: n.authorName,
+          title: n.title,
+          content: n.content,
+          targetSection: n.targetSection,
+          isPinned: isPinned ?? n.isPinned,
+          createdAt: n.createdAt,
+        );
+      }).toList();
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('updateNotice error: $e');
+      return false;
+    }
+  }
+
+  Future<void> deleteNotice(String noticeId) async {
+    final choirId = _selectedChoir?.id;
+    if (choirId == null) return;
+    // 옵티미스틱 삭제
+    final backup = List<ChoirNoticeModel>.from(_notices);
+    _notices = _notices.where((n) => n.id != noticeId).toList();
+    notifyListeners();
+    try {
+      await _service.deleteNotice(choirId, noticeId);
+    } catch (e) {
+      debugPrint('deleteNotice error: $e');
+      _notices = backup;
+      notifyListeners();
+    }
+  }
+
   List<ChoirNoticeModel> _mockNotices(String choirId) => [
         ChoirNoticeModel(id: 'n1', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '이번 주 연습 공지', content: '토요일 오후 7시 찬양실에서 연습합니다. 악보 꼭 준비해 오세요!', isPinned: true, createdAt: DateTime.now().subtract(const Duration(hours: 2)).toIso8601String()),
         ChoirNoticeModel(id: 'n2', choirId: choirId, authorId: 'u1', authorName: '김지휘', title: '주일예배 찬양곡 안내', content: '3월 10일 주일예배 찬양곡: 주님의 은혜, 주를 찬양', isPinned: false, createdAt: DateTime.now().subtract(const Duration(days: 1)).toIso8601String()),

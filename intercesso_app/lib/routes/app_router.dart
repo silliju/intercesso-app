@@ -27,6 +27,7 @@ import '../screens/choir/choir_attendance_screen.dart';
 import '../screens/choir/choir_library_screen.dart';
 import '../screens/choir/choir_management_screen.dart';
 import '../screens/choir/choir_song_screen.dart';
+import '../screens/choir/choir_notice_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -157,6 +158,10 @@ GoRouter createRouter(AuthProvider authProvider) {
       GoRoute(
         path: '/choir/songs',
         builder: (ctx, state) => const ChoirSongScreen(),
+      ),
+      GoRoute(
+        path: '/choir/notices',
+        builder: (ctx, state) => const ChoirNoticeScreen(),
       ),
     ],
   );

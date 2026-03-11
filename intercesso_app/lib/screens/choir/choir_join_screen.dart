@@ -520,43 +520,31 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
     });
 
     try {
-      // TODO: 실제 API 호출로 교체
-      await Future.delayed(const Duration(milliseconds: 800));
+      // 실제 API: 초대 코드로 찬양대 정보 조회
+      final choirProvider = context.read<ChoirProvider>();
+      final data = await choirProvider.lookupChoirByCode(code);
 
-      // Mock: PRAISE01 코드로 테스트
-      final choir = context.read<ChoirProvider>();
-      final found = choir.myChoirs.firstWhere(
-        (c) => c.inviteCode?.toUpperCase() == code,
-        orElse: () => ChoirModel(
-          id: '', name: '', ownerId: '', createdAt: '',
-        ),
-      );
+      if (!mounted) return;
 
-      if (found.id.isEmpty) {
-        // Mock 더미 찬양대 반환 (실제 API 전 테스트용)
-        if (code == 'PRAISE01' || code.length >= 6) {
-          setState(() {
-            _foundChoir = ChoirModel(
-              id: 'choir_found',
-              name: '주일예배 찬양대',
-              description: '매주 주일 예배를 함께 섬깁니다',
-              churchName: '사랑교회',
-              worshipType: '주일예배',
-              ownerId: 'user_1',
-              inviteCode: code,
-              memberCount: 24,
-              createdAt: '2024-01-01',
-            );
-          });
-        } else {
-          setState(
-              () => _errorMessage = '해당 코드의 찬양대를 찾을 수 없어요\n코드를 다시 확인해주세요');
-        }
+      if (data == null) {
+        setState(() => _errorMessage = '해당 코드의 찬양대를 찾을 수 없어요\n코드를 다시 확인해주세요');
       } else {
-        setState(() => _foundChoir = found);
+        setState(() {
+          _foundChoir = ChoirModel(
+            id: data['id'] ?? '',
+            name: data['name'] ?? '',
+            description: data['description'],
+            churchName: data['church_name'],
+            worshipType: data['worship_type'],
+            ownerId: data['owner_id'] ?? '',
+            inviteCode: data['invite_code'],
+            memberCount: data['member_count'] ?? 0,
+            createdAt: data['created_at'] ?? '',
+          );
+        });
       }
     } catch (e) {
-      setState(() => _errorMessage = '검색 중 오류가 발생했어요: $e');
+      setState(() => _errorMessage = '검색 중 오류가 발생했어요\n잠시 후 다시 시도해주세요');
     } finally {
       setState(() => _isSearching = false);
     }
@@ -567,8 +555,20 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
     setState(() => _isJoining = true);
 
     try {
-      // TODO: 실제 API 호출로 교체 (가입 신청)
-      await Future.delayed(const Duration(milliseconds: 800));
+      // 실제 API: 초대 코드로 가입 신청
+      final code = _foundChoir!.inviteCode ?? _codeController.text.trim().toUpperCase();
+      final choirProvider = context.read<ChoirProvider>();
+      final ok = await choirProvider.joinChoirByCode(code);
+
+      if (!mounted) return;
+
+      if (!ok) {
+        setState(() => _isJoining = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(choirProvider.errorMessage ?? '가입 신청에 실패했어요')),
+        );
+        return;
+      }
 
       if (mounted) {
         // 성공 다이얼로그
