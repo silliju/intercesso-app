@@ -282,7 +282,7 @@ app.get('/privacy', (req, res) => {
 });
 
 // 다음(카카오) 주소 검색 페이지 (앱 WebView에서 로드, 선택 시 Flutter로 postMessage)
-app.get('/address-search-page', (req, res) => {
+function handleAddressSearchPage(req: express.Request, res: express.Response) {
   const rawQ = (req.query.q as string | undefined)?.trim() ?? '';
   const limitedQ = rawQ.slice(0, 50); // 너무 긴 입력 방지
   const encodedQ = encodeURIComponent(limitedQ);
@@ -331,7 +331,9 @@ app.get('/address-search-page', (req, res) => {
   </script>
 </body>
 </html>`);
-});
+}
+app.get('/address-search-page', handleAddressSearchPage);
+app.get('/address-search-page/', handleAddressSearchPage);
 
 // API 라우터
 app.use('/api/auth', authRoutes);
