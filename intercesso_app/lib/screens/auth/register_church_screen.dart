@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../services/church_service.dart';
+import '../../utils/address_search_popup.dart';
 import '../../widgets/daum_address_webview.dart';
 
 /// 회원가입 중 "교회가 없어요. 직접 등록하기" 시 표시.
@@ -53,15 +53,19 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
     final keyword = _addressKeywordCtrl.text.trim();
     final url = keyword.isEmpty ? baseUrl : '$baseUrl?q=${Uri.encodeComponent(keyword)}';
 
-    // 웹(Chrome)에서는 WebView 대신 새 탭으로 주소 검색 페이지를 연다.
+    // 웹(Chrome)에서는 팝업 + postMessage로 주소 선택 결과 수신
     if (kIsWeb) {
-      final uri = Uri.parse(url);
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          webOnlyWindowName: '_blank',
-        );
-      }
+      final result = await openAddressSearchPopup(url);
+      if (result == null || !mounted) return;
+      setState(() {
+        _siDoCtrl.text = result['sido']?.toString() ?? '';
+        _siGunGuCtrl.text = result['sigungu']?.toString() ?? '';
+        _dongCtrl.text = result['bname']?.toString() ?? '';
+        _roadAddressCtrl.text = result['roadAddress']?.toString() ?? '';
+        _jibunAddressCtrl.text = result['jibunAddress']?.toString() ?? '';
+        final building = result['buildingName']?.toString() ?? '';
+        if (building.isNotEmpty) _detailAddressCtrl.text = building;
+      });
       return;
     }
 

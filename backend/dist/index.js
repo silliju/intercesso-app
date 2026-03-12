@@ -322,6 +322,10 @@ function handleAddressSearchPage(req, res) {
             if (window.Address && typeof window.Address.postMessage === 'function') {
               window.Address.postMessage(JSON.stringify(payload));
             }
+            if (window.opener) {
+              window.opener.postMessage(JSON.stringify(payload), '*');
+              window.close();
+            }
           }
         }).embed(document.getElementById('postcode-wrap'));
       } catch (e) {
