@@ -289,11 +289,12 @@ function handleAddressSearchPage(req: express.Request, res: express.Response) {
 
   // Daum 주소 스크립트와 inline 스크립트를 허용하기 위한 CSP 헤더
   const csp = [
-    "default-src 'self' https://t1.daumcdn.net",
+    "default-src 'self' https://t1.daumcdn.net https://postcode.map.kakao.com",
     "script-src 'self' 'unsafe-inline' https://t1.daumcdn.net",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https://t1.daumcdn.net",
     "connect-src *",
+    "frame-src https://postcode.map.kakao.com",
     "frame-ancestors *"
   ].join('; ');
 
