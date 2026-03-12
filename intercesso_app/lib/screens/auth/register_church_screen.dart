@@ -53,9 +53,10 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
     final keyword = _addressKeywordCtrl.text.trim();
     final url = keyword.isEmpty ? baseUrl : '$baseUrl?q=${Uri.encodeComponent(keyword)}';
 
-    // 웹(Chrome)에서는 팝업 + postMessage로 주소 선택 결과 수신
+    // 웹(Chrome)에서는 팝업 + postMessage로 주소 선택 결과 수신 (캐시 방지용 쿼리 추가)
     if (kIsWeb) {
-      final result = await openAddressSearchPopup(url);
+      final popupUrl = '$url${url.contains('?') ? '&' : '?'}_=${DateTime.now().millisecondsSinceEpoch}';
+      final result = await openAddressSearchPopup(popupUrl);
       if (result == null || !mounted) return;
       setState(() {
         _siDoCtrl.text = result['sido']?.toString() ?? '';

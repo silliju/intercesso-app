@@ -5,22 +5,26 @@ import 'dart:html' as html;
 /// 웹 전용: 주소 검색 페이지를 팝업으로 열고, 선택 시 postMessage로 받아서 반환.
 Future<Map<String, dynamic>?> openAddressSearchPopup(String url) async {
   final uri = Uri.parse(url);
-  final origin = '${uri.scheme}://${uri.host}${uri.port != 80 && uri.port != 443 ? ':${uri.port}' : ''}';
+  final expectedOrigin = '${uri.scheme}://${uri.host}${uri.port != 80 && uri.port != 443 ? ':${uri.port}' : ''}';
+  bool isAllowedOrigin(String? o) =>
+      o != null && (o == expectedOrigin || o.startsWith('${uri.scheme}://${uri.host}'));
 
   final completer = Completer<Map<String, dynamic>?>();
   StreamSubscription<html.MessageEvent>? sub;
   Timer? closeCheck;
+  Timer? closeDelay;
 
   void finish(Map<String, dynamic>? value) {
     if (!completer.isCompleted) {
       sub?.cancel();
       closeCheck?.cancel();
+      closeDelay?.cancel();
       completer.complete(value);
     }
   }
 
   sub = html.window.onMessage.listen((html.MessageEvent event) {
-    if (event.origin != origin) return;
+    if (!isAllowedOrigin(event.origin)) return;
     try {
       final data = event.data;
       if (data is! String) return;
@@ -37,9 +41,11 @@ Future<Map<String, dynamic>?> openAddressSearchPopup(String url) async {
     'width=500,height=600,scrollbars=yes,resizable=yes',
   );
 
+  // 팝업이 닫혀도 postMessage가 도착할 때까지 잠시 대기 후에만 null 완료 (경쟁 조건 방지)
   closeCheck = Timer.periodic(const Duration(milliseconds: 300), (_) {
     if (window.closed == true) {
-      finish(null);
+      closeCheck?.cancel();
+      closeDelay = Timer(const Duration(milliseconds: 600), () => finish(null));
     }
   });
 

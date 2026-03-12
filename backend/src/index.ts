@@ -336,7 +336,7 @@ function handleAddressSearchPage(req: express.Request, res: express.Response) {
             }
             if (window.opener) {
               window.opener.postMessage(JSON.stringify(payload), '*');
-              window.close();
+              setTimeout(function() { window.close(); }, 150);
             }
           }
         }).embed(document.getElementById('postcode-wrap'));

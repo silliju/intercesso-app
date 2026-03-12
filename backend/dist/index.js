@@ -324,7 +324,7 @@ function handleAddressSearchPage(req, res) {
             }
             if (window.opener) {
               window.opener.postMessage(JSON.stringify(payload), '*');
-              window.close();
+              setTimeout(function() { window.close(); }, 150);
             }
           }
         }).embed(document.getElementById('postcode-wrap'));
