@@ -172,12 +172,12 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // 헬스체크
-app.get('/health', (req, res) => {
+app.get('/health', (_req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'Intercesso API' });
 });
 
 // 이용약관 페이지
-app.get('/terms', (req, res) => {
+app.get('/terms', (_req: express.Request, res: express.Response) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`<!DOCTYPE html>
 <html lang="ko">
@@ -229,7 +229,7 @@ app.get('/terms', (req, res) => {
 });
 
 // 개인정보처리방침 페이지
-app.get('/privacy', (req, res) => {
+app.get('/privacy', (_req: express.Request, res: express.Response) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(`<!DOCTYPE html>
 <html lang="ko">
@@ -350,7 +350,7 @@ app.use('/api/churches', churchRoutes);
 app.get('/api/answers/feed', optionalAuth as any, getAnswerFeed as any);
 
 // 404 핸들러
-app.use((req, res) => {
+app.use((_req: express.Request, res: express.Response) => {
   res.status(404).json({
     success: false,
     statusCode: 404,
