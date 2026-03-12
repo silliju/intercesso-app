@@ -157,7 +157,7 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                 TextFormField(
                   controller: _nameCtrl,
                   decoration: const InputDecoration(
-                    hintText: '예: 베다니교호, 충신교회',
+                    hintText: '예: 베다니교회, 충신교회',
                     prefixIcon: Icon(Icons.church_outlined, color: AppTheme.textLight, size: 20),
                   ),
                   validator: (v) => (v == null || v.trim().isEmpty) ? '교회명을 입력해 주세요' : null,
