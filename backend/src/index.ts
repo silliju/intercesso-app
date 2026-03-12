@@ -287,7 +287,18 @@ function handleAddressSearchPage(req: express.Request, res: express.Response) {
   const limitedQ = rawQ.slice(0, 50); // 너무 긴 입력 방지
   const encodedQ = encodeURIComponent(limitedQ);
 
+  // Daum 주소 스크립트와 inline 스크립트를 허용하기 위한 CSP 헤더
+  const csp = [
+    "default-src 'self' https://t1.daumcdn.net",
+    "script-src 'self' 'unsafe-inline' https://t1.daumcdn.net",
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https://t1.daumcdn.net",
+    "connect-src *",
+    "frame-ancestors *"
+  ].join('; ');
+
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Content-Security-Policy', csp);
   res.send(`<!DOCTYPE html>
 <html lang="ko">
 <head>
