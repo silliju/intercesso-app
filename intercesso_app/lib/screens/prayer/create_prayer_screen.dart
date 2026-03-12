@@ -185,7 +185,7 @@ class _CreatePrayerScreenState extends State<CreatePrayerScreen> {
                   color: _isCovenant ? AppTheme.primaryLight : AppTheme.surface,
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
-                    color: _isCovenant ? AppTheme.primary.withValues(alpha: 0.3) : AppTheme.border,
+                    color: _isCovenant ? AppTheme.primary.withOpacity(0.3) : AppTheme.border,
                   ),
                   boxShadow: const [
                     BoxShadow(

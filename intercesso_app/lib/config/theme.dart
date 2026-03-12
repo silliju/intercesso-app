@@ -114,7 +114,7 @@ class AppTheme {
             ),
           ),
         ),
-        inputDecorationTheme: InputDecorationTheme(
+      inputDecorationTheme: InputDecorationTheme(
           filled: true,
           fillColor: surface,
           border: OutlineInputBorder(
@@ -136,12 +136,12 @@ class AppTheme {
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           hintStyle: const TextStyle(color: textLight, fontSize: 14),
         ),
-        cardTheme: CardThemeData(
+        cardTheme: const CardTheme(
           color: surface,
           elevation: 0,
           shadowColor: cardShadow,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.all(Radius.circular(18)),
           ),
         ),
         dividerTheme: const DividerThemeData(color: border, space: 1),

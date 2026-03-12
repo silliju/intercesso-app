@@ -30,6 +30,10 @@ COMMENT ON COLUMN public.users.updated_at IS
   '프로필 마지막 수정 일시 (트리거로 자동 갱신)';
 COMMENT ON COLUMN public.users.last_login IS
   '마지막 로그인 일시 (로그인 시 백엔드에서 갱신)';
+COMMENT ON COLUMN public.users.password_hash IS
+  '자체 인증용 비밀번호 해시 (bcrypt). 소셜 로그인만 사용 시 NULL.';
+COMMENT ON COLUMN public.users.fcm_token IS
+  'FCM 푸시 알림용 디바이스 토큰. 앱에서 등록·갱신 (003_fcm_token 마이그레이션).';
 
 
 -- ============================================================

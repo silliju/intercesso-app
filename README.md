@@ -220,8 +220,10 @@ flutter run
 
 # 빌드
 flutter build apk --release  # Android
-flutter build ios --release   # iOS
+flutter build ios --release   # iOS (맥 + Xcode 필요)
 ```
+
+- **iOS 빌드/설치**는 맥 + Xcode가 필요합니다. 맥에서 개발 환경 만드는 방법: [docs/setup-mac.md](docs/setup-mac.md)
 
 ### 4. 환경 변수 설정
 `backend/.env`:

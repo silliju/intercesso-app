@@ -550,10 +550,13 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
         context.go('/choir');
       } else {
         setState(() => _isLoading = false);
+        final errMsg = choir.errorMessage ?? '찬양대 생성에 실패했어요. 다시 시도해 주세요.';
+        choir.clearError();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('찬양대 생성에 실패했어요. 다시 시도해 주세요.'),
-            backgroundColor: Color(0xFFEF4444),
+          SnackBar(
+            content: Text('찬양대 생성 실패: $errMsg'),
+            backgroundColor: const Color(0xFFEF4444),
+            duration: const Duration(seconds: 5),
           ),
         );
       }

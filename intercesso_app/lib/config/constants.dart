@@ -1,21 +1,20 @@
 // lib/config/constants.dart
 class AppConstants {
   // ─── API 설정 ────────────────────────────────────────────
-  // 배포 시 --dart-define=API_BASE_URL=https://your-api.com/api 로 교체
-  // 예: flutter build apk --dart-define=API_BASE_URL=https://api.intercesso.app/api
+  // 기본값: 배포 서버(Railway). 폰/웹 동일하게 동작하려면 이 주소로 백엔드 배포 필요.
+  // 로컬 개발 시: flutter run --dart-define=API_BASE_URL=http://localhost:3000/api
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://3000-iawt7nkbqrkyumj044b1d-2e77fc33.sandbox.novita.ai/api',
+    defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app/api',
   );
 
-  /// 다음 주소 검색 페이지 URL (백엔드에서 제공, WebView 로드용)
+  /// 다음 주소 검색 페이지 URL (백엔드 /address-search-page, WebView 로드용).
   static String get addressSearchPageUrl {
     final base = baseUrl.replaceFirst(RegExp(r'/api$'), '');
     return '$base/address-search-page';
   }
 
   // ─── 앱 공개 URL ─────────────────────────────────────────
-  // 배포 시 실제 도메인으로 교체
   static const String appWebUrl = String.fromEnvironment(
     'APP_WEB_URL',
     defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app',

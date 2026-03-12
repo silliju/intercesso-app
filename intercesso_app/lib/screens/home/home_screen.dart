@@ -217,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen>
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppTheme.primary.withValues(alpha: 0.25),
+                    color: AppTheme.primary.withOpacity(0.25),
                     blurRadius: 8,
                     offset: const Offset(0, 3),
                   )
@@ -272,9 +272,9 @@ class _HomeScreenState extends State<HomeScreen>
             height: 52,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.25),
+              color: Colors.white.withOpacity(0.25),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.4),
+                color: Colors.white.withOpacity(0.4),
                 width: 2,
               ),
             ),
@@ -313,7 +313,7 @@ class _HomeScreenState extends State<HomeScreen>
                   '오늘도 함께 기도해요 🙏',
                   style: TextStyle(
                     fontSize: 13,
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: Colors.white.withOpacity(0.85),
                     fontWeight: FontWeight.w400,
                   ),
                 ),
@@ -325,10 +325,10 @@ class _HomeScreenState extends State<HomeScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
+                color: Colors.white.withOpacity(0.2),
                 borderRadius: BorderRadius.circular(14),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.3),
+                  color: Colors.white.withOpacity(0.3),
                   width: 1,
                 ),
               ),
@@ -442,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen>
                     color: (hasTodayGratitude
                             ? const Color(0xFF10B981)
                             : const Color(0xFFF59E0B))
-                        .withValues(alpha: 0.28),
+                        .withOpacity(0.28),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),
@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen>
               borderRadius: BorderRadius.circular(12),
             ),
             child: Text(
-              '"${_todayVerse['verse'] ?? ''}"',
+              '"${_todayVerse['text'] ?? ''}"',
               style: const TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w600,
@@ -608,7 +608,7 @@ class _HomeScreenState extends State<HomeScreen>
               ? [
                   BoxShadow(
                     color: (isPrayer ? AppTheme.primary : AppTheme.gamsa)
-                        .withValues(alpha: 0.25),
+                        .withOpacity(0.25),
                     blurRadius: 10,
                     offset: const Offset(0, 4),
                   )
@@ -1025,7 +1025,7 @@ class _GratitudeFeedCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: AppTheme.gamsaBorder.withValues(alpha: 0.5),
+                    color: AppTheme.gamsaBorder.withOpacity(0.5),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(

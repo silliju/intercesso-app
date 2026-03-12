@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../config/theme.dart';
 import '../../config/constants.dart';
 import '../../services/church_service.dart';
@@ -46,6 +48,20 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
 
   Future<void> _openAddressSearch() async {
     final url = AppConstants.addressSearchPageUrl;
+
+    // 웹(Chrome)에서는 WebView 대신 새 탭으로 주소 검색 페이지를 연다.
+    if (kIsWeb) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(
+          uri,
+          webOnlyWindowName: '_blank',
+        );
+      }
+      return;
+    }
+
+    // 모바일(Android/iOS)에서는 WebView 사용
     final result = await Navigator.of(context).push<Map<String, dynamic>>(
       MaterialPageRoute(
         builder: (context) => DaumAddressWebView(url: url),

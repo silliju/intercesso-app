@@ -212,7 +212,7 @@ class _FindAccountScreenState extends State<FindAccountScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.08),
+                color: AppTheme.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(children: [
@@ -369,7 +369,7 @@ class _FindAccountScreenState extends State<FindAccountScreen>
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
               decoration: BoxDecoration(
-                color: AppTheme.error.withValues(alpha: 0.08),
+                color: AppTheme.error.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Row(children: [

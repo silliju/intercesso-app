@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -15,14 +16,13 @@ import 'services/fcm_service.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Firebase 초기화
-  await Firebase.initializeApp();
-
-  // 백그라운드 메시지 핸들러 등록 (앱 시작 전 등록 필수)
-  FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-
-  // FCM 서비스 초기화 (채널 생성, 포그라운드 리스너 등록)
-  await FcmService().initialize();
+  // Firebase/FCM은 현재 웹에서 FirebaseOptions 미설정으로 인해 크래시 발생.
+  // 우선 모바일(Android/iOS)에서만 초기화하고, 웹에서는 건너뛴다.
+  if (!kIsWeb) {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await FcmService().initialize();
+  }
 
   runApp(const IntercessoApp());
 }
