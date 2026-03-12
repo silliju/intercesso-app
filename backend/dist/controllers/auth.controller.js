@@ -69,7 +69,7 @@ async function checkProfileIdColumn() {
 }
 const signUp = async (req, res) => {
     try {
-        const { email, password, nickname, church_name, denomination, bio } = req.body;
+        const { email, password, nickname, church_id, church_name, denomination, bio } = req.body;
         if (!email || !password || !nickname) {
             (0, response_1.sendError)(res, '이메일, 비밀번호, 닉네임은 필수입니다', 400, 'VALIDATION_ERROR');
             return;
@@ -77,6 +77,20 @@ const signUp = async (req, res) => {
         if (password.length < 6) {
             (0, response_1.sendError)(res, '비밀번호는 6자 이상이어야 합니다', 400, 'VALIDATION_ERROR');
             return;
+        }
+        let resolvedChurchId = null;
+        let resolvedChurchName = church_name || null;
+        if (church_id) {
+            const { data: church } = await supabase_1.default
+                .from('churches')
+                .select('church_id, name')
+                .eq('church_id', church_id)
+                .in('status', ['approved', 'pending'])
+                .maybeSingle();
+            if (church) {
+                resolvedChurchId = church.church_id;
+                resolvedChurchName = church.name;
+            }
         }
         // 이메일 중복 확인
         const { data: existingUser } = await supabase_1.default
@@ -96,7 +110,8 @@ const signUp = async (req, res) => {
             id: userId,
             email,
             nickname,
-            church_name: church_name || null,
+            church_id: resolvedChurchId,
+            church_name: resolvedChurchName,
             denomination: denomination || null,
             bio: bio || null,
             password_hash: hashedPw,

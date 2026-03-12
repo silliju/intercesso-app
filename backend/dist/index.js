@@ -18,6 +18,7 @@ const notification_routes_1 = __importDefault(require("./routes/notification.rou
 const statistics_routes_1 = __importDefault(require("./routes/statistics.routes"));
 const gratitude_routes_1 = __importDefault(require("./routes/gratitude.routes"));
 const choir_routes_1 = __importDefault(require("./routes/choir.routes"));
+const church_routes_1 = __importDefault(require("./routes/church.routes"));
 const prayer_answer_controller_1 = require("./controllers/prayer_answer.controller");
 const auth_1 = require("./middleware/auth");
 dotenv_1.default.config();
@@ -164,11 +165,11 @@ app.use((0, morgan_1.default)('dev'));
 app.use(express_1.default.json({ limit: '10mb' }));
 app.use(express_1.default.urlencoded({ extended: true }));
 // 헬스체크
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), service: 'Intercesso API' });
 });
 // 이용약관 페이지
-app.get('/terms', (req, res) => {
+app.get('/terms', (_req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`<!DOCTYPE html>
 <html lang="ko">
@@ -219,7 +220,7 @@ app.get('/terms', (req, res) => {
 </html>`);
 });
 // 개인정보처리방침 페이지
-app.get('/privacy', (req, res) => {
+app.get('/privacy', (_req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(`<!DOCTYPE html>
 <html lang="ko">
@@ -270,6 +271,58 @@ app.get('/privacy', (req, res) => {
 </body>
 </html>`);
 });
+// 다음(카카오) 주소 검색 페이지 (앱 WebView에서 로드, 선택 시 Flutter로 postMessage)
+function handleAddressSearchPage(req, res) {
+    const rawQ = req.query.q?.trim() ?? '';
+    const limitedQ = rawQ.slice(0, 50); // 너무 긴 입력 방지
+    const encodedQ = encodeURIComponent(limitedQ);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(`<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>주소 검색</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    #postcode-wrap { width: 100%; height: 100%; min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="postcode-wrap"></div>
+  <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+  <script>
+    (function() {
+      var initialQuery = decodeURIComponent('${encodedQ}');
+      try {
+        new daum.Postcode({
+          q: initialQuery || undefined,
+          oncomplete: function(data) {
+            var payload = {
+              sido: data.sido || '',
+              sigungu: data.sigungu || '',
+              bname: data.bname || '',
+              roadAddress: data.roadAddress || '',
+              jibunAddress: data.jibunAddress || '',
+              buildingName: data.buildingName || '',
+              zonecode: data.zonecode || ''
+            };
+            if (window.Address && typeof window.Address.postMessage === 'function') {
+              window.Address.postMessage(JSON.stringify(payload));
+            }
+          }
+        }).embed(document.getElementById('postcode-wrap'));
+      } catch (e) {
+        document.getElementById('postcode-wrap').innerHTML = '<p style="padding:20px;">주소 검색을 불러올 수 없습니다.</p>';
+      }
+    })();
+  </script>
+</body>
+</html>`);
+}
+app.get('/address-search-page', handleAddressSearchPage);
+app.get('/address-search-page/', handleAddressSearchPage);
 // API 라우터
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/prayers', prayer_routes_1.default);
@@ -280,10 +333,11 @@ app.use('/api/notifications', notification_routes_1.default);
 app.use('/api/statistics', statistics_routes_1.default);
 app.use('/api/gratitude', gratitude_routes_1.default);
 app.use('/api/choir', choir_routes_1.default);
+app.use('/api/churches', church_routes_1.default);
 // 기도 응답 피드
 app.get('/api/answers/feed', auth_1.optionalAuth, prayer_answer_controller_1.getAnswerFeed);
 // 404 핸들러
-app.use((req, res) => {
+app.use((_req, res) => {
     res.status(404).json({
         success: false,
         statusCode: 404,

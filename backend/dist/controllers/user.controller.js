@@ -29,17 +29,36 @@ exports.getMe = getMe;
 const updateMe = async (req, res) => {
     try {
         const userId = req.user.userId;
-        const { nickname, church_name, denomination, bio, profile_image_url } = req.body;
-        const { data: user, error } = await supabase_1.default
-            .from('users')
-            .update({
+        const { nickname, church_id, church_name, denomination, bio, profile_image_url } = req.body;
+        const updatePayload = {
             nickname,
-            church_name,
             denomination,
             bio,
             profile_image_url,
             updated_at: new Date().toISOString(),
-        })
+        };
+        if (church_id != null) {
+            const { data: church } = await supabase_1.default
+                .from('churches')
+                .select('church_id, name')
+                .eq('church_id', church_id)
+                .in('status', ['approved', 'pending'])
+                .maybeSingle();
+            if (church) {
+                updatePayload.church_id = church.church_id;
+                updatePayload.church_name = church.name;
+            }
+            else {
+                updatePayload.church_id = null;
+                updatePayload.church_name = church_name ?? null;
+            }
+        }
+        else {
+            updatePayload.church_name = church_name ?? undefined;
+        }
+        const { data: user, error } = await supabase_1.default
+            .from('users')
+            .update(updatePayload)
             .eq('id', userId)
             .select()
             .single();

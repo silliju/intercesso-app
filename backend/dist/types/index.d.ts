@@ -25,6 +25,7 @@ export interface User {
     email: string;
     nickname: string;
     profile_image_url?: string;
+    church_id?: number;
     church_name?: string;
     denomination?: string;
     bio?: string;
@@ -139,6 +140,7 @@ export interface SignUpBody {
     email: string;
     password: string;
     nickname: string;
+    church_id?: number;
     church_name?: string;
     denomination?: string;
     bio?: string;
