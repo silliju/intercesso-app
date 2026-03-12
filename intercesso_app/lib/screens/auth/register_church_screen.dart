@@ -21,6 +21,7 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
   final _nameCtrl = TextEditingController();
   final _denominationCtrl = TextEditingController();
   final _pastorCtrl = TextEditingController();
+  final _addressKeywordCtrl = TextEditingController();
   final _siDoCtrl = TextEditingController();
   final _siGunGuCtrl = TextEditingController();
   final _dongCtrl = TextEditingController();
@@ -37,6 +38,7 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
     _nameCtrl.dispose();
     _denominationCtrl.dispose();
     _pastorCtrl.dispose();
+    _addressKeywordCtrl.dispose();
     _siDoCtrl.dispose();
     _siGunGuCtrl.dispose();
     _dongCtrl.dispose();
@@ -47,7 +49,9 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
   }
 
   Future<void> _openAddressSearch() async {
-    final url = AppConstants.addressSearchPageUrl;
+    final baseUrl = AppConstants.addressSearchPageUrl;
+    final keyword = _addressKeywordCtrl.text.trim();
+    final url = keyword.isEmpty ? baseUrl : '$baseUrl?q=${Uri.encodeComponent(keyword)}';
 
     // 웹(Chrome)에서는 WebView 대신 새 탭으로 주소 검색 페이지를 연다.
     if (kIsWeb) {
@@ -178,6 +182,15 @@ class _RegisterChurchScreenState extends State<RegisterChurchScreen> {
                   controller: _pastorCtrl,
                   decoration: const InputDecoration(
                     hintText: '선택사항',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _label('주소 키워드', required: false),
+                const SizedBox(height: 6),
+                TextFormField(
+                  controller: _addressKeywordCtrl,
+                  decoration: const InputDecoration(
+                    hintText: '예: 강남역, 역삼로 1, 사랑의교회',
                   ),
                 ),
                 const SizedBox(height: 20),
