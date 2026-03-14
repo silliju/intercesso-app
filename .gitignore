@@ -7,6 +7,7 @@ build/
 .env
 .env.local
 .env.production
+docs/railway-env.json
 
 # 로그
 logs/

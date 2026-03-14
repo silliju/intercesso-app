@@ -1,0 +1,11 @@
+{
+  "NODE_ENV": "production",
+  "SUPABASE_URL": "https://ypqbkqflikdjickyywvc.supabase.co",
+  "SUPABASE_ANON_KEY": "<Supabase 대시보드 → Settings → API → anon public 키>",
+  "SUPABASE_SERVICE_ROLE_KEY": "<Supabase 대시보드 → Settings → API → service_role 키>",
+  "JWT_SECRET": "<영문+숫자 20자 이상 비밀키>",
+  "JWT_EXPIRES_IN": "7d",
+  "GOOGLE_CLIENT_ID": "777786565733-uklsbfk4i1mt4f7sa4daud7ih47t729b.apps.googleusercontent.com",
+  "KAKAO_REST_API_KEY": "3853e9c9f28e388a2f4dc4cffed572b4",
+  "FRONTEND_URL": "https://intercesso.app"
+}

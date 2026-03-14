@@ -6,6 +6,7 @@ import '../../providers/prayer_provider.dart';
 import '../../providers/gratitude_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme.dart';
+import '../../services/api_service.dart';
 import '../../services/daily_verse_service.dart';
 import '../main/main_tab_screen.dart';
 import '../gratitude/create_gratitude_screen.dart';
@@ -50,6 +51,8 @@ class _HomeScreenState extends State<HomeScreen>
         }
       });
     } catch (e) {
+      // 404(경로 없음)는 백엔드 미배포/구버전일 때 → 로컬 말씀 사용, 로그 생략
+      if (e is ApiException && e.statusCode == 404) return;
       debugPrint('[HomeScreen] 오늘의 말씀 로드 오류: $e');
     }
   }

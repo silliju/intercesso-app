@@ -19,11 +19,12 @@ const statistics_routes_1 = __importDefault(require("./routes/statistics.routes"
 const gratitude_routes_1 = __importDefault(require("./routes/gratitude.routes"));
 const choir_routes_1 = __importDefault(require("./routes/choir.routes"));
 const church_routes_1 = __importDefault(require("./routes/church.routes"));
+const daily_verse_routes_1 = __importDefault(require("./routes/daily_verse.routes"));
 const prayer_answer_controller_1 = require("./controllers/prayer_answer.controller");
 const auth_1 = require("./middleware/auth");
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 // DB 마이그레이션 상태 확인 (로그 출력용)
 async function runMigrations() {
     try {
@@ -349,6 +350,7 @@ app.use('/api/statistics', statistics_routes_1.default);
 app.use('/api/gratitude', gratitude_routes_1.default);
 app.use('/api/choir', choir_routes_1.default);
 app.use('/api/churches', church_routes_1.default);
+app.use('/api/daily-verse', daily_verse_routes_1.default);
 // 기도 응답 피드
 app.get('/api/answers/feed', auth_1.optionalAuth, prayer_answer_controller_1.getAnswerFeed);
 // 404 핸들러
@@ -370,11 +372,15 @@ app.use((err, req, res, next) => {
         error: { code: 'INTERNAL_SERVER_ERROR' },
     });
 });
-app.listen(PORT, () => {
-    console.log(`🚀 Intercesso API Server running on port ${PORT}`);
+// Railway 등 외부 헬스체크: 0.0.0.0 바인딩 필요
+const HOST = process.env.HOST ?? '0.0.0.0';
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Intercesso API Server running on ${HOST}:${PORT}`);
     console.log(`📖 Health check: http://localhost:${PORT}/health`);
     console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-    runMigrations();
+    runMigrations().catch((err) => {
+        console.error('DB 확인 실패 (서버는 계속 실행):', err);
+    });
 });
 exports.default = app;
 //# sourceMappingURL=index.js.map

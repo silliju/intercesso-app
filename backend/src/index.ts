@@ -22,7 +22,7 @@ import { optionalAuth } from './middleware/auth';
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // DB 마이그레이션 상태 확인 (로그 출력용)
 async function runMigrations() {
@@ -388,11 +388,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Intercesso API Server running on port ${PORT}`);
+// Railway 등 외부 헬스체크: 0.0.0.0 바인딩 필요
+const HOST = process.env.HOST ?? '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`🚀 Intercesso API Server running on ${HOST}:${PORT}`);
   console.log(`📖 Health check: http://localhost:${PORT}/health`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  runMigrations();
+  runMigrations().catch((err) => {
+    console.error('DB 확인 실패 (서버는 계속 실행):', err);
+  });
 });
 
 export default app;

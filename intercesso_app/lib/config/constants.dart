@@ -5,7 +5,7 @@ class AppConstants {
   // 로컬 개발 시: flutter run --dart-define=API_BASE_URL=http://localhost:3000/api
   static const String baseUrl = String.fromEnvironment(
     'API_BASE_URL',
-    defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app/api',
+    defaultValue: 'https://intercesso-app-production.up.railway.app/api',
   );
 
   /// 다음 주소 검색 페이지 URL (백엔드 /address-search-page, WebView 로드용).
@@ -17,7 +17,7 @@ class AppConstants {
   // ─── 앱 공개 URL ─────────────────────────────────────────
   static const String appWebUrl = String.fromEnvironment(
     'APP_WEB_URL',
-    defaultValue: 'https://intercesso-backend-production-5f72.up.railway.app',
+    defaultValue: 'https://intercesso-app-production.up.railway.app',
   );
   static const String privacyUrl = '$appWebUrl/privacy';
   static const String termsUrl = '$appWebUrl/terms';
