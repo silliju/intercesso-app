@@ -9,19 +9,22 @@ type DailyVerse = {
   reference: string;
 };
 
-/** 한국(Asia/Seoul) 기준 오늘 날짜 YYYY-MM-DD */
-function getTodayDateString(): string {
+const YYYY_MM_DD = /^\d{4}-\d{2}-\d{2}$/;
+
+/** 쿼리 date가 유효하면 사용, 없으면 서버(한국 시간) 오늘 */
+function getVerseDate(queryDate?: string): string {
+  if (queryDate && YYYY_MM_DD.test(queryDate)) return queryDate;
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
 }
 
 export const getTodayDailyVerse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const today = getTodayDateString(); // 한국 시간 기준 오늘, 예: 2026-03-14
+    const date = getVerseDate(req.query.date as string | undefined); // 클라이언트 date 우선
 
     const { data, error } = await supabaseAdmin
       .from('daily_verse')
       .select('verse_date, text, reference')
-      .eq('verse_date', today)
+      .eq('verse_date', date)
       .single();
 
     if (error || !data) {
