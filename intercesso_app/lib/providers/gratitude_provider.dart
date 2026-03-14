@@ -266,8 +266,8 @@ class GratitudeProvider extends ChangeNotifier {
     try {
       _streak = await _service.getStreak();
       notifyListeners();
-    } catch (e) {
-      debugPrint('GratitudeProvider loadStreak 실패: $e');
+    } catch (_) {
+      // 실패 시 기본값 유지. 로그 생략
     }
   }
 

@@ -6,7 +6,6 @@ import '../../providers/prayer_provider.dart';
 import '../../providers/gratitude_provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme.dart';
-import '../../services/api_service.dart';
 import '../../services/daily_verse_service.dart';
 import '../main/main_tab_screen.dart';
 import '../gratitude/create_gratitude_screen.dart';
@@ -50,10 +49,8 @@ class _HomeScreenState extends State<HomeScreen>
           _todayVerse = v;
         }
       });
-    } catch (e) {
-      // 404(경로 없음)는 백엔드 미배포/구버전일 때 → 로컬 말씀 사용, 로그 생략
-      if (e is ApiException && e.statusCode == 404) return;
-      debugPrint('[HomeScreen] 오늘의 말씀 로드 오류: $e');
+    } catch (_) {
+      // 실패 시 로컬 말씀 유지. 로그 생략(타임아웃·네트워크 등 반복 로그 방지)
     }
   }
 
@@ -70,11 +67,8 @@ class _HomeScreenState extends State<HomeScreen>
     if (!mounted) return;
     try {
       final g = context.read<GratitudeProvider>();
-      await Future.wait([
-        g.loadTodayJournal(),
-        g.loadStreak(),
-        g.loadFeed('group'),
-      ]);
+      await Future.wait([g.loadTodayJournal(), g.loadFeed('group')]);
+      g.loadStreak(); // 타임아웃 시에도 홈 지연 없이 백그라운드 로드
     } catch (e) {
       debugPrint('[HomeScreen] 감사 로드 오류: $e');
     }
