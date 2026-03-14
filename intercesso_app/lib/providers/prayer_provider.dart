@@ -127,34 +127,36 @@ class PrayerProvider extends ChangeNotifier {
   }
 
   // ─────────────────────────────────────────────────────────────
-  // 홈 전용 공개 기도 로드 (최대 10개, 탭 상태와 완전히 독립)
+  // 홈 전용 공개 기도 로드 (최대 5개). 캐시 있으면 즉시 표시 후 백그라운드 갱신.
   // ─────────────────────────────────────────────────────────────
   Future<void> loadHomePrayers() async {
     if (_isHomeLoading) return;
-    _isHomeLoading = true;
-    notifyListeners();
+    final hasCache = _homePrayers.isNotEmpty;
+    if (!hasCache) {
+      _isHomeLoading = true;
+      _error = null;
+      notifyListeners();
+    }
 
     try {
-      // 공개 기도 로드 (15초 타임아웃으로 무한 로딩 방지)
       final response = await _prayerService.getPrayers(
         page: 1,
-        limit: 10,
+        limit: 5,
         scope: null,
       ).timeout(
-        const Duration(seconds: 15),
+        const Duration(seconds: 12),
         onTimeout: () => throw TimeoutException('홈 기도 목록 로드 지연'),
       );
       final List<dynamic> data = response['data'] ?? [];
       _homePrayers = data.map((p) => PrayerModel.fromJson(p)).toList();
 
-      // 공개 기도 없으면 내 기도로 fallback
       if (_homePrayers.isEmpty) {
         final myResponse = await _prayerService.getPrayers(
           page: 1,
-          limit: 10,
+          limit: 5,
           scope: 'mine',
         ).timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 8),
           onTimeout: () => throw TimeoutException('내 기도 목록 로드 지연'),
         );
         final List<dynamic> myData = myResponse['data'] ?? [];
@@ -162,12 +164,9 @@ class PrayerProvider extends ChangeNotifier {
       }
     } catch (e) {
       _error = e.toString();
+      if (!hasCache) _homePrayers = [];
     } finally {
       _isHomeLoading = false;
-      // 홈 전용 리스트가 비어 있으면 '전체 공개' 탭도 로드해 두어 homePrayersForDisplay에서 사용
-      if (_homePrayers.isEmpty) {
-        await loadPrayers(refresh: true, scope: null);
-      }
       notifyListeners();
     }
   }

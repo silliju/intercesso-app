@@ -1,17 +1,19 @@
 // ============================================================
-// 오늘의 말씀 DB 시드 생성 스크립트
-// bible_verses_data.dart 와 동일한 146개 구절 → 기준 윤년(2000년) 366일 날짜로 매핑
+// 오늘의 말씀 DB 시드 + JSON 생성 스크립트
+// 146개 구절 → 기준 윤년(2000년) 366일 날짜로 매핑
 // 실행: 프로젝트 루트에서 dart database/seed_daily_verse_gen.dart
-// 결과: database/seed_daily_verse.sql 생성
+// 결과: database/seed_daily_verse.sql, backend/data/daily_verses.json
 // ============================================================
 
+import 'dart:convert';
 import 'dart:io';
 
 void main() {
-  // Script 위치 기준으로 같은 디렉터리에 seed_daily_verse.sql 생성
   final verses = _allVerses;
-  final sb = StringBuffer();
+  final base = DateTime(2000, 1, 1);
 
+  // 1) SQL 생성
+  final sb = StringBuffer();
   sb.writeln('-- 오늘의 말씀 시드 (146개 구절 → 기준 윤년(2000) 366일)');
   sb.writeln('-- 생성: dart database/seed_daily_verse_gen.dart');
   sb.writeln('-- 실행 전에 010_daily_verse.sql 로 테이블 생성 후 실행하세요.');
@@ -19,7 +21,6 @@ void main() {
   sb.writeln('INSERT INTO public.daily_verse (verse_date, text, reference)');
   sb.writeln('VALUES');
 
-  final base = DateTime(2000, 1, 1);
   for (var day = 1; day <= 366; day++) {
     final i = (day - 1) % verses.length;
     final d = base.add(Duration(days: day - 1));
@@ -32,15 +33,34 @@ void main() {
   }
 
   final scriptDir = File(Platform.script.toFilePath()).parent.path;
-  final outPath = '$scriptDir/seed_daily_verse.sql';
-  File(outPath).writeAsStringSync(sb.toString());
-  print('Generated: $outPath');
+  File('$scriptDir/seed_daily_verse.sql').writeAsStringSync(sb.toString());
+  print('Generated: $scriptDir/seed_daily_verse.sql');
+
+  // 2) JSON 생성 (MM-DD → { text, reference })
+  final jsonMap = <String, Map<String, String>>{};
+  for (var day = 1; day <= 366; day++) {
+    final i = (day - 1) % verses.length;
+    final d = base.add(Duration(days: day - 1));
+    final key = _mmdd(d);
+    jsonMap[key] = {'text': verses[i]['text']!, 'reference': verses[i]['reference']!};
+  }
+
+  final jsonDir = '$scriptDir/../backend/data';
+  Directory(jsonDir).createSync(recursive: true);
+  final jsonPath = '$jsonDir/daily_verses.json';
+  File(jsonPath).writeAsStringSync(const JsonEncoder.withIndent('  ').convert(jsonMap));
+  print('Generated: $jsonPath');
 }
 
 String _escape(String s) => "'" + s.replaceAll("'", "''") + "'";
 String _fmtDate(DateTime d) {
   String two(int n) => n.toString().padLeft(2, '0');
   return '${d.year}-${two(d.month)}-${two(d.day)}';
+}
+
+String _mmdd(DateTime d) {
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(d.month)}-${two(d.day)}';
 }
 
 final List<Map<String, String>> _allVerses = [

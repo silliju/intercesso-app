@@ -30,9 +30,18 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _todayVerse = BibleVersesData.getTodayVerse();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAll());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAllInBackground());
   }
 
+  /// 첫 진입: API 기다리지 않고 화면 먼저 그림. 데이터는 백그라운드에서 들어오면 갱신.
+  void _loadAllInBackground() {
+    if (!mounted) return;
+    _loadTodayVerse();
+    _loadPrayers();
+    _loadGratitude();
+  }
+
+  /// 당겨서 새로고침: 세 로드 모두 끝날 때까지 대기.
   Future<void> _loadAll() async {
     if (!mounted) return;
     await Future.wait([_loadTodayVerse(), _loadPrayers(), _loadGratitude()]);
@@ -221,7 +230,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Text(
                         '기도 제목 쓰기',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                           letterSpacing: -0.2,
@@ -230,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Text(
                         '오늘의 기도',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 13,
                           color: Colors.white70,
                         ),
                       ),
@@ -296,7 +305,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Text(
                         hasTodayGratitude ? '감사일기 완료' : '감사일기 쓰기',
                         style: const TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
                           letterSpacing: -0.2,
@@ -305,7 +314,7 @@ class _HomeScreenState extends State<HomeScreen>
                       Text(
                         hasTodayGratitude ? '오늘 작성 완료 ✓' : '오늘의 감사',
                         style: const TextStyle(
-                          fontSize: 11,
+                          fontSize: 13,
                           color: Colors.white70,
                         ),
                       ),
@@ -351,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Text(
                     '오늘의 말씀',
                     style: TextStyle(
-                      fontSize: 15,
+                      fontSize: 17,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.primary,
                     ),
@@ -461,15 +470,34 @@ class _HomeScreenState extends State<HomeScreen>
     if (isLoading && prayers.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Center(
-            child: CircularProgressIndicator(color: AppTheme.primary),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppTheme.primary,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '불러오는 중…',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
 
     if (prayers.isEmpty) {
+      final hasError = provider.error != null && provider.error!.isNotEmpty;
       return SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
@@ -482,23 +510,31 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             child: Column(
               children: [
-                const Text('🙏', style: TextStyle(fontSize: 48)),
+                Text(hasError ? '😢' : '🙏', style: const TextStyle(fontSize: 48)),
                 const SizedBox(height: 12),
-                const Text(
-                  '아직 기도제목이 없어요\n첫 번째 기도를 작성해보세요',
+                Text(
+                  hasError ? '불러오기에 실패했어요\n아래에서 다시 시도해 주세요' : '아직 기도제목이 없어요\n첫 번째 기도를 작성해보세요',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     color: AppTheme.textSecondary,
                     height: 1.6,
                   ),
                 ),
                 const SizedBox(height: 20),
-                ElevatedButton.icon(
-                  onPressed: () => context.push('/prayer/create'),
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('기도 작성하기'),
-                ),
+                if (hasError)
+                  OutlinedButton.icon(
+                    onPressed: () => provider.loadHomePrayers(),
+                    icon: const Icon(Icons.refresh, size: 18),
+                    label: const Text('다시 시도'),
+                    style: OutlinedButton.styleFrom(foregroundColor: AppTheme.primary),
+                  )
+                else
+                  ElevatedButton.icon(
+                    onPressed: () => context.push('/prayer/create'),
+                    icon: const Icon(Icons.add, size: 18),
+                    label: const Text('기도 작성하기'),
+                  ),
               ],
             ),
           ),
@@ -544,9 +580,27 @@ class _HomeScreenState extends State<HomeScreen>
     if (isLoading && journals.isEmpty) {
       return SliverToBoxAdapter(
         child: Padding(
-          padding: const EdgeInsets.all(40),
-          child: Center(
-            child: CircularProgressIndicator(color: AppTheme.gamsa),
+          padding: const EdgeInsets.symmetric(vertical: 24),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: AppTheme.gamsa,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '불러오는 중…',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
           ),
         ),
       );
@@ -582,7 +636,7 @@ class _HomeScreenState extends State<HomeScreen>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppTheme.gamsa,
                   ),
-                  icon: const Text('🌷', style: TextStyle(fontSize: 16)),
+                  icon: const Text('🌷', style: TextStyle(fontSize: 18)),
                   label: const Text('감사일기 쓰기'),
                 ),
               ],

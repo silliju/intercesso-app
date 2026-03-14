@@ -43,8 +43,7 @@ class _IntercessionScreenState extends State<IntercessionScreen>
     try {
       final list = await _service.getReceivedRequests();
       if (mounted) setState(() { _received = list; _isLoadingReceived = false; });
-    } catch (e) {
-      debugPrint('[Intercession] 받은 요청 로드 오류: $e');
+    } catch (_) {
       if (mounted) setState(() { _isLoadingReceived = false; });
     }
   }
@@ -54,8 +53,7 @@ class _IntercessionScreenState extends State<IntercessionScreen>
     try {
       final list = await _service.getSentRequests();
       if (mounted) setState(() { _sent = list; _isLoadingSent = false; });
-    } catch (e) {
-      debugPrint('[Intercession] 보낸 요청 로드 오류: $e');
+    } catch (_) {
       if (mounted) setState(() => _isLoadingSent = false);
     }
   }

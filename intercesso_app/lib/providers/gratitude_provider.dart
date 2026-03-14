@@ -145,8 +145,11 @@ class GratitudeProvider extends ChangeNotifier {
     }
     if (_feedHasMore[tab] == false && !refresh) return;
 
-    _feedLoading[tab] = true;
-    notifyListeners();
+    final hasCache = (_feedData[tab] ?? []).isNotEmpty;
+    if (!hasCache) {
+      _feedLoading[tab] = true;
+      notifyListeners();
+    }
 
     try {
       final response = await _service.getFeed(

@@ -96,7 +96,6 @@ class MainTabScreenState extends State<MainTabScreen> {
   }
 
   Widget _buildNavItem(_NavTab tab, bool selected) {
-    final Color activeColor = _getActiveColor(tab.type);
     final Color activeBg = _getActiveBg(tab.type);
 
     return AnimatedContainer(
@@ -109,6 +108,7 @@ class MainTabScreenState extends State<MainTabScreen> {
             )
           : null,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           AnimatedDefaultTextStyle(
@@ -116,17 +116,6 @@ class MainTabScreenState extends State<MainTabScreen> {
             style: TextStyle(fontSize: selected ? 22 : 20),
             child: Text(tab.emoji),
           ),
-          // 하단 메뉴 글씨 (복원 시 아래 주석 해제)
-          // const SizedBox(height: 2),
-          // Text(
-          //   tab.label,
-          //   style: TextStyle(
-          //     fontSize: 10,
-          //     fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-          //     color: selected ? activeColor : AppTheme.textLight,
-          //     letterSpacing: -0.2,
-          //   ),
-          // ),
         ],
       ),
     );
