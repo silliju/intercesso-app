@@ -1,255 +1,511 @@
+// ============================================
+// Flutter 앱 테마 설정 파일
+// HTML 디자인 시스템(docs/앱가이드.html)과 동일한 값 사용
+// 기존 AppTheme.xxx 참조 호환용 getter 포함
+// ============================================
+
 import 'package:flutter/material.dart';
 
+/// 앱 전체에서 사용할 색상 정의
+/// HTML의 :root CSS 변수와 동일
+class AppColors {
+  // ===== Primary Colors (주요 브랜드 색상) =====
+  static const Color primaryMain = Color(0xFF4A7FFF);      // #4A7FFF
+  static const Color primaryLight = Color(0xFF7BA3FF);    // #7BA3FF
+  static const Color primaryDark = Color(0xFF2E5FCC);    // #2E5FCC
+  static const Color primaryContrast = Color(0xFFFFFFFF);
+
+  // ===== Secondary Colors (보조 색상 / 감사 등) =====
+  static const Color secondaryMain = Color(0xFFFF9D3D);    // #FF9D3D
+  static const Color secondaryLight = Color(0xFFFFB76B);
+  static const Color secondaryDark = Color(0xFFE68429);
+
+  // ===== Background Colors =====
+  static const Color bgPrimary = Color(0xFFFFFFFF);
+  /// 화면 배경 (연한 블루 톤 — 흰 카드/파란 버튼과 구분되며 조화)
+  static const Color bgSecondary = Color(0xFFEEF2FF);
+  static const Color bgTertiary = Color(0xFFE8ECFA);
+
+  // ===== Text Colors =====
+  static const Color textPrimary = Color(0xFF212529);
+  static const Color textSecondary = Color(0xFF6C757D);
+  static const Color textDisabled = Color(0xFFADB5BD);
+  static const Color textHint = Color(0xFFCED4DA);
+
+  // ===== Border & Divider =====
+  static const Color borderLight = Color(0xFFE9ECEF);
+  static const Color borderMain = Color(0xFFDEE2E6);
+  static const Color borderDark = Color(0xFFCED4DA);
+  static const Color divider = Color(0xFFE9ECEF);
+
+  // ===== Semantic Colors =====
+  static const Color success = Color(0xFF4CAF50);
+  static const Color successBg = Color(0xFFE8F5E9);
+  static const Color successText = Color(0xFF2E7D32);
+
+  static const Color warning = Color(0xFFFFC107);
+  static const Color warningBg = Color(0xFFFFF8E1);
+  static const Color warningText = Color(0xFFF57F17);
+
+  static const Color error = Color(0xFFF44336);
+  static const Color errorBg = Color(0xFFFFEBEE);
+  static const Color errorText = Color(0xFFC62828);
+
+  static const Color info = Color(0xFF2196F3);
+  static const Color infoBg = Color(0xFFE3F2FD);
+  static const Color infoText = Color(0xFF1565C0);
+}
+
+/// 간격 시스템 (HTML --spacing-* 와 동일)
+class AppSpacing {
+  static const double xs = 4.0;
+  static const double sm = 8.0;
+  static const double md = 16.0;
+  static const double lg = 24.0;
+  static const double xl = 32.0;
+  static const double xxl = 48.0;
+}
+
+/// Border Radius (HTML --radius-* 와 동일)
+class AppRadius {
+  static const double sm = 4.0;
+  static const double md = 8.0;
+  static const double lg = 12.0;
+  static const double xl = 16.0;
+  static const double full = 999.0;
+}
+
+/// 그림자(Elevation)
+class AppElevation {
+  static const double none = 0.0;
+  static const double sm = 1.0;
+  static const double md = 2.0;
+  static const double lg = 4.0;
+  static const double xl = 8.0;
+}
+
+/// 애니메이션 Duration
+class AppDuration {
+  static const Duration fast = Duration(milliseconds: 150);
+  static const Duration normal = Duration(milliseconds: 300);
+  static const Duration slow = Duration(milliseconds: 500);
+}
+
+/// 앱 테마 + 기존 코드 호환 (const 유지로 const TextStyle(color: AppTheme.primary) 등 사용 가능)
 class AppTheme {
-  // ── 모듈별 시그니처 컬러 (디자인 가이드 기준) ────────────────────────
-  static const Color primary = Color(0xFF2F6FED);       // 메인 Primary - Deep Blue
-  static const Color gamsa = Color(0xFFF59E08);         // 감사 (Gamsa) - Golden Amber
-  static const Color seonggadae = Color(0xFF885CF6);    // 성가대 - Purple
-  static const Color simbang = Color(0xFFF97316);       // 심방 - Orange
-  static const Color guyeok = Color(0xFF108981);        // 구역 - Green
-  static const Color gyojeok = Color(0xFF3B82F6);       // 교적 - Navy Blue
+  // ----- 호환용: 기존 AppTheme.primary 등 그대로 사용 (const) -----
+  static const Color primary = AppColors.primaryMain;
+  static const Color gamsa = AppColors.secondaryMain;
+  static const Color primaryDark = AppColors.primaryDark;
+  static const Color primaryLight = AppColors.primaryLight;
+  static const Color secondary = AppColors.secondaryMain;
+  static const Color success = AppColors.success;
+  static const Color warning = AppColors.warning;
+  static const Color error = AppColors.error;
 
-  // ── 보조 컬러 ────────────────────────────────────────────────
-  static const Color primaryDark = Color(0xFF1E56C8);
-  static const Color primaryLight = Color(0xFFEEF4FD);
-  static const Color secondary = Color(0xFF00C9A7);
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
+  static const Color textPrimary = AppColors.textPrimary;
+  static const Color textSecondary = AppColors.textSecondary;
+  static const Color textLight = AppColors.textDisabled;
+  static const Color background = AppColors.bgSecondary;
+  static const Color surface = AppColors.bgPrimary;
+  static const Color border = AppColors.borderMain;
 
-  // ── 텍스트 (디자인 가이드) ──────────────────────────────────
-  static const Color textPrimary = Color(0xFF1F2D3D);
-  static const Color textSecondary = Color(0xFF6B7C93);
-  static const Color textLight = Color(0xFFADB5BD);
+  // 감사/모듈 전용 (Secondary 계열)
+  static const Color gamsaLight = Color(0xFFFFF4E6);
+  static const Color gamsaDark = Color(0xFFE68429);
+  static const Color gamsaBorder = Color(0xFFFFD9B3);
 
-  // ── 배경 (디자인 가이드) ────────────────────────────────────
-  static const Color background = Color(0xFFF4F6FB);
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color border = Color(0xFFE4E9F2);
+  // 모듈 시그니처 (찬양대/심방/구역/교적) — 필요 시 유지
+  static const Color seonggadae = Color(0xFF885CF6);
+  static const Color seonggadaeDark = Color(0xFF6D3FD4); // 그라디언트 끝색
+  static const Color seonggadaeLight = Color(0xFFEDE9FE); // 찬양대 연보라 배경
+  static const Color simbang = Color(0xFFF97316);
+  static const Color guyeok = Color(0xFF108981);
+  static const Color gyojeok = Color(0xFF3B82F6);
+
   static const Color cardShadow = Color(0x14000000);
 
-  // ── 감사 모듈 전용 컬러 ────────────────────────────────────
-  static const Color gamsaLight = Color(0xFFFFFBEB);
-  static const Color gamsaDark = Color(0xFFD97706);
-  static const Color gamsaBorder = Color(0xFFFDE68A);
-
-  // ── 그라디언트 ──────────────────────────────────────────────
-  static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF2F6FED), Color(0xFF1E56C8)],
+  // ----- 그라디언트 (HTML Primary/Secondary 기반) -----
+  static final LinearGradient primaryGradient = LinearGradient(
+    colors: [AppColors.primaryMain, AppColors.primaryDark],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static final LinearGradient heroGradient = LinearGradient(
+    colors: [AppColors.primaryMain, AppColors.primaryLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+  static final LinearGradient gamsaGradient = LinearGradient(
+    colors: [AppColors.secondaryMain, AppColors.secondaryDark],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
-  static const LinearGradient heroGradient = LinearGradient(
-    colors: [Color(0xFF2F6FED), Color(0xFF4A90E2)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static const LinearGradient gamsaGradient = LinearGradient(
-    colors: [Color(0xFFF59E08), Color(0xFFD97706)],
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-  );
-
-  static ThemeData get lightTheme => ThemeData(
-        useMaterial3: true,
-        fontFamily: 'Pretendard',
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: primary,
-          primary: primary,
-          secondary: gamsa,
-          surface: surface,
-          error: error,
-        ),
-        scaffoldBackgroundColor: background,
-        appBarTheme: const AppBarTheme(
-          backgroundColor: surface,
-          foregroundColor: textPrimary,
-          elevation: 0,
-          centerTitle: true,
-          titleTextStyle: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: textPrimary,
-            letterSpacing: -0.3,
-          ),
-          iconTheme: IconThemeData(color: textPrimary),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primary,
-            foregroundColor: Colors.white,
-            elevation: 0,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        outlinedButtonTheme: OutlinedButtonThemeData(
-          style: OutlinedButton.styleFrom(
-            foregroundColor: primary,
-            side: const BorderSide(color: primary, width: 1.5),
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            textStyle: const TextStyle(
-              fontSize: 15,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ),
-        textButtonTheme: TextButtonThemeData(
-          style: TextButton.styleFrom(
-            foregroundColor: primary,
-            textStyle: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-        ),
-      inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: surface,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: border, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: border, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: primary, width: 1.5),
-          ),
-          errorBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: error, width: 1),
-          ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          hintStyle: const TextStyle(color: textLight, fontSize: 14),
-        ),
-        cardTheme: const CardTheme(
-          color: surface,
-          elevation: 0,
-          shadowColor: cardShadow,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(18)),
-          ),
-        ),
-        dividerTheme: const DividerThemeData(color: border, space: 1),
-        chipTheme: ChipThemeData(
-          backgroundColor: primaryLight,
-          selectedColor: primary,
-          labelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
-        ),
-      );
-
-  // ── 카드 데코레이션 (디자인 가이드: radius 18px, shadow) ────
+  // ----- 카드 데코레이션 (기존 호환) -----
   static BoxDecoration get cardDecoration => BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.bgPrimary,
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         boxShadow: const [
-          BoxShadow(
-            color: Color(0x14000000),
-            blurRadius: 30,
-            offset: Offset(0, 10),
-          ),
+          BoxShadow(color: Color(0x14000000), blurRadius: 30, offset: Offset(0, 10)),
         ],
       );
 
   static BoxDecoration get cardDecorationSmall => BoxDecoration(
-        color: surface,
+        color: AppColors.bgPrimary,
         borderRadius: BorderRadius.circular(14),
         boxShadow: const [
-          BoxShadow(
-            color: Color(0x0F000000),
-            blurRadius: 16,
-            offset: Offset(0, 4),
-          ),
+          BoxShadow(color: Color(0x0F000000), blurRadius: 16, offset: Offset(0, 4)),
         ],
       );
 
   static BoxDecoration get highlightCardDecoration => BoxDecoration(
-        color: primaryLight,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Color.fromRGBO(47, 111, 237, 0.15)),
+        color: AppColors.primaryLight.withOpacity(0.25),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        border: Border.all(color: AppColors.primaryMain.withOpacity(0.15)),
       );
 
-  // ── 그라디언트 카드 데코레이션 ───────────────────────────────
   static BoxDecoration get primaryCardDecoration => BoxDecoration(
         gradient: primaryGradient,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x332F6FED),
+            color: AppColors.primaryMain.withOpacity(0.2),
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       );
 
-  // ── 감사 카드 데코레이션 ──────────────────────────────────
   static BoxDecoration get gamsaCardDecoration => BoxDecoration(
         color: gamsaLight,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.lg),
         border: Border.all(color: gamsaBorder),
-        boxShadow: const [
+        boxShadow: [
           BoxShadow(
-            color: Color(0x14F59E0B),
+            color: AppColors.secondaryMain.withOpacity(0.08),
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       );
 
-  // ── 감사 그라디언트 카드 ──────────────────────────────────
   static BoxDecoration get gamsaGradientDecoration => BoxDecoration(
         gradient: gamsaGradient,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(AppRadius.lg),
+        boxShadow: [
           BoxShadow(
-            color: Color(0x33F59E0B),
+            color: AppColors.secondaryMain.withOpacity(0.2),
             blurRadius: 20,
-            offset: Offset(0, 8),
+            offset: const Offset(0, 8),
           ),
         ],
       );
 
-  // ── 섹션 헤더 스타일 ─────────────────────────────────────
+  // ----- 텍스트 스타일 (기존 호환) -----
   static TextStyle get sectionTitle => const TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w700,
-        color: textPrimary,
+        color: AppColors.textPrimary,
         letterSpacing: -0.3,
       );
-
   static TextStyle get cardTitle => const TextStyle(
         fontSize: 15,
         fontWeight: FontWeight.w700,
-        color: textPrimary,
+        color: AppColors.textPrimary,
         letterSpacing: -0.2,
       );
-
   static TextStyle get cardSubtitle => const TextStyle(
         fontSize: 13,
         fontWeight: FontWeight.w400,
-        color: textSecondary,
+        color: AppColors.textSecondary,
       );
-
   static TextStyle get badgeText => const TextStyle(
         fontSize: 11,
         fontWeight: FontWeight.w700,
         color: Colors.white,
         letterSpacing: 0.2,
+      );
+
+  // ===== Light Theme (HTML 가이드 + Pretendard) =====
+  static ThemeData get lightTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        fontFamily: 'Pretendard',
+        scaffoldBackgroundColor: AppColors.bgSecondary,
+        colorScheme: ColorScheme.light(
+          primary: AppColors.primaryMain,
+          onPrimary: AppColors.primaryContrast,
+          primaryContainer: AppColors.primaryLight,
+          secondary: AppColors.secondaryMain,
+          onSecondary: Colors.white,
+          secondaryContainer: AppColors.secondaryLight,
+          error: AppColors.error,
+          onError: Colors.white,
+          errorContainer: AppColors.errorBg,
+          surface: AppColors.bgPrimary,
+          onSurface: AppColors.textPrimary,
+          outline: AppColors.borderMain,
+          outlineVariant: AppColors.borderLight,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: AppColors.bgPrimary,
+          foregroundColor: AppColors.textPrimary,
+          elevation: AppElevation.sm,
+          centerTitle: true,
+          titleTextStyle: const TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            letterSpacing: -0.3,
+          ),
+          iconTheme: const IconThemeData(color: AppColors.textPrimary, size: 24),
+        ),
+        cardTheme: CardTheme(
+          color: AppColors.bgPrimary,
+          elevation: AppElevation.md,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.lg),
+          ),
+          margin: const EdgeInsets.all(AppSpacing.sm),
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryMain,
+            foregroundColor: AppColors.primaryContrast,
+            elevation: AppElevation.sm,
+            minimumSize: const Size(0, 48),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+        outlinedButtonTheme: OutlinedButtonThemeData(
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primaryMain,
+            minimumSize: const Size(0, 48),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+            side: const BorderSide(color: AppColors.primaryMain, width: 2),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppRadius.md),
+            ),
+            textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+        ),
+        textButtonTheme: TextButtonThemeData(
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.primaryMain,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+          ),
+        ),
+        iconButtonTheme: IconButtonThemeData(
+          style: IconButton.styleFrom(
+            foregroundColor: AppColors.textPrimary,
+            minimumSize: const Size(40, 40),
+            iconSize: 24,
+          ),
+        ),
+        floatingActionButtonTheme: FloatingActionButtonThemeData(
+          backgroundColor: AppColors.primaryMain,
+          foregroundColor: Colors.white,
+          elevation: AppElevation.lg,
+          shape: const CircleBorder(),
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          filled: true,
+          fillColor: AppColors.bgPrimary,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.md,
+            vertical: AppSpacing.sm,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.borderMain, width: 1),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.borderMain, width: 1),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.primaryMain, width: 2),
+          ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.error, width: 2),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.error, width: 2),
+          ),
+          disabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            borderSide: const BorderSide(color: AppColors.borderLight, width: 1),
+          ),
+          labelStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 14),
+          floatingLabelStyle: const TextStyle(color: AppColors.primaryMain, fontSize: 14),
+          hintStyle: const TextStyle(color: AppColors.textHint, fontSize: 16),
+          helperStyle: const TextStyle(color: AppColors.textSecondary, fontSize: 12),
+          errorStyle: const TextStyle(color: AppColors.error, fontSize: 12),
+        ),
+        switchTheme: SwitchThemeData(
+          thumbColor: WidgetStateProperty.all(Colors.white),
+          trackColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) return AppColors.primaryMain;
+            return AppColors.borderDark;
+          }),
+          trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+        ),
+        checkboxTheme: CheckboxThemeData(
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) return AppColors.primaryMain;
+            return Colors.transparent;
+          }),
+          checkColor: WidgetStateProperty.all(Colors.white),
+          side: const BorderSide(color: AppColors.borderDark, width: 2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+          ),
+        ),
+        radioTheme: RadioThemeData(
+          fillColor: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) return AppColors.primaryMain;
+            return AppColors.borderDark;
+          }),
+        ),
+        chipTheme: ChipThemeData(
+          backgroundColor: AppColors.bgTertiary,
+          selectedColor: AppColors.primaryMain,
+          disabledColor: AppColors.bgSecondary,
+          labelStyle: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.sm,
+            vertical: AppSpacing.xs,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.full),
+          ),
+        ),
+        dividerTheme: const DividerThemeData(
+          color: AppColors.divider,
+          thickness: 1,
+          space: 1,
+        ),
+        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+          backgroundColor: AppColors.bgPrimary,
+          selectedItemColor: AppColors.primaryMain,
+          unselectedItemColor: AppColors.textSecondary,
+          type: BottomNavigationBarType.fixed,
+          elevation: 1,
+          selectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          unselectedLabelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.normal),
+        ),
+        tabBarTheme: const TabBarTheme(
+          labelColor: AppColors.primaryMain,
+          unselectedLabelColor: AppColors.textSecondary,
+          indicatorColor: AppColors.primaryMain,
+          labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          unselectedLabelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+        ),
+        dialogTheme: DialogTheme(
+          backgroundColor: AppColors.bgPrimary,
+          elevation: AppElevation.xl,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.xl),
+          ),
+          titleTextStyle: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+          contentTextStyle: const TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.normal,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        snackBarTheme: SnackBarThemeData(
+          backgroundColor: const Color(0xFF323232),
+          contentTextStyle: const TextStyle(color: Colors.white, fontSize: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppRadius.md),
+          ),
+          behavior: SnackBarBehavior.floating,
+          elevation: AppElevation.xl,
+        ),
+        progressIndicatorTheme: const ProgressIndicatorThemeData(
+          color: AppColors.primaryMain,
+          linearTrackColor: AppColors.borderLight,
+          circularTrackColor: AppColors.borderLight,
+        ),
+        textTheme: const TextTheme(
+          displayLarge: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            height: 1.2,
+          ),
+          displayMedium: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+            height: 1.2,
+          ),
+          displaySmall: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+            height: 1.3,
+          ),
+          bodyLarge: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textPrimary,
+            height: 1.5,
+          ),
+          bodyMedium: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textPrimary,
+            height: 1.5,
+          ),
+          bodySmall: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w400,
+            color: AppColors.textSecondary,
+            height: 1.5,
+          ),
+          labelLarge: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
+          labelMedium: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+          labelSmall: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            color: AppColors.textSecondary,
+          ),
+        ),
+      );
+
+  static ThemeData get darkTheme => ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        // TODO: 다크 테마 상세 설정
       );
 }

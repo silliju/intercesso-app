@@ -91,7 +91,14 @@ class _GroupDetailScreenState extends State<GroupDetailScreen>
     try {
       final members = await _groupService.getGroupMembers(widget.groupId);
       if (mounted) setState(() => _members = members);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('그룹 멤버 로드 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('멤버 목록을 불러오지 못했어요')),
+        );
+      }
+    }
   }
 
   Future<void> _copyInviteCode() async {

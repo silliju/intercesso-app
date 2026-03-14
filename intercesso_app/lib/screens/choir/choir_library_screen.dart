@@ -46,9 +46,9 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
             elevation: 0,
             bottom: TabBar(
               controller: _tabController,
-              labelColor: const Color(0xFF885CF6),
+              labelColor: AppTheme.seonggadae,
               unselectedLabelColor: AppTheme.textSecondary,
-              indicatorColor: const Color(0xFF885CF6),
+              indicatorColor: AppTheme.seonggadae,
               tabs: const [
                 Tab(text: '악보'),
                 Tab(text: '영상'),
@@ -59,7 +59,7 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
           floatingActionButton: isAdmin
               ? FloatingActionButton(
                   onPressed: () => _showUploadSheet(context),
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   child: const Icon(Icons.upload, color: Colors.white),
                 )
               : null,
@@ -213,14 +213,14 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF885CF6).withOpacity(0.08),
+                      color: AppTheme.seonggadae.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
                       file.targetSection!,
                       style: const TextStyle(
                         fontSize: 10,
-                        color: Color(0xFF885CF6),
+                        color: AppTheme.seonggadae,
                       ),
                     ),
                   ),
@@ -240,7 +240,7 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
             if (file.youtubeUrl != null)
               IconButton(
                 icon: const Icon(Icons.play_circle_filled,
-                    color: Color(0xFFFF0000), size: 28),
+                    color: AppTheme.error, size: 28),
                 onPressed: () => _openUrl(file.youtubeUrl!),
               )
             else if (file.fileUrl != null)
@@ -258,11 +258,11 @@ class _ChoirLibraryScreenState extends State<ChoirLibraryScreen>
 
   Color _fileTypeColor(String type) {
     switch (type) {
-      case 'score':    return const Color(0xFF2F6FED);
-      case 'video':    return const Color(0xFFEF4444);
-      case 'audio':    return const Color(0xFF10B981);
-      case 'document': return const Color(0xFFF59E0B);
-      default:         return const Color(0xFF885CF6);
+      case 'score':    return AppTheme.primary;
+      case 'video':    return AppTheme.error;
+      case 'audio':    return AppTheme.success;
+      case 'document': return AppTheme.warning;
+      default:         return AppTheme.seonggadae;
     }
   }
 
@@ -389,12 +389,12 @@ class _UploadFileSheetState extends State<_UploadFileSheet> {
                   label: Text(t.$2,
                       style: TextStyle(
                         fontSize: 12,
-                        color: selected ? const Color(0xFF885CF6) : AppTheme.textSecondary,
+                        color: selected ? AppTheme.seonggadae : AppTheme.textSecondary,
                         fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
                       )),
                   selected: selected,
                   onSelected: (_) => setState(() => _fileType = t.$1),
-                  selectedColor: const Color(0xFF885CF6).withOpacity(0.12),
+                  selectedColor: AppTheme.seonggadae.withOpacity(0.12),
                 );
               }).toList(),
             ),
@@ -427,7 +427,7 @@ class _UploadFileSheetState extends State<_UploadFileSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),

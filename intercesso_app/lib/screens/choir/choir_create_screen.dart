@@ -103,9 +103,9 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
                   height: 28,
                   decoration: BoxDecoration(
                     color: isDone
-                        ? const Color(0xFF10B981)
+                        ? AppTheme.success
                         : isActive
-                            ? const Color(0xFF885CF6)
+                            ? AppTheme.seonggadae
                             : AppTheme.border,
                     shape: BoxShape.circle,
                   ),
@@ -132,7 +132,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
                     fontWeight:
                         isActive ? FontWeight.w700 : FontWeight.w400,
                     color: isActive
-                        ? const Color(0xFF885CF6)
+                        ? AppTheme.seonggadae
                         : AppTheme.textSecondary,
                   ),
                 ),
@@ -143,7 +143,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
                     height: 1,
                     width: 20,
                     color: isDone
-                        ? const Color(0xFF10B981)
+                        ? AppTheme.success
                         : AppTheme.border,
                   ),
                   const SizedBox(width: 6),
@@ -178,7 +178,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
           controller: _nameController,
           decoration: const InputDecoration(
             hintText: '예) 주일예배 찬양대',
-            prefixIcon: Icon(Icons.music_note, color: Color(0xFF885CF6)),
+            prefixIcon: Icon(Icons.music_note, color: AppTheme.seonggadae),
           ),
           validator: (v) =>
               v == null || v.trim().isEmpty ? '찬양대 이름을 입력해주세요' : null,
@@ -214,12 +214,12 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
                     horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? const Color(0xFF885CF6)
+                      ? AppTheme.seonggadae
                       : AppTheme.surface,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
-                        ? const Color(0xFF885CF6)
+                        ? AppTheme.seonggadae
                         : AppTheme.border,
                   ),
                 ),
@@ -286,10 +286,10 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: const Color(0xFF885CF6).withOpacity(0.06),
+            color: AppTheme.seonggadae.withOpacity(0.06),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
-                color: const Color(0xFF885CF6).withOpacity(0.2)),
+                color: AppTheme.seonggadae.withOpacity(0.2)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -297,14 +297,14 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
               const Row(
                 children: [
                   Icon(Icons.info_outline,
-                      size: 16, color: Color(0xFF885CF6)),
+                      size: 16, color: AppTheme.seonggadae),
                   SizedBox(width: 6),
                   Text(
                     '찬양대 생성 후 할 수 있는 것',
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF885CF6),
+                      color: AppTheme.seonggadae,
                     ),
                   ),
                 ],
@@ -320,7 +320,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
                     child: Row(
                       children: [
                         const Icon(Icons.check_circle,
-                            size: 14, color: Color(0xFF10B981)),
+                            size: 14, color: AppTheme.success),
                         const SizedBox(width: 8),
                         Text(
                           item,
@@ -350,14 +350,14 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
           height: 100,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+              colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             shape: BoxShape.circle,
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF885CF6).withOpacity(0.4),
+                color: AppTheme.seonggadae.withOpacity(0.4),
                 blurRadius: 24,
                 offset: const Offset(0, 8),
               ),
@@ -482,8 +482,8 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
               onPressed: _isLoading ? null : _onNextPressed,
               style: ElevatedButton.styleFrom(
                 backgroundColor: _currentStep == 2
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF885CF6),
+                    ? AppTheme.success
+                    : AppTheme.seonggadae,
                 padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: _isLoading
@@ -544,7 +544,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('🎉 ${newChoir.name} 찬양대가 생성됐어요!'),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppTheme.success,
           ),
         );
         context.go('/choir');
@@ -555,7 +555,7 @@ class _ChoirCreateScreenState extends State<ChoirCreateScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('찬양대 생성 실패: $errMsg'),
-            backgroundColor: const Color(0xFFEF4444),
+            backgroundColor: AppTheme.error,
             duration: const Duration(seconds: 5),
           ),
         );

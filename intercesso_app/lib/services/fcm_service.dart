@@ -174,7 +174,9 @@ class FcmService {
       try {
         final data = jsonDecode(response.payload!) as Map<String, dynamic>;
         _navigateFromData(data);
-      } catch (_) {}
+      } catch (e) {
+        debugPrint('🔔 알림 payload 파싱/이동 실패: $e');
+      }
     }
   }
 

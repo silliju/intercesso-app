@@ -14,6 +14,7 @@ import '../screens/prayer/prayer_edit_screen.dart';
 import '../screens/group/group_detail_screen.dart';
 import '../screens/group/create_group_screen.dart';
 import '../screens/profile/edit_profile_screen.dart';
+import '../screens/profile/profile_screen.dart';
 import '../screens/notifications/notifications_screen.dart';
 import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/gratitude/gratitude_feed_screen.dart';
@@ -83,7 +84,15 @@ GoRouter createRouter(AuthProvider authProvider) {
           return FindAccountScreen(showPasswordTab: extra?['showPasswordTab'] == true);
         },
       ),
-      GoRoute(path: '/home', builder: (ctx, state) => const MainTabScreen()),
+      GoRoute(
+        path: '/home',
+        builder: (ctx, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final tabIndex = extra?['tabIndex'] as int?;
+          return MainTabScreen(initialTabIndex: tabIndex);
+        },
+      ),
+      GoRoute(path: '/my', builder: (ctx, state) => const ProfileScreen()),
       // ⚠️ /prayer/create 반드시 /prayer/:id 보다 먼저 등록해야 충돌 방지
       GoRoute(
         path: '/prayer/create',

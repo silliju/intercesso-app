@@ -266,7 +266,9 @@ class GratitudeProvider extends ChangeNotifier {
     try {
       _streak = await _service.getStreak();
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('GratitudeProvider loadStreak 실패: $e');
+    }
   }
 
   Future<void> loadCalendar({int? year, int? month}) async {
@@ -274,7 +276,9 @@ class GratitudeProvider extends ChangeNotifier {
     notifyListeners();
     try {
       _calendarData = await _service.getCalendar(year: year, month: month);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('GratitudeProvider loadCalendar 실패: $e');
+    }
     _isCalendarLoading = false;
     notifyListeners();
   }

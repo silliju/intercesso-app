@@ -109,11 +109,11 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
           width: 64,
           height: 64,
           decoration: BoxDecoration(
-            color: const Color(0xFF885CF6).withOpacity(0.1),
+            color: AppTheme.seonggadae.withOpacity(0.1),
             borderRadius: BorderRadius.circular(18),
           ),
           child: const Icon(Icons.group_add,
-              size: 32, color: Color(0xFF885CF6)),
+              size: 32, color: AppTheme.seonggadae),
         ),
         const SizedBox(height: 20),
         const Text(
@@ -162,7 +162,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
             color: AppTheme.textPrimary,
           ),
           decoration: InputDecoration(
-            hintText: 'XXXXXXXX',
+            hintText: '초대 코드 입력',
             hintStyle: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w400,
@@ -190,7 +190,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(
-                  color: Color(0xFF885CF6), width: 2),
+                  color: AppTheme.seonggadae, width: 2),
             ),
           ),
           onChanged: (_) {
@@ -224,10 +224,10 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
           style: const TextStyle(color: Colors.white, fontSize: 15),
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF885CF6),
+          backgroundColor: AppTheme.seonggadae,
           padding: const EdgeInsets.symmetric(vertical: 14),
           disabledBackgroundColor:
-              const Color(0xFF885CF6).withOpacity(0.5),
+              AppTheme.seonggadae.withOpacity(0.5),
         ),
       ),
     );
@@ -244,11 +244,11 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
             color: AppTheme.surface,
             borderRadius: BorderRadius.circular(18),
             border: Border.all(
-                color: const Color(0xFF885CF6).withOpacity(0.3),
+                color: AppTheme.seonggadae.withOpacity(0.3),
                 width: 1.5),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF885CF6).withOpacity(0.08),
+                color: AppTheme.seonggadae.withOpacity(0.08),
                 blurRadius: 16,
                 offset: const Offset(0, 4),
               ),
@@ -263,7 +263,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
                     height: 52,
                     decoration: BoxDecoration(
                       gradient: const LinearGradient(
-                        colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+                        colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -301,14 +301,14 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
                         horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color:
-                          const Color(0xFF10B981).withOpacity(0.1),
+                          AppTheme.success.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
                       '✓ 찾았어요',
                       style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF10B981),
+                        color: AppTheme.success,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -356,7 +356,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
           child: ElevatedButton(
             onPressed: _isJoining ? null : _joinChoir,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
+              backgroundColor: AppTheme.success,
               padding: const EdgeInsets.symmetric(vertical: 14),
             ),
             child: _isJoining
@@ -411,22 +411,22 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFEF4444).withOpacity(0.06),
+        color: AppTheme.error.withOpacity(0.06),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-            color: const Color(0xFFEF4444).withOpacity(0.3)),
+            color: AppTheme.error.withOpacity(0.3)),
       ),
       child: Row(
         children: [
           const Icon(Icons.error_outline,
-              color: Color(0xFFEF4444), size: 20),
+              color: AppTheme.error, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               _errorMessage!,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFFEF4444),
+                color: AppTheme.error,
               ),
             ),
           ),
@@ -450,11 +450,11 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
             width: 44,
             height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFF885CF6).withOpacity(0.1),
+              color: AppTheme.seonggadae.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(Icons.add,
-                color: Color(0xFF885CF6), size: 22),
+                color: AppTheme.seonggadae, size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -484,7 +484,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
               context.push('/choir/create');
             },
             style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF885CF6)),
+                foregroundColor: AppTheme.seonggadae),
             child: const Text('만들기'),
           ),
         ],
@@ -586,11 +586,11 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
                   width: 72,
                   height: 72,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: AppTheme.success.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.check_circle,
-                      color: Color(0xFF10B981), size: 40),
+                      color: AppTheme.success, size: 40),
                 ),
                 const SizedBox(height: 16),
                 const Text(
@@ -620,7 +620,7 @@ class _ChoirJoinScreenState extends State<ChoirJoinScreen> {
                       context.go('/choir');
                     },
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981)),
+                        backgroundColor: AppTheme.success),
                     child: const Text('확인',
                         style: TextStyle(color: Colors.white)),
                   ),

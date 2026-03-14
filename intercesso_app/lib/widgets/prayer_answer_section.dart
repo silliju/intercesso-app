@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../services/prayer_answer_service.dart';
-import '../../theme/app_theme.dart';
+import '../../config/theme.dart';
 
 class PrayerAnswerSection extends StatefulWidget {
   final String prayerId;
@@ -99,12 +99,12 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
                   children: [
                     const Text('🎉', style: TextStyle(fontSize: 20)),
                     const SizedBox(width: 8),
-                    const Text('기도 응답', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: Color(0xFF065F46))),
+                    Text('기도 응답', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.successText)),
                     const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(color: const Color(0xFFD1FAE5), borderRadius: BorderRadius.circular(50)),
-                      child: Text(scopeLabel, style: const TextStyle(fontSize: 11, color: Color(0xFF065F46))),
+                      decoration: BoxDecoration(color: AppColors.successBg, borderRadius: BorderRadius.circular(AppRadius.full)),
+                      child: Text(scopeLabel, style: const TextStyle(fontSize: 11, color: AppColors.successText)),
                     ),
                     const Spacer(),
                     if (widget.isOwner) ...[
@@ -112,7 +112,7 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
                         onTap: () => _showAnswerModal(existing: a),
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(border: Border.all(color: AppTheme.success), borderRadius: BorderRadius.circular(8)),
+                          decoration: BoxDecoration(border: Border.all(color: AppTheme.success), borderRadius: BorderRadius.circular(AppRadius.md)),
                           child: Text('수정', style: TextStyle(fontSize: 12, color: AppTheme.success)),
                         ),
                       ),
@@ -121,8 +121,8 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
                         onTap: _deleteAnswer,
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(border: Border.all(color: Colors.redAccent), borderRadius: BorderRadius.circular(8)),
-                          child: const Text('삭제', style: TextStyle(fontSize: 12, color: Colors.redAccent)),
+                          decoration: BoxDecoration(border: Border.all(color: AppTheme.error), borderRadius: BorderRadius.circular(AppRadius.md)),
+                          child: const Text('삭제', style: TextStyle(fontSize: 12, color: AppTheme.error)),
                         ),
                       ),
                     ],
@@ -133,8 +133,8 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 16),
                 child: content != null && content.isNotEmpty
-                    ? Text(content, style: const TextStyle(fontSize: 15, color: Color(0xFF064E3B), height: 1.7))
-                    : const Text('응답 내용이 없습니다', style: TextStyle(fontSize: 14, color: Colors.grey, fontStyle: FontStyle.italic)),
+                    ? Text(content, style: const TextStyle(fontSize: 15, color: AppColors.successText, height: 1.7))
+                    : const Text('응답 내용이 없습니다', style: TextStyle(fontSize: 14, color: AppTheme.textSecondary, fontStyle: FontStyle.italic)),
               ),
             ],
           ),
@@ -151,8 +151,8 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFFECFDF5),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.successBg,
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,14 +160,14 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
             child: Row(children: [
-              const Text('🙌 응답 댓글 ', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF065F46))),
+              const Text('🙌 응답 댓글 ', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.successText)),
               Text('${comments.length}', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppTheme.success)),
             ]),
           ),
           if (comments.isEmpty)
             const Padding(
               padding: EdgeInsets.only(bottom: 12),
-              child: Center(child: Text('첫 번째 축하 댓글을 남겨보세요!', style: TextStyle(fontSize: 13, color: Colors.grey))),
+              child: Center(child: Text('첫 번째 축하 댓글을 남겨보세요!', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary))),
             )
           else
             ...comments.map((c) => _buildCommentItem(c)),
@@ -180,11 +180,11 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
                   controller: _commentCtrl,
                   decoration: InputDecoration(
                     hintText: '축하 또는 감사 댓글...',
-                    hintStyle: const TextStyle(fontSize: 13, color: Colors.grey),
+                    hintStyle: const TextStyle(fontSize: 13, color: AppTheme.textLight),
                     filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: Color(0xFFA7F3D0))),
-                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(50), borderSide: const BorderSide(color: Color(0xFFA7F3D0))),
+                    fillColor: AppColors.bgPrimary,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: AppTheme.success)),
+                    enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadius.full), borderSide: const BorderSide(color: AppTheme.success)),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   ),
                   style: const TextStyle(fontSize: 13),
@@ -198,8 +198,8 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
                 onTap: _submitComment,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(color: AppTheme.success, borderRadius: BorderRadius.circular(50)),
-                  child: const Text('전송', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w700)),
+                  decoration: BoxDecoration(color: AppTheme.success, borderRadius: BorderRadius.circular(AppRadius.full)),
+                  child: const Text('전송', style: TextStyle(color: AppColors.primaryContrast, fontSize: 13, fontWeight: FontWeight.w700)),
                 ),
               ),
             ]),
@@ -219,15 +219,15 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
         children: [
           CircleAvatar(
             radius: 14,
-            backgroundColor: const Color(0xFFD1FAE5),
-            child: Text(nick.isNotEmpty ? nick[0] : '?', style: const TextStyle(fontSize: 11, color: Color(0xFF065F46), fontWeight: FontWeight.w700)),
+            backgroundColor: AppColors.successBg,
+            child: Text(nick.isNotEmpty ? nick[0] : '?', style: const TextStyle(fontSize: 11, color: AppColors.successText, fontWeight: FontWeight.w700)),
           ),
           const SizedBox(width: 10),
           Expanded(
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(nick, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Color(0xFF065F46))),
+              Text(nick, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: AppColors.successText)),
               const SizedBox(height: 2),
-              Text(c['content'] as String? ?? '', style: const TextStyle(fontSize: 13, color: Color(0xFF064E3B), height: 1.5)),
+              Text(c['content'] as String? ?? '', style: const TextStyle(fontSize: 13, color: AppColors.successText, height: 1.5)),
             ]),
           ),
         ],
@@ -241,9 +241,9 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
-        border: Border.all(color: const Color(0xFFD1D5DB), width: 2),
-        borderRadius: BorderRadius.circular(16),
+        color: AppColors.bgSecondary,
+        border: Border.all(color: AppTheme.border, width: 2),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         children: [
@@ -251,7 +251,7 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
           const SizedBox(height: 8),
           const Text('응답 간증을 나눠보세요', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
-          const Text('하나님의 응답을 공동체와 함께 나누면 큰 힘이 됩니다', style: TextStyle(fontSize: 13, color: Colors.grey), textAlign: TextAlign.center),
+          const Text('하나님의 응답을 공동체와 함께 나누면 큰 힘이 됩니다', style: TextStyle(fontSize: 13, color: AppTheme.textSecondary), textAlign: TextAlign.center),
           const SizedBox(height: 14),
           ElevatedButton(
             onPressed: () => _showAnswerModal(),
@@ -387,7 +387,12 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('응답이 삭제되었습니다')));
         await _loadAnswer();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('기도 응답 삭제 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('삭제에 실패했어요')));
+      }
+    }
   }
 
   Future<void> _submitComment() async {
@@ -400,6 +405,11 @@ class _PrayerAnswerSectionState extends State<PrayerAnswerSection> {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('댓글이 등록되었습니다 🙌'), backgroundColor: Color(0xFF10B981)));
         await _loadAnswer();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('기도 댓글 등록 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('댓글 등록에 실패했어요')));
+      }
+    }
   }
 }

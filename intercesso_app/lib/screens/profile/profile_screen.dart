@@ -8,7 +8,6 @@ import '../../config/constants.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/statistics_service.dart';
 import '../../services/api_service.dart';
-import '../main/main_tab_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -81,6 +80,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppTheme.background,
       appBar: AppBar(
+        leading: Navigator.canPop(context)
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => context.pop(),
+              )
+            : null,
         title: const Text('마이페이지'),
         actions: [
           IconButton(
@@ -182,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
 
-              // 기능 메뉴
+              // 기능 메뉴 (찬양대 포함)
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
@@ -192,10 +197,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       MenuItemTile(
                         icon: Icons.menu_book_outlined,
                         title: '내 기도 목록',
-                        onTap: () {
-                          final mainState = context.findAncestorStateOfType<MainTabScreenState>();
-                          mainState?.switchToTab(1);
-                        },
+                        onTap: () => context.go('/home', extra: {'tabIndex': 1}),
                       ),
                       Divider(height: 1, indent: 64, color: AppTheme.border),
                       MenuItemTile(
@@ -205,12 +207,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       Divider(height: 1, indent: 64, color: AppTheme.border),
                       MenuItemTile(
+                        icon: Icons.music_note_outlined,
+                        title: '찬양대',
+                        onTap: () => context.push('/choir'),
+                      ),
+                      Divider(height: 1, indent: 64, color: AppTheme.border),
+                      MenuItemTile(
                         icon: Icons.group_outlined,
                         title: '내 그룹',
-                        onTap: () {
-                          final mainState = context.findAncestorStateOfType<MainTabScreenState>();
-                          mainState?.switchToTab(3);
-                        },
+                        onTap: () => context.go('/home', extra: {'tabIndex': 4}),
                       ),
                       Divider(height: 1, indent: 64, color: AppTheme.border),
                       MenuItemTile(

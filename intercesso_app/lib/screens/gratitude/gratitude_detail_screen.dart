@@ -86,7 +86,14 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
           );
         }
       });
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('감사 댓글 전송 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('댓글 전송에 실패했어요')),
+        );
+      }
+    }
     setState(() => _isSendingComment = false);
   }
 
@@ -94,7 +101,14 @@ class _GratitudeDetailScreenState extends State<GratitudeDetailScreen> {
     try {
       await _service.toggleReaction(widget.journalId, reactionType);
       await _loadJournal();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('감사 반응 토글 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('반응 반영에 실패했어요')),
+        );
+      }
+    }
   }
 
   @override

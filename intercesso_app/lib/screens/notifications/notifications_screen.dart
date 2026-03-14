@@ -45,14 +45,28 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     try {
       await _api.put('/notifications/$id/read');
       await _loadNotifications();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('알림 읽음 처리 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('읽음 처리에 실패했어요')),
+        );
+      }
+    }
   }
 
   Future<void> _markAllRead() async {
     try {
       await _api.put('/notifications/read-all');
       await _loadNotifications();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('알림 전체 읽음 처리 실패: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('읽음 처리에 실패했어요')),
+        );
+      }
+    }
   }
 
   /// 알림 타입에 따라 해당 화면으로 이동
@@ -159,7 +173,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       onDismissed: (_) async {
         try {
           await _api.delete('/notifications/${notif.id}');
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('알림 삭제 실패: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('삭제에 실패했어요')),
+            );
+          }
+        }
       },
       child: InkWell(
         onTap: hasLink
@@ -263,11 +284,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _notifColor(String type) {
     switch (type) {
       case 'prayer_participation': return AppTheme.primary;
-      case 'comment': return const Color(0xFF8B5CF6);
+      case 'comment': return AppTheme.seonggadae;
       case 'intercession_request':
       case 'intercession_accepted': return AppTheme.success;
       case 'prayer_answered': return AppTheme.warning;
-      case 'group_invite': return const Color(0xFF0EA5E9);
+      case 'group_invite': return AppColors.info;
       default: return AppTheme.primary;
     }
   }

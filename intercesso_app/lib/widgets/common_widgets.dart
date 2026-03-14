@@ -45,9 +45,9 @@ class PrayerCard extends StatelessWidget {
 
   Color get _scopeColor {
     switch (scope) {
-      case 'friends': return const Color(0xFF8B5CF6);
-      case 'private': return const Color(0xFF6B7280);
-      case 'community': return const Color(0xFF059669);
+      case 'friends': return AppTheme.seonggadae;
+      case 'private': return AppTheme.textSecondary;
+      case 'community': return AppTheme.success;
       default: return AppTheme.primary;
     }
   }
@@ -250,7 +250,7 @@ class PrayerCard extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: isParticipated
                           ? AppTheme.primaryLight
-                          : const Color(0xFFF5F5F5),
+                          : AppColors.bgTertiary,
                       borderRadius: BorderRadius.circular(50),
                     ),
                     child: Row(

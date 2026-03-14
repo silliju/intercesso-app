@@ -20,7 +20,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
   final _tabs = ['group', 'following', 'public'];
   final _tabLabels = ['🏠 우리 그룹', '👥 팔로우', '🌐 전체'];
 
-  static const _choirPurple = Color(0xFF885CF6);
+  static Color get _choirPurple => AppTheme.seonggadae;
 
   @override
   void initState() {
@@ -72,7 +72,7 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+              colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
             ),
           ),
           child: SafeArea(
@@ -123,10 +123,10 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFFF3F0FF), Color(0xFFEDE9FE)],
+                colors: [AppTheme.gamsaLight, AppTheme.primaryLight],
               ),
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: const Color(0xFFDDD6FE)),
+              border: Border.all(color: AppTheme.gamsaBorder),
             ),
             child: Row(
               children: [
@@ -141,12 +141,12 @@ class _GratitudeFeedScreenState extends State<GratitudeFeedScreen>
                         style: const TextStyle(
                           fontWeight: FontWeight.w700,
                           fontSize: 14,
-                          color: Color(0xFF4C1D95),
+                          color: AppTheme.seonggadaeDark,
                         ),
                       ),
                       Text(
                         '총 ${streak.totalCount}번 은혜를 기록했어요',
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF6D28D9)),
+                        style: const TextStyle(fontSize: 12, color: AppTheme.seonggadae),
                       ),
                     ],
                   ),
@@ -222,7 +222,7 @@ class _FeedTabView extends StatelessWidget {
         }
 
         return RefreshIndicator(
-          color: const Color(0xFF885CF6),
+          color: AppTheme.seonggadae,
           onRefresh: () => provider.loadFeed(tab, refresh: true),
           child: ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
@@ -339,7 +339,7 @@ class _GratitudeFeedCard extends StatelessWidget {
                               style: const TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 14,
-                                color: Color(0xFF1A1A2E),
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             if (isMyPost) ...[
@@ -514,7 +514,7 @@ class _GratitudeItem extends StatelessWidget {
           height: 20,
           margin: const EdgeInsets.only(top: 1),
           decoration: BoxDecoration(
-            color: const Color(0xFFFEF3C7),
+            color: AppColors.warningBg,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Center(
@@ -534,7 +534,7 @@ class _GratitudeItem extends StatelessWidget {
             text,
             style: const TextStyle(
               fontSize: 14,
-              color: Color(0xFF374151),
+              color: AppColors.textPrimary,
               height: 1.4,
             ),
           ),
@@ -568,9 +568,9 @@ class _ReactionButton extends StatelessWidget {
     return TextButton(
       onPressed: () => context.read<GratitudeProvider>().toggleReaction(journalId, reactionType, tab),
       style: TextButton.styleFrom(
-        foregroundColor: isActive ? const Color(0xFFF59E0B) : AppTheme.textSecondary,
+        foregroundColor: isActive ? AppTheme.gamsa : AppTheme.textSecondary,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-        backgroundColor: isActive ? const Color(0xFFFFFBEB) : Colors.transparent,
+        backgroundColor: isActive ? AppTheme.gamsaLight : Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       ),
       child: Row(

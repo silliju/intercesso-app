@@ -38,10 +38,10 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
     {'key': 'public', 'label': '전체 공개', 'icon': Icons.public_outlined},
   ];
 
-  // 은혜 기록 색상 (찬양대 보라)
-  static const _gratitudeColor = Color(0xFF885CF6);
-  static const _gratitudeLightColor = Color(0xFFEDE9FE);
-  static const _gratitudeAccentColor = Color(0xFF6D3FD4);
+  // 은혜 기록 색상 (가이드: 감사는 gamsa, 찬양/특수는 seonggadae)
+  static Color get _gratitudeColor => AppTheme.seonggadae;
+  static Color get _gratitudeLightColor => AppTheme.gamsaLight;
+  static Color get _gratitudeAccentColor => AppTheme.seonggadaeDark;
 
   @override
   void initState() {
@@ -116,7 +116,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.bgSecondary,
       body: CustomScrollView(
         slivers: [
           _buildHeader(),
@@ -161,7 +161,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+              colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
             ),
           ),
           child: SafeArea(
@@ -278,7 +278,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                 height: 32,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+                    colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -313,7 +313,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                   ),
                   style: const TextStyle(
                     fontSize: 15,
-                    color: Color(0xFF1A1A2E),
+                    color: AppColors.textPrimary,
                     height: 1.5,
                   ),
                   validator: required
@@ -325,7 +325,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
           ),
         ),
         if (showDivider)
-          const Divider(height: 1, color: Color(0xFFF3F4F6)),
+          Divider(height: 1, color: AppColors.borderLight),
       ],
     );
   }
@@ -354,7 +354,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1A1A2E),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -371,10 +371,10 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                     duration: const Duration(milliseconds: 200),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
-                      color: isSelected ? _gratitudeColor : const Color(0xFFF9FAFB),
+                      color: isSelected ? _gratitudeColor : AppColors.bgSecondary,
                       borderRadius: BorderRadius.circular(50),
                       border: Border.all(
-                        color: isSelected ? _gratitudeColor : const Color(0xFFE5E7EB),
+                        color: isSelected ? _gratitudeColor : AppTheme.border,
                         width: 1.5,
                       ),
                     ),
@@ -388,7 +388,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : const Color(0xFF374151),
+                            color: isSelected ? AppColors.primaryContrast : AppColors.textPrimary,
                           ),
                         ),
                       ],
@@ -438,7 +438,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF1A1A2E),
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
@@ -446,7 +446,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                   '선택',
                   style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF9CA3AF),
+                    color: AppTheme.textLight,
                   ),
                 ),
               ],
@@ -492,9 +492,9 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
+                    color: AppColors.bgSecondary,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE5E7EB)),
+                    border: Border.all(color: AppTheme.border),
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -543,7 +543,7 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF1A1A2E),
+                color: AppColors.textPrimary,
               ),
             ),
             const SizedBox(height: 12),
@@ -560,10 +560,10 @@ class _CreateGratitudeScreenState extends State<CreateGratitudeScreen> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                       decoration: BoxDecoration(
-                        color: isSelected ? _gratitudeLightColor : const Color(0xFFF9FAFB),
+                        color: isSelected ? _gratitudeLightColor : AppColors.bgSecondary,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: isSelected ? _gratitudeColor : const Color(0xFFE5E7EB),
+                          color: isSelected ? _gratitudeColor : AppTheme.border,
                           width: 1.5,
                         ),
                       ),

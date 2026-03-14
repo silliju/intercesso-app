@@ -18,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
-  bool _isPersonalMode = true;
   bool _showPrayerFeed = true;
   late Map<String, String> _todayVerse;
 
@@ -81,10 +80,8 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final user = context.watch<AuthProvider>().user;
     final gratProvider = context.watch<GratitudeProvider>();
     final prayerProvider = context.watch<PrayerProvider>();
-    final streak = gratProvider.streak;
 
     return Scaffold(
       backgroundColor: AppTheme.background,
@@ -94,7 +91,7 @@ class _HomeScreenState extends State<HomeScreen>
         child: CustomScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           slivers: [
-            // ── 앱바
+            // ── 앱바 (My + 알림)
             SliverAppBar(
               floating: true,
               snap: true,
@@ -111,6 +108,17 @@ class _HomeScreenState extends State<HomeScreen>
                 ),
               ),
               actions: [
+                TextButton(
+                  onPressed: () => context.push('/my'),
+                  child: const Text(
+                    'My',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 15,
+                      color: AppTheme.primary,
+                    ),
+                  ),
+                ),
                 IconButton(
                   icon: const Icon(Icons.notifications_outlined,
                       color: AppTheme.textPrimary, size: 24),
@@ -126,14 +134,11 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
 
-            // ── 개인/교회 모드 토글
-            SliverToBoxAdapter(child: _buildModeToggle()),
-
-            // ── 인사말 카드
+            // ── 오늘의 말씀 (상단 배치)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: _buildGreetingCard(user, streak),
+                child: _buildTodayVerse(),
               ),
             ),
 
@@ -142,14 +147,6 @@ class _HomeScreenState extends State<HomeScreen>
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                 child: _buildQuickActions(gratProvider),
-              ),
-            ),
-
-            // ── 오늘의 말씀
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                child: _buildTodayVerse(),
               ),
             ),
 
@@ -170,185 +167,6 @@ class _HomeScreenState extends State<HomeScreen>
             const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
-      ),
-    );
-  }
-
-  // ── 개인/교회 모드 토글 (디자인 가이드 적용)
-  Widget _buildModeToggle() {
-    return Container(
-      color: AppTheme.surface,
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-      child: Container(
-        height: 46,
-        decoration: BoxDecoration(
-          color: AppTheme.background,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.border),
-        ),
-        child: Row(
-          children: [
-            Expanded(child: _modeTab('🙏 개인모드', true)),
-            Expanded(child: _modeTab('⛪ 교회모드', false)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _modeTab(String label, bool isPersonal) {
-    final isSelected = _isPersonalMode == isPersonal;
-    return GestureDetector(
-      onTap: () {
-        setState(() => _isPersonalMode = isPersonal);
-        // 교회모드 선택 시 찬양대 홈으로 이동, 돌아오면 개인모드 복귀
-        if (!isPersonal) {
-          context.push('/choir').then((_) {
-            if (mounted) setState(() => _isPersonalMode = true);
-          });
-        }
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppTheme.primary.withOpacity(0.25),
-                    blurRadius: 8,
-                    offset: const Offset(0, 3),
-                  )
-                ]
-              : null,
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              color: isSelected ? Colors.white : AppTheme.textSecondary,
-              letterSpacing: -0.2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ── 인사말 카드 (디자인 가이드 그라디언트 헤더)
-  Widget _buildGreetingCard(dynamic user, dynamic streak) {
-    final hour = DateTime.now().hour;
-    final greeting =
-        hour < 12 ? '좋은 아침이에요' : hour < 18 ? '안녕하세요' : '좋은 저녁이에요';
-    final name = user?.nickname ?? '사용자';
-    final initial = name.isNotEmpty ? name[0] : '?';
-    final streakDays =
-        (streak != null && streak.currentStreak != null)
-            ? streak.currentStreak as int
-            : 0;
-
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: AppTheme.heroGradient,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(
-            color: Color(0x332F6FED),
-            blurRadius: 20,
-            offset: Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          // 아바타
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.25),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.4),
-                width: 2,
-              ),
-            ),
-            child: ClipOval(
-              child: user?.profileImageUrl != null
-                  ? Image.network(user!.profileImageUrl!, fit: BoxFit.cover)
-                  : Center(
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-            ),
-          ),
-          const SizedBox(width: 14),
-          // 인사말
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  '$greeting, $name님 👋',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w800,
-                    color: Colors.white,
-                    letterSpacing: -0.3,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '오늘도 함께 기도해요 🙏',
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.white.withOpacity(0.85),
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          // 스트릭 배지
-          if (streakDays > 0)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.3),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text('🔥', style: TextStyle(fontSize: 22)),
-                  const SizedBox(height: 2),
-                  Text(
-                    '${streakDays}일',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
       ),
     );
   }
@@ -431,17 +249,17 @@ class _HomeScreenState extends State<HomeScreen>
               decoration: BoxDecoration(
                 gradient: hasTodayGratitude
                     ? const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF059669)],
+                        colors: [AppTheme.success, AppColors.successText],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       )
                     : AppTheme.gamsaGradient,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.lg),
                 boxShadow: [
                   BoxShadow(
                     color: (hasTodayGratitude
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFF59E0B))
+                            ? AppTheme.success
+                            : AppTheme.warning)
                         .withOpacity(0.28),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
@@ -994,9 +812,9 @@ class _GratitudeFeedCard extends StatelessWidget {
               Container(
                 width: 36,
                 height: 36,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: Color(0xFFFEF3C7),
+                  color: AppColors.warningBg,
                 ),
                 child: Center(
                   child: Text(
@@ -1004,7 +822,7 @@ class _GratitudeFeedCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFFF59E0B),
+                      color: AppTheme.warning,
                     ),
                   ),
                 ),
@@ -1036,16 +854,15 @@ class _GratitudeFeedCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          // 감사 항목들
-          if (journal.item1 != null)
-            _gratitudeItem(journal.item1!),
-          if (journal.item2 != null) ...[
+          // 감사 항목들 (GratitudeModel: gratitude1, gratitude2, gratitude3)
+          _gratitudeItem(journal.gratitude1),
+          if (journal.gratitude2 != null && journal.gratitude2!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            _gratitudeItem(journal.item2!),
+            _gratitudeItem(journal.gratitude2!),
           ],
-          if (journal.item3 != null) ...[
+          if (journal.gratitude3 != null && journal.gratitude3!.isNotEmpty) ...[
             const SizedBox(height: 6),
-            _gratitudeItem(journal.item3!),
+            _gratitudeItem(journal.gratitude3!),
           ],
         ],
       ),

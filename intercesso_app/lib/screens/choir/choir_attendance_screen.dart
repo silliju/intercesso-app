@@ -75,7 +75,7 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
                     : const Text(
                         '저장',
                         style: TextStyle(
-                          color: Color(0xFF885CF6),
+                          color: AppTheme.seonggadae,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
@@ -111,7 +111,7 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
           ),
           floatingActionButton: FloatingActionButton.extended(
             onPressed: () => _markAllPresent(choir),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppTheme.success,
             icon: const Icon(Icons.check_circle, color: Colors.white),
             label: const Text('전체 출석',
                 style: TextStyle(color: Colors.white)),
@@ -140,7 +140,7 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF885CF6),
+                  color: AppTheme.seonggadae,
                 ),
               ),
             ],
@@ -152,25 +152,25 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
               value: rate,
               backgroundColor: AppTheme.border,
               valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF885CF6)),
+                  AppTheme.seonggadae),
               minHeight: 6,
             ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              _legendDot(const Color(0xFF10B981), '출석'),
+              _legendDot(AppTheme.success, '출석'),
               const SizedBox(width: 16),
-              _legendDot(const Color(0xFFEF4444), '결석'),
+              _legendDot(AppTheme.error, '결석'),
               const SizedBox(width: 16),
-              _legendDot(const Color(0xFFF59E0B), '공결'),
+              _legendDot(AppTheme.warning, '공결'),
               const Spacer(),
               Text(
                 '${(rate * 100).round()}%',
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF885CF6),
+                  color: AppTheme.seonggadae,
                 ),
               ),
             ],
@@ -219,18 +219,18 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
                     style: TextStyle(
                       fontSize: 12,
                       color: selected
-                          ? const Color(0xFF885CF6)
+                          ? AppTheme.seonggadae
                           : AppTheme.textSecondary,
                     )),
                 selected: selected,
                 onSelected: (_) => setState(() => _filterSection = s),
                 selectedColor:
-                    const Color(0xFF885CF6).withOpacity(0.15),
-                checkmarkColor: const Color(0xFF885CF6),
+                    AppTheme.seonggadae.withOpacity(0.15),
+                checkmarkColor: AppTheme.seonggadae,
                 backgroundColor: AppTheme.background,
                 side: BorderSide(
                   color: selected
-                      ? const Color(0xFF885CF6)
+                      ? AppTheme.seonggadae
                       : AppTheme.border,
                 ),
               ),
@@ -338,17 +338,17 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
 
   Color _statusColor(AttendanceStatus status) {
     switch (status) {
-      case AttendanceStatus.present: return const Color(0xFF10B981);
-      case AttendanceStatus.absent:  return const Color(0xFFEF4444);
-      case AttendanceStatus.excused: return const Color(0xFFF59E0B);
+      case AttendanceStatus.present: return AppTheme.success;
+      case AttendanceStatus.absent:  return AppTheme.error;
+      case AttendanceStatus.excused: return AppTheme.warning;
     }
   }
 
   Color _statusBorderColor(AttendanceStatus status) {
     switch (status) {
-      case AttendanceStatus.present: return const Color(0xFF10B981).withOpacity(0.3);
-      case AttendanceStatus.absent:  return const Color(0xFFEF4444).withOpacity(0.3);
-      case AttendanceStatus.excused: return const Color(0xFFF59E0B).withOpacity(0.3);
+      case AttendanceStatus.present: return AppTheme.success.withOpacity(0.3);
+      case AttendanceStatus.absent:  return AppTheme.error.withOpacity(0.3);
+      case AttendanceStatus.excused: return AppTheme.warning.withOpacity(0.3);
     }
   }
 
@@ -380,7 +380,7 @@ class _ChoirAttendanceScreenState extends State<ChoirAttendanceScreen> {
             onPressed: () =>
                 Navigator.pop(context, controller.text),
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF885CF6)),
+                backgroundColor: AppTheme.seonggadae),
             child: const Text('저장'),
           ),
         ],
@@ -498,12 +498,12 @@ class _ChoirAttendanceStatsScreenState
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: selected
-              ? const Color(0xFF885CF6)
+              ? AppTheme.seonggadae
               : AppTheme.surface,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: selected
-                ? const Color(0xFF885CF6)
+                ? AppTheme.seonggadae
                 : AppTheme.border,
           ),
         ),
@@ -526,14 +526,14 @@ class _ChoirAttendanceStatsScreenState
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+          colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF885CF6).withOpacity(0.3),
+            color: AppTheme.seonggadae.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -632,7 +632,7 @@ class _ChoirAttendanceStatsScreenState
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF885CF6),
+                          color: AppTheme.seonggadae,
                         ),
                       ),
                     ],
@@ -660,11 +660,11 @@ class _ChoirAttendanceStatsScreenState
 
   Color _sectionColor(ChoirSection section) {
     switch (section) {
-      case ChoirSection.soprano: return const Color(0xFFEC4899);
-      case ChoirSection.alto:    return const Color(0xFFF59E0B);
-      case ChoirSection.tenor:   return const Color(0xFF2F6FED);
-      case ChoirSection.bass:    return const Color(0xFF10B981);
-      default:                   return const Color(0xFF885CF6);
+      case ChoirSection.soprano: return AppColors.info;
+      case ChoirSection.alto:    return AppTheme.warning;
+      case ChoirSection.tenor:   return AppTheme.primary;
+      case ChoirSection.bass:    return AppTheme.success;
+      default:                   return AppTheme.seonggadae;
     }
   }
 
@@ -695,7 +695,7 @@ class _ChoirAttendanceStatsScreenState
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF885CF6).withOpacity(0.1),
+                  color: AppTheme.seonggadae.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Center(
@@ -717,14 +717,14 @@ class _ChoirAttendanceStatsScreenState
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     color:
-                        const Color(0xFF885CF6).withOpacity(0.1),
+                        AppTheme.seonggadae.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
                     '보기',
                     style: TextStyle(
                       fontSize: 12,
-                      color: Color(0xFF885CF6),
+                      color: AppTheme.seonggadae,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

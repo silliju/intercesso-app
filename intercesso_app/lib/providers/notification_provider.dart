@@ -39,7 +39,9 @@ class NotificationProvider extends ChangeNotifier {
     try {
       _unreadCount = await _service.getUnreadCount();
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('NotificationProvider loadUnreadCount 실패: $e');
+    }
   }
 
   Future<void> markAsRead(String id) async {
@@ -50,7 +52,9 @@ class NotificationProvider extends ChangeNotifier {
         if (_unreadCount > 0) _unreadCount--;
         notifyListeners();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('NotificationProvider markAsRead 실패: $e');
+    }
   }
 
   Future<void> markAllAsRead() async {
@@ -58,6 +62,8 @@ class NotificationProvider extends ChangeNotifier {
       await _service.markAllAsRead();
       _unreadCount = 0;
       notifyListeners();
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('NotificationProvider markAllAsRead 실패: $e');
+    }
   }
 }

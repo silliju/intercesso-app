@@ -275,7 +275,9 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
     try {
       final list = await _prayerService.getCheckins(widget.prayerId);
       if (mounted) setState(() => _checkins = list);
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('기도 체크인 목록 로드 실패: $e');
+    }
   }
 
   Future<void> _doCheckIn() async {

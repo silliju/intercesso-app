@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/constants.dart';
 import '../models/models.dart';
@@ -56,7 +57,9 @@ class AuthService {
   Future<void> logout() async {
     try {
       await _api.post('/auth/logout');
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('AuthService logout 서버 호출 실패: $e');
+    }
     await _api.clearToken();
   }
 

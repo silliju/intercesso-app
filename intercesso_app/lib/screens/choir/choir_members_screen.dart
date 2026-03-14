@@ -50,9 +50,9 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
             elevation: 0,
             bottom: TabBar(
               controller: _tabController,
-              labelColor: const Color(0xFF10B981),
+              labelColor: AppTheme.success,
               unselectedLabelColor: AppTheme.textSecondary,
-              indicatorColor: const Color(0xFF10B981),
+              indicatorColor: AppTheme.success,
               tabs: [
                 Tab(text: '단원 (${choir.activeMembers.length})'),
                 if (_adminMode)
@@ -63,7 +63,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
           floatingActionButton: _adminMode
               ? FloatingActionButton.extended(
                   onPressed: () => _showAddMemberSheet(context, choir),
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppTheme.success,
                   icon: const Icon(Icons.person_add, color: Colors.white),
                   label: const Text('단원 추가',
                       style: TextStyle(color: Colors.white)),
@@ -125,19 +125,19 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
                                   ? FontWeight.w700
                                   : FontWeight.w400,
                               color: selected
-                                  ? const Color(0xFF10B981)
+                                  ? AppTheme.success
                                   : AppTheme.textSecondary,
                             )),
                         selected: selected,
                         onSelected: (_) =>
                             setState(() => _filterSection = s),
                         selectedColor:
-                            const Color(0xFF10B981).withOpacity(0.15),
-                        checkmarkColor: const Color(0xFF10B981),
+                            AppTheme.success.withOpacity(0.15),
+                        checkmarkColor: AppTheme.success,
                         backgroundColor: AppTheme.surface,
                         side: BorderSide(
                           color: selected
-                              ? const Color(0xFF10B981)
+                              ? AppTheme.success
                               : AppTheme.border,
                         ),
                       ),
@@ -218,14 +218,14 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
                     padding: const EdgeInsets.symmetric(
                         horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      color: AppTheme.success.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Text(
                       '${sectionMembers.length}명',
                       style: const TextStyle(
                         fontSize: 11,
-                        color: Color(0xFF10B981),
+                        color: AppTheme.success,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -260,7 +260,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
       child: ListTile(
         leading: CircleAvatar(
           radius: 22,
-          backgroundColor: const Color(0xFF10B981).withOpacity(0.15),
+          backgroundColor: AppTheme.success.withOpacity(0.15),
           backgroundImage: member.profileImageUrl != null
               ? NetworkImage(member.profileImageUrl!)
               : null,
@@ -269,7 +269,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
                   member.name.isNotEmpty ? member.name[0] : '?',
                   style: const TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: Color(0xFF10B981),
+                    color: AppTheme.success,
                   ),
                 )
               : null,
@@ -289,14 +289,14 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
               padding:
                   const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
               decoration: BoxDecoration(
-                color: const Color(0xFF885CF6).withOpacity(0.1),
+                color: AppTheme.seonggadae.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Text(
                 '${member.role.emoji} ${member.role.label}',
                 style: const TextStyle(
                   fontSize: 10,
-                  color: Color(0xFF885CF6),
+                  color: AppTheme.seonggadae,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -320,7 +320,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
     if (isMe) {
       return IconButton(
         icon: const Icon(Icons.edit_outlined,
-            size: 18, color: Color(0xFF885CF6)),
+            size: 18, color: AppTheme.seonggadae),
         tooltip: '내 정보 수정',
         onPressed: () => _onMemberAction(context, 'edit', member, choir),
       );
@@ -386,7 +386,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
               children: [
                 IconButton(
                   icon: const Icon(Icons.check_circle,
-                      color: Color(0xFF10B981)),
+                      color: AppTheme.success),
                   onPressed: () async {
                     await choir.approveMember(member.id);
                     if (context.mounted) {
@@ -398,7 +398,7 @@ class _ChoirMembersScreenState extends State<ChoirMembersScreen>
                   },
                 ),
                 IconButton(
-                  icon: const Icon(Icons.cancel, color: Color(0xFFEF4444)),
+                  icon: const Icon(Icons.cancel, color: AppTheme.error),
                   onPressed: () async {
                     await choir.removeMember(member.id);
                   },
@@ -564,10 +564,10 @@ class _MemberFormSheetState extends State<_MemberFormSheet> {
                   selected: selected,
                   onSelected: (_) => setState(() => _section = s),
                   selectedColor:
-                      const Color(0xFF10B981).withOpacity(0.15),
+                      AppTheme.success.withOpacity(0.15),
                   labelStyle: TextStyle(
                     color: selected
-                        ? const Color(0xFF10B981)
+                        ? AppTheme.success
                         : AppTheme.textSecondary,
                     fontWeight:
                         selected ? FontWeight.w700 : FontWeight.w400,
@@ -593,10 +593,10 @@ class _MemberFormSheetState extends State<_MemberFormSheet> {
                   selected: selected,
                   onSelected: (_) => setState(() => _role = r),
                   selectedColor:
-                      const Color(0xFF885CF6).withOpacity(0.15),
+                      AppTheme.seonggadae.withOpacity(0.15),
                   labelStyle: TextStyle(
                     color: selected
-                        ? const Color(0xFF885CF6)
+                        ? AppTheme.seonggadae
                         : AppTheme.textSecondary,
                     fontWeight:
                         selected ? FontWeight.w700 : FontWeight.w400,
@@ -621,7 +621,7 @@ class _MemberFormSheetState extends State<_MemberFormSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF10B981),
+                  backgroundColor: AppTheme.success,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _isLoading

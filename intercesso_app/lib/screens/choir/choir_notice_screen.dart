@@ -28,14 +28,14 @@ class _ChoirNoticeScreenState extends State<ChoirNoticeScreen> {
           backgroundColor: AppTheme.background,
           appBar: AppBar(
             title: const Text('공지사항'),
-            backgroundColor: const Color(0xFF885CF6),
+            backgroundColor: AppTheme.seonggadae,
             foregroundColor: Colors.white,
             elevation: 0,
           ),
           floatingActionButton: isAdmin
               ? FloatingActionButton(
                   onPressed: () => _showAddNoticeSheet(context, choir),
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   child: const Icon(Icons.add, color: Colors.white),
                 )
               : null,
@@ -131,7 +131,7 @@ class _NoticeCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: notice.isPinned
-                ? const Color(0xFF885CF6).withOpacity(0.4)
+                ? AppTheme.seonggadae.withOpacity(0.4)
                 : AppTheme.border,
             width: notice.isPinned ? 1.5 : 1,
           ),
@@ -152,13 +152,13 @@ class _NoticeCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF885CF6).withOpacity(0.1),
+                      color: AppTheme.seonggadae.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: const Text(
                       '📌 고정',
                       style: TextStyle(
-                          fontSize: 10, color: Color(0xFF885CF6), fontWeight: FontWeight.w700),
+                          fontSize: 10, color: AppTheme.seonggadae, fontWeight: FontWeight.w700),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -268,11 +268,11 @@ class _NoticeCard extends StatelessWidget {
                 margin: const EdgeInsets.only(bottom: 10),
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF885CF6).withOpacity(0.1),
+                  color: AppTheme.seonggadae.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Text('📌 고정 공지',
-                    style: TextStyle(fontSize: 11, color: Color(0xFF885CF6))),
+                    style: TextStyle(fontSize: 11, color: AppTheme.seonggadae)),
               ),
             Text(
               notice.title,
@@ -402,7 +402,7 @@ class _AddNoticeSheetState extends State<_AddNoticeSheet> {
                 Switch(
                   value: _isPinned,
                   onChanged: (v) => setState(() => _isPinned = v),
-                  activeColor: const Color(0xFF885CF6),
+                  activeColor: AppTheme.seonggadae,
                 ),
                 const SizedBox(width: 8),
                 const Text('📌 상단 고정',
@@ -415,7 +415,7 @@ class _AddNoticeSheetState extends State<_AddNoticeSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),

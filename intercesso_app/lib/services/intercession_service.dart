@@ -1,4 +1,5 @@
 // lib/services/intercession_service.dart
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/models.dart';
 import '../config/constants.dart';
@@ -57,7 +58,9 @@ class IntercessionService {
       if (success || (!errMsg.contains('대상자 ID') && res['error']?['code'] != 'VALIDATION_ERROR')) {
         return res;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('IntercessionService 신버전 엔드포인트 실패: $e');
+    }
 
     // Railway 구버전 레거시 엔드포인트로 fallback
     return await _api.post('/intercessions/request', body: {
@@ -91,7 +94,9 @@ class IntercessionService {
       if (success || (!errMsg.contains('대상자 ID') && res['error']?['code'] != 'VALIDATION_ERROR')) {
         return res;
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('IntercessionService 그룹 요청 신버전 실패: $e');
+    }
 
     // Railway 구버전 레거시 엔드포인트로 fallback
     final fallbackMsg = groupName != null

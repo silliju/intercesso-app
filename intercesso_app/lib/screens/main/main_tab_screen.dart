@@ -9,17 +9,18 @@ import '../prayers/prayers_screen.dart';
 import '../intercession/intercession_screen.dart';
 import '../gratitude/gratitude_feed_screen.dart';
 import '../groups/groups_screen.dart';
-import '../profile/profile_screen.dart';
 
 class MainTabScreen extends StatefulWidget {
-  const MainTabScreen({super.key});
+  final int? initialTabIndex;
+
+  const MainTabScreen({super.key, this.initialTabIndex});
 
   @override
   State<MainTabScreen> createState() => MainTabScreenState();
 }
 
 class MainTabScreenState extends State<MainTabScreen> {
-  int _currentIndex = 0;
+  late int _currentIndex;
 
   final List<Widget> _screens = const [
     HomeScreen(),          // 0 홈
@@ -27,8 +28,16 @@ class MainTabScreenState extends State<MainTabScreen> {
     IntercessionScreen(),  // 2 중보
     GratitudeFeedScreen(), // 3 감사
     GroupsScreen(),        // 4 그룹
-    ProfileScreen(),       // 5 프로필
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    final idx = widget.initialTabIndex;
+    _currentIndex = (idx != null && idx >= 0 && idx < _screens.length)
+        ? idx
+        : 0;
+  }
 
   void switchToTab(int index) => setState(() => _currentIndex = index);
 
@@ -38,7 +47,6 @@ class MainTabScreenState extends State<MainTabScreen> {
     _NavTab('🤝', '중보',  _TabType.intercession),
     _NavTab('🌷', '감사',  _TabType.gamsa),
     _NavTab('👥', '그룹',  _TabType.group),
-    _NavTab('👤', '프로필', _TabType.profile),
   ];
 
   @override
@@ -139,7 +147,7 @@ class MainTabScreenState extends State<MainTabScreen> {
       case _TabType.gamsa:
         return AppTheme.gamsaLight;
       case _TabType.intercession:
-        return const Color(0xFFE6FBF7);
+        return AppColors.infoBg;
       default:
         return AppTheme.primaryLight;
     }
@@ -201,7 +209,7 @@ class MainTabScreenState extends State<MainTabScreen> {
   }
 }
 
-enum _TabType { home, prayer, intercession, gamsa, group, profile }
+enum _TabType { home, prayer, intercession, gamsa, group }
 
 class _NavTab {
   final String emoji;

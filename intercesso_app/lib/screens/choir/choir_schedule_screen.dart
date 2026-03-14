@@ -58,9 +58,9 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
             elevation: 0,
             bottom: TabBar(
               controller: _tabController,
-              labelColor: const Color(0xFF885CF6),
+              labelColor: AppTheme.seonggadae,
               unselectedLabelColor: AppTheme.textSecondary,
-              indicatorColor: const Color(0xFF885CF6),
+              indicatorColor: AppTheme.seonggadae,
               tabs: const [
                 Tab(text: '예정'),
                 Tab(text: '지난 일정'),
@@ -70,7 +70,7 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
           floatingActionButton: isAdmin
               ? FloatingActionButton.extended(
                   onPressed: () => _showAddScheduleSheet(context, choir),
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   icon: const Icon(Icons.add, color: Colors.white),
                   label: const Text('일정 추가',
                       style: TextStyle(color: Colors.white)),
@@ -171,7 +171,7 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
               width: 50,
               height: 58,
               decoration: BoxDecoration(
-                color: const Color(0xFF885CF6).withOpacity(0.08),
+                color: AppTheme.seonggadae.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -180,14 +180,14 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
                   Text(
                     '${schedule.startTime.month}월',
                     style: const TextStyle(
-                        fontSize: 11, color: Color(0xFF885CF6)),
+                        fontSize: 11, color: AppTheme.seonggadae),
                   ),
                   Text(
                     '${schedule.startTime.day}',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w800,
-                      color: Color(0xFF885CF6),
+                      color: AppTheme.seonggadae,
                     ),
                   ),
                 ],
@@ -217,14 +217,14 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
                           padding: const EdgeInsets.symmetric(
                               horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            color: AppTheme.success.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: const Text(
                             '확정',
                             style: TextStyle(
                               fontSize: 10,
-                              color: Color(0xFF10B981),
+                              color: AppTheme.success,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -238,14 +238,14 @@ class _ChoirSchedulesScreenState extends State<ChoirSchedulesScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 7, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF885CF6).withOpacity(0.08),
+                          color: AppTheme.seonggadae.withOpacity(0.08),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           '${schedule.scheduleType.emoji} ${schedule.scheduleType.label}',
                           style: const TextStyle(
                             fontSize: 11,
-                            color: Color(0xFF885CF6),
+                            color: AppTheme.seonggadae,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -388,10 +388,10 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
                   label: Text('${type.emoji} ${type.label}'),
                   selected: selected,
                   onSelected: (_) => setState(() => _type = type),
-                  selectedColor: const Color(0xFF885CF6).withOpacity(0.15),
+                  selectedColor: AppTheme.seonggadae.withOpacity(0.15),
                   labelStyle: TextStyle(
                     color: selected
-                        ? const Color(0xFF885CF6)
+                        ? AppTheme.seonggadae
                         : AppTheme.textSecondary,
                     fontWeight: selected
                         ? FontWeight.w700
@@ -494,7 +494,7 @@ class _AddScheduleSheetState extends State<_AddScheduleSheet> {
               child: ElevatedButton(
                 onPressed: _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: const Text('일정 등록',
@@ -620,7 +620,7 @@ class _ChoirScheduleDetailScreenState
     return SliverAppBar(
       expandedHeight: 120,
       pinned: true,
-      backgroundColor: const Color(0xFF885CF6),
+      backgroundColor: AppTheme.seonggadae,
       foregroundColor: Colors.white,
       leading: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -637,7 +637,7 @@ class _ChoirScheduleDetailScreenState
         background: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+              colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -706,7 +706,7 @@ class _ChoirScheduleDetailScreenState
             '상태',
             schedule.isConfirmed ? '확정' : '미확정',
             valueColor: schedule.isConfirmed
-                ? const Color(0xFF10B981)
+                ? AppTheme.success
                 : AppTheme.textSecondary,
           ),
         ],
@@ -772,7 +772,7 @@ class _ChoirScheduleDetailScreenState
                     width: 24,
                     height: 24,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF885CF6).withOpacity(0.1),
+                      color: AppTheme.seonggadae.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -781,7 +781,7 @@ class _ChoirScheduleDetailScreenState
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF885CF6),
+                          color: AppTheme.seonggadae,
                         ),
                       ),
                     ),
@@ -798,7 +798,7 @@ class _ChoirScheduleDetailScreenState
                     GestureDetector(
                       onTap: () => openYoutube(context, e.value.youtubeUrl!),
                       child: const Icon(Icons.play_circle_outline,
-                          size: 18, color: Color(0xFFFF0000)),
+                          size: 18, color: AppTheme.error),
                     ),
                 ],
               ),
@@ -841,10 +841,10 @@ class _ChoirScheduleDetailScreenState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _statBox('출석율', '$rate%', const Color(0xFF10B981)),
-              _statBox('출석', '$present명', const Color(0xFF2F6FED)),
-              _statBox('결석', '$absent명', const Color(0xFFEF4444)),
-              _statBox('공결', '$excused명', const Color(0xFFF59E0B)),
+              _statBox('출석율', '$rate%', AppTheme.success),
+              _statBox('출석', '$present명', AppTheme.primary),
+              _statBox('결석', '$absent명', AppTheme.error),
+              _statBox('공결', '$excused명', AppTheme.warning),
             ],
           ),
         ],
@@ -881,7 +881,7 @@ class _ChoirScheduleDetailScreenState
         icon: const Icon(Icons.share),
         label: const Text('일정 공유'),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF885CF6),
+          backgroundColor: AppTheme.seonggadae,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
@@ -1028,10 +1028,10 @@ class _EditScheduleSheetState extends State<_EditScheduleSheet> {
                   selected: selected,
                   onSelected: (_) => setState(() => _type = type),
                   selectedColor:
-                      const Color(0xFF885CF6).withOpacity(0.15),
+                      AppTheme.seonggadae.withOpacity(0.15),
                   labelStyle: TextStyle(
                     color: selected
-                        ? const Color(0xFF885CF6)
+                        ? AppTheme.seonggadae
                         : AppTheme.textSecondary,
                     fontWeight: selected
                         ? FontWeight.w700
@@ -1132,7 +1132,7 @@ class _EditScheduleSheetState extends State<_EditScheduleSheet> {
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 child: _isLoading

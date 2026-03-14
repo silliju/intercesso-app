@@ -259,9 +259,9 @@ class _IntercessionScreenState extends State<IntercessionScreen>
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: const Color(0xFFF0FDF4),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: const Color(0xFFBBF7D0)),
+                color: AppColors.successBg,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                border: Border.all(color: AppTheme.success),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -402,7 +402,7 @@ class _IntercessionScreenState extends State<IntercessionScreen>
     }
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(50)),
+      decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(AppRadius.full)),
       child: Text(label, style: TextStyle(fontSize: 11, color: fg, fontWeight: FontWeight.w700)),
     );
   }

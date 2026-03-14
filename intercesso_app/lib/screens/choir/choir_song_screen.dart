@@ -59,7 +59,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
           floatingActionButton: isAdmin
               ? FloatingActionButton.extended(
                   onPressed: () => _showAddSongSheet(context, choir),
-                  backgroundColor: const Color(0xFF885CF6),
+                  backgroundColor: AppTheme.seonggadae,
                   icon: const Icon(Icons.music_note, color: Colors.white),
                   label: const Text('곡 추가',
                       style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
@@ -147,11 +147,11 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
         decoration: BoxDecoration(
           color: active
-              ? const Color(0xFF885CF6).withOpacity(0.12)
+              ? AppTheme.seonggadae.withOpacity(0.12)
               : AppTheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: active ? const Color(0xFF885CF6) : AppTheme.border,
+            color: active ? AppTheme.seonggadae : AppTheme.border,
           ),
         ),
         child: Text(
@@ -159,7 +159,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
-            color: active ? const Color(0xFF885CF6) : AppTheme.textSecondary,
+            color: active ? AppTheme.seonggadae : AppTheme.textSecondary,
           ),
         ),
       ),
@@ -205,7 +205,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                 height: 48,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF885CF6), Color(0xFFB084FF)],
+                    colors: [AppTheme.seonggadae, AppTheme.seonggadaeLight],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -262,7 +262,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                       runSpacing: 4,
                       children: [
                         if (song.genre != null)
-                          _tag(song.genre!, const Color(0xFF885CF6)),
+                          _tag(song.genre!, AppTheme.seonggadae),
                         ...song.parts.map((p) => _partTag(p)),
                       ],
                     ),
@@ -276,7 +276,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                   child: IconButton(
                     icon: const Icon(
                       Icons.play_circle_filled,
-                      color: Color(0xFFFF0000),
+                      color: AppTheme.error,
                       size: 30,
                     ),
                     onPressed: () => _openYoutube(song.youtubeUrl!),
@@ -291,9 +291,9 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
 
   Widget _diffBadge(String diff) {
     final colors = {
-      'easy': const Color(0xFF10B981),
-      'medium': const Color(0xFFF59E0B),
-      'hard': const Color(0xFFEF4444),
+      'easy': AppTheme.success,
+      'medium': AppTheme.warning,
+      'hard': AppTheme.error,
     };
     final color = colors[diff] ?? AppTheme.textSecondary;
     return Container(
@@ -329,10 +329,10 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
 
   Widget _partTag(String part) {
     final map = {
-      'soprano': ('소프라노', const Color(0xFFEC4899)),
-      'alto': ('알토', const Color(0xFFEF4444)),
-      'tenor': ('테너', const Color(0xFF3B82F6)),
-      'bass': ('베이스', const Color(0xFF1D4ED8)),
+      'soprano': ('소프라노', AppColors.info),
+      'alto': ('알토', AppTheme.error),
+      'tenor': ('테너', AppTheme.primary),
+      'bass': ('베이스', AppTheme.primaryDark),
     };
     final info = map[part] ?? (part, AppTheme.textSecondary);
     return _tag(info.$1, info.$2);
@@ -367,7 +367,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
             label: const Text('첫 곡 등록하기',
                 style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF885CF6),
+              backgroundColor: AppTheme.seonggadae,
               padding:
                   const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
               shape: RoundedRectangleBorder(
@@ -437,7 +437,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete_outline,
-                          color: Color(0xFFEF4444)),
+                          color: AppTheme.error),
                       onPressed: () =>
                           _confirmDelete(context, song, choir),
                     ),
@@ -499,7 +499,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                     child: OutlinedButton.icon(
                       onPressed: () => _openYoutube(song.youtubeUrl!),
                       icon: const Icon(Icons.play_circle_filled,
-                          color: Color(0xFFFF0000)),
+                          color: AppTheme.error),
                       label: const Text('YouTube에서 듣기'),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
@@ -644,12 +644,12 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                             horizontal: 14, vertical: 7),
                         decoration: BoxDecoration(
                           color: active
-                              ? const Color(0xFF885CF6).withOpacity(0.12)
+                              ? AppTheme.seonggadae.withOpacity(0.12)
                               : AppTheme.background,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: active
-                                ? const Color(0xFF885CF6)
+                                ? AppTheme.seonggadae
                                 : AppTheme.border,
                           ),
                         ),
@@ -659,7 +659,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                             fontSize: 12,
                             fontWeight: FontWeight.w600,
                             color: active
-                                ? const Color(0xFF885CF6)
+                                ? AppTheme.seonggadae
                                 : AppTheme.textSecondary,
                           ),
                         ),
@@ -679,9 +679,9 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                   children: _difficulties.map((d) {
                     final active = selectedDiff == d;
                     final colors = {
-                      'easy': const Color(0xFF10B981),
-                      'medium': const Color(0xFFF59E0B),
-                      'hard': const Color(0xFFEF4444),
+                      'easy': AppTheme.success,
+                      'medium': AppTheme.warning,
+                      'hard': AppTheme.error,
                     };
                     final c = colors[d]!;
                     return Expanded(
@@ -741,12 +741,12 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                             horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
                           color: active
-                              ? const Color(0xFF885CF6).withOpacity(0.12)
+                              ? AppTheme.seonggadae.withOpacity(0.12)
                               : AppTheme.background,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: active
-                                ? const Color(0xFF885CF6)
+                                ? AppTheme.seonggadae
                                 : AppTheme.border,
                           ),
                         ),
@@ -756,7 +756,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                             if (active)
                               const Icon(Icons.check,
                                   size: 14,
-                                  color: Color(0xFF885CF6)),
+                                  color: AppTheme.seonggadae),
                             if (active) const SizedBox(width: 4),
                             Text(
                               _partLabel(p),
@@ -764,7 +764,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
                                 color: active
-                                    ? const Color(0xFF885CF6)
+                                    ? AppTheme.seonggadae
                                     : AppTheme.textSecondary,
                               ),
                             ),
@@ -875,7 +875,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                             }
                           },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF885CF6),
+                      backgroundColor: AppTheme.seonggadae,
                       padding:
                           const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
@@ -945,7 +945,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
               await choir.deleteSong(song.id);
             },
             child: const Text('삭제',
-                style: TextStyle(color: Color(0xFFEF4444))),
+                style: TextStyle(color: AppTheme.error)),
           ),
         ],
       ),
@@ -979,7 +979,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                 title: Text(g),
                 trailing: _genreFilter == g
                     ? const Icon(Icons.check,
-                        color: Color(0xFF885CF6))
+                        color: AppTheme.seonggadae)
                     : null,
                 onTap: () {
                   setState(() => _genreFilter = g);
@@ -1019,7 +1019,7 @@ class _ChoirSongScreenState extends State<ChoirSongScreen> {
                 title: Text(_diffLabel(d)),
                 trailing: _difficultyFilter == d
                     ? const Icon(Icons.check,
-                        color: Color(0xFF885CF6))
+                        color: AppTheme.seonggadae)
                     : null,
                 onTap: () {
                   setState(() => _difficultyFilter = d);

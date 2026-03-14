@@ -93,13 +93,13 @@ class _CreateGroupScreenState extends State<CreateGroupScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
-                        color: isSelected ? AppTheme.primary : const Color(0xFFF3F4F6),
-                        borderRadius: BorderRadius.circular(12),
+                        color: isSelected ? AppTheme.primary : AppColors.bgTertiary,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
                       ),
                       child: Text(
                         entry.value,
                         style: TextStyle(
-                          color: isSelected ? Colors.white : AppTheme.textSecondary,
+                          color: isSelected ? AppColors.primaryContrast : AppTheme.textSecondary,
                           fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                         ),
                       ),

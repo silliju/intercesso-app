@@ -117,7 +117,9 @@ class AuthProvider extends ChangeNotifier {
         _user = UserModel.fromJson(response['data']);
         notifyListeners();
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('AuthProvider fetchUser 실패: $e');
+    }
   }
 
   void clearError() {

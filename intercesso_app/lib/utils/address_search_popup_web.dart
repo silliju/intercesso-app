@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:html' as html;
+import 'package:flutter/foundation.dart';
 
 /// 웹 전용: 주소 검색 페이지를 팝업으로 열고, 선택 시 postMessage로 받아서 반환.
 Future<Map<String, dynamic>?> openAddressSearchPopup(String url) async {
@@ -32,7 +33,9 @@ Future<Map<String, dynamic>?> openAddressSearchPopup(String url) async {
       if (map.containsKey('sido') || map.containsKey('roadAddress')) {
         finish(map);
       }
-    } catch (_) {}
+    } catch (e) {
+      debugPrint('주소 팝업 postMessage 파싱 실패: $e');
+    }
   });
 
   final window = html.window.open(

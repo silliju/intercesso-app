@@ -63,14 +63,14 @@ class ChoirManagementScreen extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF885CF6), Color(0xFF6D3FD4)],
+          colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF885CF6).withOpacity(0.3),
+            color: AppTheme.seonggadae.withOpacity(0.3),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -172,11 +172,11 @@ class ChoirManagementScreen extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF2F6FED).withOpacity(0.1),
+                color: AppTheme.primary.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.key,
-                  size: 18, color: Color(0xFF2F6FED)),
+                  size: 18, color: AppTheme.primary),
             ),
             title: const Text('초대 코드',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -185,7 +185,7 @@ class ChoirManagementScreen extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
-                color: Color(0xFF885CF6),
+                color: AppTheme.seonggadae,
                 letterSpacing: 2,
               ),
             ),
@@ -229,11 +229,11 @@ class ChoirManagementScreen extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: const Color(0xFF10B981).withOpacity(0.1),
+                color: AppTheme.success.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.link,
-                  size: 18, color: Color(0xFF10B981)),
+                  size: 18, color: AppTheme.success),
             ),
             title: const Text('초대 링크 공유',
                 style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
@@ -242,7 +242,7 @@ class ChoirManagementScreen extends StatelessWidget {
             trailing: Switch(
               value: selected.inviteLinkActive,
               onChanged: (_) {},
-              activeColor: const Color(0xFF10B981),
+              activeColor: AppTheme.success,
             ),
           ),
           Padding(
@@ -268,9 +268,9 @@ class ChoirManagementScreen extends StatelessWidget {
                 icon: const Icon(Icons.share, size: 16),
                 label: const Text('초대 링크 공유하기'),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: const Color(0xFF885CF6),
+                  foregroundColor: AppTheme.seonggadae,
                   side:
-                      const BorderSide(color: Color(0xFF885CF6)),
+                      const BorderSide(color: AppTheme.seonggadae),
                 ),
               ),
             ),
@@ -286,7 +286,7 @@ class ChoirManagementScreen extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFF59E0B).withOpacity(0.5)),
+        border: Border.all(color: AppTheme.warning.withOpacity(0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +309,7 @@ class ChoirManagementScreen extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(
                       horizontal: 8, vertical: 2),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF59E0B),
+                    color: AppTheme.warning,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -353,7 +353,7 @@ class ChoirManagementScreen extends StatelessWidget {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: AppTheme.success,
                       minimumSize: const Size(50, 30),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
@@ -368,9 +368,9 @@ class ChoirManagementScreen extends StatelessWidget {
                       await choir.removeMember(m.id);
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFFEF4444),
+                      foregroundColor: AppTheme.error,
                       side: const BorderSide(
-                          color: Color(0xFFEF4444)),
+                          color: AppTheme.error),
                       minimumSize: const Size(50, 30),
                       padding: const EdgeInsets.symmetric(
                           horizontal: 10, vertical: 4),
@@ -388,7 +388,7 @@ class ChoirManagementScreen extends StatelessWidget {
               child: Text(
                   '전체 보기 (${choir.pendingMembers.length}명)'),
               style: TextButton.styleFrom(
-                  foregroundColor: const Color(0xFF885CF6)),
+                  foregroundColor: AppTheme.seonggadae),
             ),
           const SizedBox(height: 4),
         ],
@@ -403,32 +403,32 @@ class ChoirManagementScreen extends StatelessWidget {
       _MenuItem(
           icon: Icons.people,
           label: '단원 관리',
-          color: const Color(0xFF10B981),
+          color: AppTheme.success,
           onTap: () => context.push('/choir/members')),
       _MenuItem(
           icon: Icons.calendar_month,
           label: '일정 관리',
-          color: const Color(0xFF2F6FED),
+          color: AppTheme.primary,
           onTap: () => context.push('/choir/schedules')),
       _MenuItem(
           icon: Icons.library_music,
           label: '곡 관리',
-          color: const Color(0xFFF59E0B),
+          color: AppTheme.warning,
           onTap: () {}),
       _MenuItem(
           icon: Icons.library_books,
           label: '자료실',
-          color: const Color(0xFF885CF6),
+          color: AppTheme.seonggadae,
           onTap: () => context.push('/choir/library')),
       _MenuItem(
           icon: Icons.bar_chart,
           label: '출석 통계',
-          color: const Color(0xFF0EA5E9),
+          color: AppColors.info,
           onTap: () => context.push('/choir/stats')),
       _MenuItem(
           icon: Icons.notifications_outlined,
           label: '공지 관리',
-          color: const Color(0xFFF97316),
+          color: AppTheme.simbang,
           onTap: () {}),
     ];
 
@@ -494,7 +494,7 @@ class ChoirManagementScreen extends StatelessWidget {
         color: AppTheme.surface,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(
-            color: const Color(0xFFEF4444).withOpacity(0.3)),
+            color: AppTheme.error.withOpacity(0.3)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -506,7 +506,7 @@ class ChoirManagementScreen extends StatelessWidget {
               style: TextStyle(
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFFEF4444),
+                color: AppTheme.error,
               ),
             ),
           ),
@@ -523,11 +523,11 @@ class ChoirManagementScreen extends StatelessWidget {
           const Divider(height: 1),
           ListTile(
             leading: const Icon(Icons.delete_forever,
-                color: Color(0xFFEF4444)),
+                color: AppTheme.error),
             title: const Text(
               '찬양대 삭제',
               style: TextStyle(
-                  fontSize: 14, color: Color(0xFFEF4444)),
+                  fontSize: 14, color: AppTheme.error),
             ),
             trailing: const Icon(Icons.chevron_right,
                 size: 18, color: AppTheme.textLight),
@@ -554,7 +554,7 @@ class ChoirManagementScreen extends StatelessWidget {
               context.pop();
             },
             style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFFEF4444)),
+                foregroundColor: AppTheme.error),
             child: const Text('나가기'),
           ),
         ],
@@ -580,7 +580,7 @@ class ChoirManagementScreen extends StatelessWidget {
               context.pop();
             },
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFEF4444)),
+                backgroundColor: AppTheme.error),
             child: const Text('삭제',
                 style: TextStyle(color: Colors.white)),
           ),
@@ -701,7 +701,7 @@ class _EditChoirSheetState extends State<_EditChoirSheet> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF885CF6),
+                    backgroundColor: AppTheme.seonggadae,
                     padding:
                         const EdgeInsets.symmetric(vertical: 14)),
                 child: const Text('수정 완료',

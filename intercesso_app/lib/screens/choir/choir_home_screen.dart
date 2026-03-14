@@ -16,8 +16,8 @@ class ChoirHomeScreen extends StatefulWidget {
 }
 
 class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
-  // 보라색 테마 컬러
-  static const _purple = Color(0xFF8B5CF6);
+  // 보라색 테마 컬러 (const로 const 위젯에서 사용)
+  static const Color _purple = AppTheme.seonggadae;
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
       builder: (context, choir, _) {
         if (choir.isLoading && choir.myChoirs.isEmpty) {
           return const Scaffold(
-            backgroundColor: Color(0xFF8B5CF6),
+            backgroundColor: AppTheme.seonggadae,
             body: Center(
               child: CircularProgressIndicator(color: Colors.white),
             ),
@@ -146,7 +146,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
     if (selected == null) return const SizedBox.shrink();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F4F6),
+      backgroundColor: AppColors.bgTertiary,
       body: Column(
         children: [
           // ── 보라색 헤더 영역 ──────────────────────────────────
@@ -192,7 +192,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFF9B59FF), Color(0xFF7C3AED)],
+          colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -282,14 +282,14 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF9B59FF), Color(0xFF7C3AED)],
+            colors: [AppTheme.seonggadae, AppTheme.seonggadaeDark],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF8B5CF6).withOpacity(0.35),
+              color: AppTheme.seonggadae.withOpacity(0.35),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
@@ -499,7 +499,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEDE9FE),
+                  color: AppTheme.seonggadaeLight,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: const Text(
@@ -630,17 +630,17 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
       _QuickMenuItem(
           icon: Icons.calendar_month,
           label: '일정',
-          color: const Color(0xFF3B82F6),
+          color: AppTheme.primary,
           route: '/choir/schedules'),
       _QuickMenuItem(
           icon: Icons.people,
           label: '회원',
-          color: const Color(0xFF10B981),
+          color: AppTheme.success,
           route: '/choir/members'),
       _QuickMenuItem(
           icon: Icons.how_to_reg,
           label: '출석',
-          color: const Color(0xFFF59E0B),
+          color: AppTheme.warning,
           route: '/choir/stats'),
       _QuickMenuItem(
           icon: Icons.library_music,
@@ -650,7 +650,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
       _QuickMenuItem(
           icon: Icons.queue_music,
           label: '곡 관리',
-          color: const Color(0xFFEC4899),
+          color: AppColors.info,
           route: '/choir/songs'),
     ];
 
@@ -782,7 +782,7 @@ class _ChoirHomeScreenState extends State<ChoirHomeScreen> {
                       padding: const EdgeInsets.only(left: 4),
                       child: CircleAvatar(
                         radius: 18,
-                        backgroundColor: const Color(0xFFEDE9FE),
+                        backgroundColor: AppTheme.seonggadaeLight,
                         child: Text(
                           '+${choir.activeMembers.length - 5}',
                           style: const TextStyle(
