@@ -1,0 +1,16 @@
+---
+description: Intercesso 디자인 기준 — docs/앱가이드 참고
+alwaysApply: true
+---
+
+# 디자인 기준: 앱가이드
+
+- **공식 디자인 참고 문서**: `docs/앱가이드.html` (또는 `docs/앱가이드` 폴더 내 파일)
+- UI/테마/컴포넌트 작업 시 **반드시 이 가이드를 참고**한다.
+- 가이드에 정의된 것:
+  - **색상**: Primary #4A7FFF, Secondary #FF9D3D, 배경/텍스트/시맨틱(success, warning, error, info)
+  - **간격**: 4px 단위 (xs 4, sm 8, md 16, lg 24, xl 32, xxl 48)
+  - **라운드**: sm 4, md 8, lg 12, xl 16, full(원형)
+  - **타이포**: Pretendard, 제목 Bold/Semibold, 본문 Regular, 크기 스케일(12~28px)
+  - **컴포넌트**: 버튼(Primary/Secondary/Text/Icon), 카드, AppBar, Bottom Nav, Input, 태그/뱃지, Alert
+- Flutter 구현 시 `intercesso_app/lib/config/theme.dart`의 `AppColors`, `AppSpacing`, `AppRadius`, `AppTheme`가 가이드와 동기화되어 있음. 새 스타일 추가 시 가이드 값과 theme 둘 다 맞출 것.

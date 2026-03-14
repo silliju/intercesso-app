@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>02. 토글 · 체크 · 라디오</title>
+  <!-- Pretendard: 한글 가독성이 좋은 폰트 (디자인 일관성의 핵심) -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Icons: Flutter의 Icons.*와 느낌을 맞추기 좋습니다 -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+
+/* =========================================================
+   디자인 토큰(Design Tokens)
+   - Flutter의 ThemeData/ColorScheme/TextTheme와 같은 역할
+   - "여기 정의된 값만" 쓰면 화면마다 톤앤매너가 자동으로 맞춰집니다.
+   - AI(코파일럿/커서)에게도 "토큰 외 하드코딩 금지"를 명확히 전달하세요.
+========================================================= */
+:root{
+  /* ---------- 브랜드 핵심 색상(Primary) ---------- */
+  --color-primary-main:#4A7FFF;    /* 주색: 주요 CTA, 선택 상태 */
+  --color-primary-light:#7BA3FF;   /* 주색의 밝은 버전: hover 배경 등 */
+  --color-primary-dark:#2E5FCC;    /* 주색의 어두운 버전: pressed 등 */
+  --color-on-primary:#FFFFFF;      /* 주색 위 텍스트/아이콘 색 */
+
+  /* ---------- 보조 색상(Secondary) ---------- */
+  --color-secondary-main:#FF9D3D;
+  --color-secondary-light:#FFB76B;
+  --color-secondary-dark:#E68429;
+  --color-on-secondary:#FFFFFF;
+
+  /* ---------- 배경/서피스(Background/Surface) ---------- */
+  --color-bg:#F8F9FA;              /* 앱 전체 배경(Scaffold 배경에 해당) */
+  --color-surface:#FFFFFF;         /* 카드/시트 등 표면색 */
+  --color-surface-2:#F1F3F5;       /* 약간 구분되는 표면(필드 배경 등) */
+
+  /* ---------- 텍스트(Text) ---------- */
+  --color-text:#212529;            /* 본문/제목 기본 텍스트 */
+  --color-text-2:#6C757D;          /* 보조 설명 텍스트 */
+  --color-text-3:#ADB5BD;          /* disabled 텍스트 */
+  --color-hint:#CED4DA;            /* placeholder/hint */
+
+  /* ---------- 테두리/구분선(Border/Divider) ---------- */
+  --color-border-1:#E9ECEF;        /* 매우 연한 경계 */
+  --color-border-2:#DEE2E6;        /* 기본 경계 */
+  --color-divider:#E9ECEF;         /* 구분선 */
+
+  /* ---------- 상태 색상(Semantic) ---------- */
+  --color-success:#4CAF50; --color-success-bg:#E8F5E9; --color-success-text:#2E7D32;
+  --color-warning:#FFC107; --color-warning-bg:#FFF8E1; --color-warning-text:#F57F17;
+  --color-error:#F44336;   --color-error-bg:#FFEBEE;   --color-error-text:#C62828;
+  --color-info:#2196F3;    --color-info-bg:#E3F2FD;    --color-info-text:#1565C0;
+
+  /* ---------- 간격(Spacing) : 4px 그리드 ---------- */
+  --space-1:4px;   /* xs */
+  --space-2:8px;   /* sm */
+  --space-3:12px;  /* sm+ : 필요시(아이콘/텍스트 간) */
+  --space-4:16px;  /* md : 기본 패딩 */
+  --space-5:20px;
+  --space-6:24px;  /* lg */
+  --space-8:32px;  /* xl */
+  --space-12:48px; /* 2xl */
+
+  /* ---------- 라운드(Border Radius) ---------- */
+  --radius-1:4px;   /* 뱃지/태그 */
+  --radius-2:8px;   /* 버튼/입력필드 */
+  --radius-3:12px;  /* 카드 */
+  --radius-4:16px;  /* 다이얼로그 */
+  --radius-full:9999px; /* 원형 */
+
+  /* ---------- 그림자(Shadow) : Flutter elevation 대응 ---------- */
+  --shadow-0:none;
+  --shadow-1:0 1px 2px rgba(0,0,0,.05);
+  --shadow-2:0 2px 8px rgba(0,0,0,.08);
+  --shadow-3:0 4px 16px rgba(0,0,0,.12);
+  --shadow-4:0 8px 24px rgba(0,0,0,.16);
+
+  /* ---------- 타이포그래피(Typography) ---------- */
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --fs-12:12px; --fs-14:14px; --fs-16:16px; --fs-18:18px; --fs-20:20px; --fs-24:24px; --fs-28:28px; --fs-32:32px;
+  --fw-400:400; --fw-500:500; --fw-600:600; --fw-700:700;
+  --lh-tight:1.2; --lh-normal:1.5; --lh-relaxed:1.75;
+
+  /* ---------- 모션(Motion) ---------- */
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --t-fast:150ms var(--ease);
+  --t-base:300ms var(--ease);
+
+  /* ---------- 레이어(Z-index) ---------- */
+  --z-sticky:1000;
+  --z-modal:1100;
+  --z-toast:1200;
+}
+
+
+/* =========================================================
+   베이스 스타일(Reset + 공통 레이아웃)
+   - 브라우저 기본 스타일 차이를 줄여 "항상 같은 UI"로 보이게 합니다.
+========================================================= */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font);
+  font-size:var(--fs-16);
+  line-height:var(--lh-normal);
+  color:var(--color-text);
+  background:var(--color-bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ---------- 페이지 래퍼 ---------- */
+.container{max-width:1100px;margin:0 auto;padding:var(--space-8);}
+
+/* ---------- 상단 AppBar(Flutter AppBar 대응) ---------- */
+.appbar{
+  position:sticky;top:0;z-index:var(--z-sticky);
+  height:56px;background:var(--color-surface);
+  border-bottom:1px solid var(--color-border-1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--space-4);
+  box-shadow:var(--shadow-1);
+}
+.appbar__title{font-weight:var(--fw-700);color:var(--color-primary-main);text-decoration:none;font-size:var(--fs-20);}
+.appbar__actions{display:flex;align-items:center;gap:var(--space-2);}
+
+/* ---------- 섹션 카드(가이드 콘텐츠 단위) ---------- */
+.section{
+  background:var(--color-surface);
+  border:1px solid var(--color-border-1);
+  border-radius:var(--radius-3);
+  box-shadow:var(--shadow-1);
+  padding:var(--space-8);
+  margin:0 0 var(--space-6);
+}
+.h1{font-size:var(--fs-32);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-6);}
+.h2{font-size:var(--fs-24);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-4);}
+.h3{font-size:var(--fs-18);font-weight:var(--fw-600);margin:var(--space-6) 0 var(--space-3);}
+.p{color:var(--color-text-2);font-size:var(--fs-14);}
+
+/* ---------- 데모 박스(컴포넌트 미리보기 영역) ---------- */
+.demo{
+  background:var(--color-surface-2);
+  border:1px dashed var(--color-border-2);
+  border-radius:var(--radius-3);
+  padding:var(--space-6);
+  display:flex;flex-wrap:wrap;gap:var(--space-4);
+  align-items:center;
+}
+
+/* ---------- 코드 블록(Flutter 예시) ---------- */
+.codeWrap{margin-top:var(--space-4);}
+.codeHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);}
+.codeTitle{font-weight:var(--fw-600);font-size:var(--fs-14);color:var(--color-text);}
+.copyBtn{
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  border-radius:var(--radius-2);
+  padding:8px 12px;
+  cursor:pointer;
+  transition:background var(--t-fast);
+}
+.copyBtn:hover{background:var(--color-surface-2);}
+pre{
+  background:#111827; /* 초보자에게: "코드용 어두운 배경" */
+  color:#E5E7EB;
+  padding:var(--space-4);
+  border-radius:var(--radius-3);
+  overflow:auto;
+  font-size:13px;
+  line-height:1.55;
+}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+
+/* ---------- 유틸: Row/Column 느낌 ---------- */
+.row{display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:center;}
+.col{display:flex;flex-direction:column;gap:var(--space-3);}
+
+/* ---------- 링크 목록(목차/페이지 이동) ---------- */
+.navlist{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 var(--space-4);}
+.navlist a{
+  font-size:13px;text-decoration:none;
+  padding:6px 10px;border-radius:var(--radius-full);
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  color:var(--color-text);
+}
+.navlist a:hover{border-color:var(--color-primary-main);color:var(--color-primary-main);}
+
+/* ---------- 반응형: 화면이 커지면 좌우 여백 확대 ---------- */
+@media (min-width:768px){
+  .appbar{height:64px;padding:0 var(--space-8);}
+}
+
+
+/* =========================================================
+   공통 아이콘 버튼(상단 AppBar 액션)
+   - Flutter의 IconButton과 유사
+========================================================= */
+.iconBtn{
+  width:40px;height:40px;
+  border:0;background:transparent;
+  border-radius:var(--radius-full);
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background var(--t-fast);
+  color:var(--color-text);
+}
+.iconBtn:hover{background:rgba(0,0,0,.05);} /* hover 상태 */
+.iconBtn:active{transform:scale(.98);}      /* active(pressed) 상태 */
+.iconBtn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* 아이콘 기본 크기: Material Icons는 font-size로 크기 조절 */
+.material-icons{font-size:24px;}
+
+/* =========================================================
+   Switch / Checkbox / Radio
+   - Flutter에서 "폼"과 "설정"에 매우 자주 나옵니다.
+   - 초보자 팁: 라벨(텍스트)을 클릭해도 토글되게 label로 감싸면 UX가 좋아집니다.
+========================================================= */
+
+/* Switch(토글): input은 숨기고, 트랙/썸을 커스텀 */
+.switch{display:inline-flex;align-items:center;gap:var(--space-4);}
+.switch input{display:none;}
+.switch__track{
+  width:52px;height:32px;border-radius:var(--radius-full);
+  background:var(--color-border-2);
+  position:relative;cursor:pointer;
+  transition:background var(--t-base);
+}
+.switch__thumb{
+  width:24px;height:24px;border-radius:var(--radius-full);
+  background:#fff;
+  position:absolute;top:4px;left:4px;
+  box-shadow:var(--shadow-2);
+  transition:left var(--t-base);
+}
+.switch input:checked + .switch__track{background:var(--color-primary-main);} /* ON 배경 */
+.switch input:checked + .switch__track .switch__thumb{left:24px;}            /* 썸 이동 */
+.switch input:disabled + .switch__track{opacity:.5;cursor:not-allowed;}       /* disabled */
+
+/* Checkbox */
+.chk{display:inline-flex;align-items:center;gap:var(--space-2);cursor:pointer;}
+.chk input{display:none;}
+.chk__box{
+  width:20px;height:20px;border-radius:var(--radius-1);
+  border:2px solid var(--color-border-2);
+  display:flex;align-items:center;justify-content:center;
+  transition:background var(--t-fast), border-color var(--t-fast);
+}
+.chk__box .material-icons{font-size:16px;color:white;display:none;}
+.chk input:checked + .chk__box{background:var(--color-primary-main);border-color:var(--color-primary-main);} 
+.chk input:checked + .chk__box .material-icons{display:block;}
+.chk input:disabled + .chk__box{opacity:.5;cursor:not-allowed;}
+
+/* Radio */
+.radio{display:inline-flex;align-items:center;gap:var(--space-2);cursor:pointer;}
+.radio input{display:none;}
+.radio__circle{
+  width:20px;height:20px;border-radius:var(--radius-full);
+  border:2px solid var(--color-border-2);
+  display:flex;align-items:center;justify-content:center;
+  transition:background var(--t-fast), border-color var(--t-fast);
+}
+.radio__dot{width:10px;height:10px;border-radius:var(--radius-full);background:white;display:none;}
+.radio input:checked + .radio__circle{background:var(--color-primary-main);border-color:var(--color-primary-main);} 
+.radio input:checked + .radio__circle .radio__dot{display:block;}
+
+/* 상태 텍스트 */
+.state{font-size:var(--fs-14);color:var(--color-text-2);}
+
+  </style>
+</head>
+<body>
+  <!-- 상단바(AppBar): Flutter의 AppBar 구조를 웹으로 보여주는 예시 -->
+  <header class="appbar">
+    <a class="appbar__title" href="00_목차_및_색상시스템.html">Flutter 디자인 시스템</a>
+    <div class="appbar__actions">
+      <button class="iconBtn" aria-label="검색"><span class="material-icons">search</span></button>
+      <button class="iconBtn" aria-label="알림"><span class="material-icons">notifications</span></button>
+      <button class="iconBtn" aria-label="내 정보"><span class="material-icons">account_circle</span></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="h1">02. 토글 · 체크 · 라디오</div>
+    <div class="navlist"><a href="00_목차_및_색상시스템.html">목차_및_색상시스템</a><a href="01_버튼_모음.html">버튼_모음</a><a href="02_토글_체크_라디오.html" style="border-color:var(--color-primary-main);color:var(--color-primary-main)">토글_체크_라디오</a><a href="03_탭바_네비게이션.html">탭바_네비게이션</a><a href="04_입력필드_폼.html">입력필드_폼</a><a href="05_카드_리스트타일.html">카드_리스트타일</a><a href="06_슬라이더_프로그레스.html">슬라이더_프로그레스</a><a href="07_칩_뱃지_태그.html">칩_뱃지_태그</a><a href="08_다이얼로그_스낵바.html">다이얼로그_스낵바</a><a href="09_완성예시_실전화면.html">완성예시_실전화면</a></div>
+    
+<section class="section">
+  <div class="h2">1) Switch (설정 ON/OFF)</div>
+  <p class="p">아래 토글을 클릭해보세요. 오른쪽 상태 텍스트가 바뀝니다.</p>
+  <div class="demo" style="align-items:flex-start">
+    <div class="col">
+      <label class="switch">
+        <input id="sw1" type="checkbox" checked>
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span>알림 받기</span>
+      </label>
+      <div class="state" id="sw1State">상태: ON</div>
+
+      <label class="switch">
+        <input id="sw2" type="checkbox">
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span>다크 모드</span>
+      </label>
+      <div class="state" id="sw2State">상태: OFF</div>
+
+      <label class="switch">
+        <input type="checkbox" disabled>
+        <span class="switch__track"><span class="switch__thumb"></span></span>
+        <span>비활성 토글</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (Switch / SwitchListTile)</div><button class="copyBtn" data-copy-target="#code02_1">코드 복사</button></div>
+    <pre id="code02_1"><code>bool isNotificationOn = true;
+
+SwitchListTile(
+  title: const Text('알림 받기'),
+  value: isNotificationOn,
+  onChanged: (value) {
+    setState(() => isNotificationOn = value);
+  },
+);
+
+Switch(
+  value: isNotificationOn,
+  onChanged: (value) {
+    setState(() => isNotificationOn = value);
+  },
+);</code></pre>
+  </div>
+</section>
+
+<section class="section">
+  <div class="h2">2) Checkbox (복수 선택)</div>
+  <div class="demo">
+    <label class="chk">
+      <input id="c1" type="checkbox" checked>
+      <span class="chk__box"><span class="material-icons">check</span></span>
+      <span>이용약관 동의</span>
+    </label>
+    <label class="chk">
+      <input id="c2" type="checkbox">
+      <span class="chk__box"><span class="material-icons">check</span></span>
+      <span>마케팅 수신(선택)</span>
+    </label>
+    <label class="chk">
+      <input type="checkbox" disabled>
+      <span class="chk__box"><span class="material-icons">check</span></span>
+      <span>비활성</span>
+    </label>
+    <div class="state" id="chkState">선택됨: 이용약관</div>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (CheckboxListTile)</div><button class="copyBtn" data-copy-target="#code02_2">코드 복사</button></div>
+    <pre id="code02_2"><code>bool agreeTerms = true;
+bool agreeMarketing = false;
+
+CheckboxListTile(
+  title: const Text('이용약관 동의'),
+  value: agreeTerms,
+  onChanged: (value) {
+    setState(() => agreeTerms = value ?? false);
+  },
+);
+
+CheckboxListTile(
+  title: const Text('마케팅 수신(선택)'),
+  value: agreeMarketing,
+  onChanged: (value) {
+    setState(() => agreeMarketing = value ?? false);
+  },
+);</code></pre>
+  </div>
+</section>
+
+<section class="section">
+  <div class="h2">3) Radio (단일 선택)</div>
+  <p class="p">결제수단처럼 "하나만" 선택해야 할 때 사용합니다.</p>
+  <div class="demo" style="align-items:flex-start">
+    <div class="col">
+      <label class="radio">
+        <input type="radio" name="pay" value="card" checked>
+        <span class="radio__circle"><span class="radio__dot"></span></span>
+        <span>신용카드</span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="pay" value="bank">
+        <span class="radio__circle"><span class="radio__dot"></span></span>
+        <span>계좌이체</span>
+      </label>
+      <label class="radio">
+        <input type="radio" name="pay" value="cash">
+        <span class="radio__circle"><span class="radio__dot"></span></span>
+        <span>무통장입금</span>
+      </label>
+      <div class="state" id="radioState">선택됨: card</div>
+    </div>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (RadioListTile)</div><button class="copyBtn" data-copy-target="#code02_3">코드 복사</button></div>
+    <pre id="code02_3"><code>String payment = 'card';
+
+RadioListTile<String>(
+  title: const Text('신용카드'),
+  value: 'card',
+  groupValue: payment,
+  onChanged: (value) {
+    setState(() => payment = value!);
+  },
+);
+
+RadioListTile<String>(
+  title: const Text('계좌이체'),
+  value: 'bank',
+  groupValue: payment,
+  onChanged: (value) {
+    setState(() => payment = value!);
+  },
+);</code></pre>
+  </div>
+</section>
+
+    <div class="p" style="margin-top:var(--space-12)">© Design System Guide. 이 페이지는 교육용 예시입니다.</div>
+  </main>
+
+  <script>
+
+// =========================================================
+// 공통 JS: 코드 복사 버튼
+// - 초보자 팁: "document.querySelectorAll"로 여러 요소를 한번에 찾습니다.
+// - 각 copy 버튼은 data-copy-target 속성으로 복사할 <pre>를 가리킵니다.
+// =========================================================
+function setupCopyButtons(){
+  document.querySelectorAll('[data-copy-target]').forEach((btn)=>{
+    btn.addEventListener('click', async ()=>{
+      const sel = btn.getAttribute('data-copy-target');
+      const pre = document.querySelector(sel);
+      if(!pre) return;
+      const text = pre.innerText;
+      try{
+        await navigator.clipboard.writeText(text);
+        const old = btn.innerText;
+        btn.innerText = '복사됨';
+        setTimeout(()=>btn.innerText = old, 900);
+      }catch(e){
+        alert('복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+      }
+    });
+  });
+}
+window.addEventListener('DOMContentLoaded', setupCopyButtons);
+
+
+// Switch 상태 표시
+function bindSwitch(id, out){
+  const el = document.getElementById(id);
+  const outEl = document.getElementById(out);
+  const render = ()=> outEl.textContent = '상태: ' + (el.checked ? 'ON' : 'OFF');
+  el.addEventListener('change', render);
+  render();
+}
+
+// Checkbox 상태 표시(간단 예시)
+function bindCheckboxSummary(){
+  const c1 = document.getElementById('c1');
+  const c2 = document.getElementById('c2');
+  const out = document.getElementById('chkState');
+  const render = ()=>{
+    const items=[];
+    if(c1.checked) items.push('이용약관');
+    if(c2.checked) items.push('마케팅');
+    out.textContent = '선택됨: ' + (items.length?items.join(', '):'없음');
+  };
+  c1.addEventListener('change', render);
+  c2.addEventListener('change', render);
+  render();
+}
+
+// Radio 상태 표시
+function bindRadioSummary(){
+  const out = document.getElementById('radioState');
+  const render = ()=>{
+    const checked = document.querySelector('input[name="pay"]:checked');
+    out.textContent = '선택됨: ' + (checked ? checked.value : '없음');
+  };
+  document.querySelectorAll('input[name="pay"]').forEach(r=>r.addEventListener('change', render));
+  render();
+}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  bindSwitch('sw1','sw1State');
+  bindSwitch('sw2','sw2State');
+  bindCheckboxSummary();
+  bindRadioSummary();
+});
+
+  </script>
+</body>
+</html>

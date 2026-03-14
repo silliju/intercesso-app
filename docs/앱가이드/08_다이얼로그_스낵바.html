@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>08. 다이얼로그 · 스낵바 · 바텀시트</title>
+  <!-- Pretendard: 한글 가독성이 좋은 폰트 (디자인 일관성의 핵심) -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Icons: Flutter의 Icons.*와 느낌을 맞추기 좋습니다 -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+
+/* =========================================================
+   디자인 토큰(Design Tokens)
+   - Flutter의 ThemeData/ColorScheme/TextTheme와 같은 역할
+   - "여기 정의된 값만" 쓰면 화면마다 톤앤매너가 자동으로 맞춰집니다.
+   - AI(코파일럿/커서)에게도 "토큰 외 하드코딩 금지"를 명확히 전달하세요.
+========================================================= */
+:root{
+  /* ---------- 브랜드 핵심 색상(Primary) ---------- */
+  --color-primary-main:#4A7FFF;    /* 주색: 주요 CTA, 선택 상태 */
+  --color-primary-light:#7BA3FF;   /* 주색의 밝은 버전: hover 배경 등 */
+  --color-primary-dark:#2E5FCC;    /* 주색의 어두운 버전: pressed 등 */
+  --color-on-primary:#FFFFFF;      /* 주색 위 텍스트/아이콘 색 */
+
+  /* ---------- 보조 색상(Secondary) ---------- */
+  --color-secondary-main:#FF9D3D;
+  --color-secondary-light:#FFB76B;
+  --color-secondary-dark:#E68429;
+  --color-on-secondary:#FFFFFF;
+
+  /* ---------- 배경/서피스(Background/Surface) ---------- */
+  --color-bg:#F8F9FA;              /* 앱 전체 배경(Scaffold 배경에 해당) */
+  --color-surface:#FFFFFF;         /* 카드/시트 등 표면색 */
+  --color-surface-2:#F1F3F5;       /* 약간 구분되는 표면(필드 배경 등) */
+
+  /* ---------- 텍스트(Text) ---------- */
+  --color-text:#212529;            /* 본문/제목 기본 텍스트 */
+  --color-text-2:#6C757D;          /* 보조 설명 텍스트 */
+  --color-text-3:#ADB5BD;          /* disabled 텍스트 */
+  --color-hint:#CED4DA;            /* placeholder/hint */
+
+  /* ---------- 테두리/구분선(Border/Divider) ---------- */
+  --color-border-1:#E9ECEF;        /* 매우 연한 경계 */
+  --color-border-2:#DEE2E6;        /* 기본 경계 */
+  --color-divider:#E9ECEF;         /* 구분선 */
+
+  /* ---------- 상태 색상(Semantic) ---------- */
+  --color-success:#4CAF50; --color-success-bg:#E8F5E9; --color-success-text:#2E7D32;
+  --color-warning:#FFC107; --color-warning-bg:#FFF8E1; --color-warning-text:#F57F17;
+  --color-error:#F44336;   --color-error-bg:#FFEBEE;   --color-error-text:#C62828;
+  --color-info:#2196F3;    --color-info-bg:#E3F2FD;    --color-info-text:#1565C0;
+
+  /* ---------- 간격(Spacing) : 4px 그리드 ---------- */
+  --space-1:4px;   /* xs */
+  --space-2:8px;   /* sm */
+  --space-3:12px;  /* sm+ : 필요시(아이콘/텍스트 간) */
+  --space-4:16px;  /* md : 기본 패딩 */
+  --space-5:20px;
+  --space-6:24px;  /* lg */
+  --space-8:32px;  /* xl */
+  --space-12:48px; /* 2xl */
+
+  /* ---------- 라운드(Border Radius) ---------- */
+  --radius-1:4px;   /* 뱃지/태그 */
+  --radius-2:8px;   /* 버튼/입력필드 */
+  --radius-3:12px;  /* 카드 */
+  --radius-4:16px;  /* 다이얼로그 */
+  --radius-full:9999px; /* 원형 */
+
+  /* ---------- 그림자(Shadow) : Flutter elevation 대응 ---------- */
+  --shadow-0:none;
+  --shadow-1:0 1px 2px rgba(0,0,0,.05);
+  --shadow-2:0 2px 8px rgba(0,0,0,.08);
+  --shadow-3:0 4px 16px rgba(0,0,0,.12);
+  --shadow-4:0 8px 24px rgba(0,0,0,.16);
+
+  /* ---------- 타이포그래피(Typography) ---------- */
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --fs-12:12px; --fs-14:14px; --fs-16:16px; --fs-18:18px; --fs-20:20px; --fs-24:24px; --fs-28:28px; --fs-32:32px;
+  --fw-400:400; --fw-500:500; --fw-600:600; --fw-700:700;
+  --lh-tight:1.2; --lh-normal:1.5; --lh-relaxed:1.75;
+
+  /* ---------- 모션(Motion) ---------- */
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --t-fast:150ms var(--ease);
+  --t-base:300ms var(--ease);
+
+  /* ---------- 레이어(Z-index) ---------- */
+  --z-sticky:1000;
+  --z-modal:1100;
+  --z-toast:1200;
+}
+
+
+/* =========================================================
+   베이스 스타일(Reset + 공통 레이아웃)
+   - 브라우저 기본 스타일 차이를 줄여 "항상 같은 UI"로 보이게 합니다.
+========================================================= */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font);
+  font-size:var(--fs-16);
+  line-height:var(--lh-normal);
+  color:var(--color-text);
+  background:var(--color-bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ---------- 페이지 래퍼 ---------- */
+.container{max-width:1100px;margin:0 auto;padding:var(--space-8);}
+
+/* ---------- 상단 AppBar(Flutter AppBar 대응) ---------- */
+.appbar{
+  position:sticky;top:0;z-index:var(--z-sticky);
+  height:56px;background:var(--color-surface);
+  border-bottom:1px solid var(--color-border-1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--space-4);
+  box-shadow:var(--shadow-1);
+}
+.appbar__title{font-weight:var(--fw-700);color:var(--color-primary-main);text-decoration:none;font-size:var(--fs-20);}
+.appbar__actions{display:flex;align-items:center;gap:var(--space-2);}
+
+/* ---------- 섹션 카드(가이드 콘텐츠 단위) ---------- */
+.section{
+  background:var(--color-surface);
+  border:1px solid var(--color-border-1);
+  border-radius:var(--radius-3);
+  box-shadow:var(--shadow-1);
+  padding:var(--space-8);
+  margin:0 0 var(--space-6);
+}
+.h1{font-size:var(--fs-32);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-6);}
+.h2{font-size:var(--fs-24);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-4);}
+.h3{font-size:var(--fs-18);font-weight:var(--fw-600);margin:var(--space-6) 0 var(--space-3);}
+.p{color:var(--color-text-2);font-size:var(--fs-14);}
+
+/* ---------- 데모 박스(컴포넌트 미리보기 영역) ---------- */
+.demo{
+  background:var(--color-surface-2);
+  border:1px dashed var(--color-border-2);
+  border-radius:var(--radius-3);
+  padding:var(--space-6);
+  display:flex;flex-wrap:wrap;gap:var(--space-4);
+  align-items:center;
+}
+
+/* ---------- 코드 블록(Flutter 예시) ---------- */
+.codeWrap{margin-top:var(--space-4);}
+.codeHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);}
+.codeTitle{font-weight:var(--fw-600);font-size:var(--fs-14);color:var(--color-text);}
+.copyBtn{
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  border-radius:var(--radius-2);
+  padding:8px 12px;
+  cursor:pointer;
+  transition:background var(--t-fast);
+}
+.copyBtn:hover{background:var(--color-surface-2);}
+pre{
+  background:#111827; /* 초보자에게: "코드용 어두운 배경" */
+  color:#E5E7EB;
+  padding:var(--space-4);
+  border-radius:var(--radius-3);
+  overflow:auto;
+  font-size:13px;
+  line-height:1.55;
+}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+
+/* ---------- 유틸: Row/Column 느낌 ---------- */
+.row{display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:center;}
+.col{display:flex;flex-direction:column;gap:var(--space-3);}
+
+/* ---------- 링크 목록(목차/페이지 이동) ---------- */
+.navlist{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 var(--space-4);}
+.navlist a{
+  font-size:13px;text-decoration:none;
+  padding:6px 10px;border-radius:var(--radius-full);
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  color:var(--color-text);
+}
+.navlist a:hover{border-color:var(--color-primary-main);color:var(--color-primary-main);}
+
+/* ---------- 반응형: 화면이 커지면 좌우 여백 확대 ---------- */
+@media (min-width:768px){
+  .appbar{height:64px;padding:0 var(--space-8);}
+}
+
+
+/* =========================================================
+   공통 아이콘 버튼(상단 AppBar 액션)
+   - Flutter의 IconButton과 유사
+========================================================= */
+.iconBtn{
+  width:40px;height:40px;
+  border:0;background:transparent;
+  border-radius:var(--radius-full);
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background var(--t-fast);
+  color:var(--color-text);
+}
+.iconBtn:hover{background:rgba(0,0,0,.05);} /* hover 상태 */
+.iconBtn:active{transform:scale(.98);}      /* active(pressed) 상태 */
+.iconBtn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* 아이콘 기본 크기: Material Icons는 font-size로 크기 조절 */
+.material-icons{font-size:24px;}
+
+/* =========================================================
+   Dialog / SnackBar / BottomSheet
+   - Flutter: AlertDialog, SnackBar, showModalBottomSheet
+========================================================= */
+
+/* 버튼(간단히 페이지 내에서 사용) */
+.btn{
+  height:48px;padding:0 var(--space-6);
+  border-radius:var(--radius-2);
+  border:0;cursor:pointer;
+  font-weight:var(--fw-600);
+  background:var(--color-primary-main);color:var(--color-on-primary);
+  box-shadow:var(--shadow-2);
+  transition:background var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+}
+.btn:hover{background:var(--color-primary-dark);box-shadow:var(--shadow-3);transform:translateY(-1px);} 
+.btn:active{transform:scale(.98);} 
+.btn--secondary{background:transparent;color:var(--color-primary-main);border:2px solid var(--color-primary-main);box-shadow:none;} 
+.btn--secondary:hover{background:rgba(74,127,255,.08);} 
+
+/* Backdrop: 모달 뒤 어두운 배경 */
+.backdrop{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.45);
+  display:none;align-items:center;justify-content:center;
+  z-index:var(--z-modal);
+}
+.backdrop.is-open{display:flex;}
+
+/* Dialog(모달 본체) */
+.dialog{
+  width:min(420px,92vw);
+  background:var(--color-surface);
+  border-radius:var(--radius-4);
+  box-shadow:var(--shadow-4);
+  padding:var(--space-6);
+  animation:pop var(--t-base);
+}
+@keyframes pop{from{transform:scale(.96);opacity:0;}to{transform:scale(1);opacity:1;}}
+.dialog__title{font-size:var(--fs-20);font-weight:var(--fw-700);margin-bottom:var(--space-2);} 
+.dialog__body{color:var(--color-text-2);margin-bottom:var(--space-6);} 
+.dialog__actions{display:flex;justify-content:flex-end;gap:var(--space-2);} 
+
+/* SnackBar(토스트) */
+.snack{
+  position:fixed;left:50%;bottom:84px;transform:translateX(-50%);
+  min-width:min(520px,92vw);
+  background:#111827;color:#fff;
+  border-radius:var(--radius-3);
+  padding:var(--space-4) var(--space-6);
+  box-shadow:var(--shadow-4);
+  display:none;align-items:center;justify-content:space-between;gap:var(--space-4);
+  z-index:var(--z-toast);
+}
+.snack.is-open{display:flex;animation:slideUp var(--t-base);} 
+@keyframes slideUp{from{opacity:0;transform:translate(-50%,8px);}to{opacity:1;transform:translate(-50%,0);} }
+.snack__action{background:transparent;border:0;color:var(--color-secondary-main);font-weight:var(--fw-700);cursor:pointer;} 
+
+/* BottomSheet */
+.sheet{
+  position:fixed;left:0;right:0;bottom:0;
+  background:var(--color-surface);
+  border-radius:16px 16px 0 0;
+  box-shadow:var(--shadow-4);
+  padding:var(--space-6);
+  transform:translateY(110%);
+  transition:transform var(--t-base);
+  z-index:var(--z-modal);
+}
+.sheet.is-open{transform:translateY(0);} 
+.sheet__handle{width:48px;height:5px;border-radius:var(--radius-full);background:var(--color-border-2);margin:0 auto var(--space-6);} 
+.sheet__title{font-weight:var(--fw-700);margin-bottom:var(--space-2);} 
+.sheet__item{padding:14px;border-radius:var(--radius-3);cursor:pointer;transition:background var(--t-fast);} 
+.sheet__item:hover{background:var(--color-surface-2);} 
+
+  </style>
+</head>
+<body>
+  <!-- 상단바(AppBar): Flutter의 AppBar 구조를 웹으로 보여주는 예시 -->
+  <header class="appbar">
+    <a class="appbar__title" href="00_목차_및_색상시스템.html">Flutter 디자인 시스템</a>
+    <div class="appbar__actions">
+      <button class="iconBtn" aria-label="검색"><span class="material-icons">search</span></button>
+      <button class="iconBtn" aria-label="알림"><span class="material-icons">notifications</span></button>
+      <button class="iconBtn" aria-label="내 정보"><span class="material-icons">account_circle</span></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="h1">08. 다이얼로그 · 스낵바 · 바텀시트</div>
+    <div class="navlist"><a href="00_목차_및_색상시스템.html">목차_및_색상시스템</a><a href="01_버튼_모음.html">버튼_모음</a><a href="02_토글_체크_라디오.html">토글_체크_라디오</a><a href="03_탭바_네비게이션.html">탭바_네비게이션</a><a href="04_입력필드_폼.html">입력필드_폼</a><a href="05_카드_리스트타일.html">카드_리스트타일</a><a href="06_슬라이더_프로그레스.html">슬라이더_프로그레스</a><a href="07_칩_뱃지_태그.html">칩_뱃지_태그</a><a href="08_다이얼로그_스낵바.html" style="border-color:var(--color-primary-main);color:var(--color-primary-main)">다이얼로그_스낵바</a><a href="09_완성예시_실전화면.html">완성예시_실전화면</a></div>
+    
+<section class="section">
+  <div class="h2">1) AlertDialog</div>
+  <p class="p">삭제/로그아웃처럼 되돌리기 어려운 액션은 다이얼로그로 재확인합니다.</p>
+  <div class="demo">
+    <button class="btn" id="openDialog">다이얼로그 열기</button>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (showDialog + AlertDialog)</div><button class="copyBtn" data-copy-target="#code08_1">코드 복사</button></div>
+    <pre id="code08_1"><code>showDialog(
+  context: context,
+  builder: (_) => AlertDialog(
+    title: const Text('삭제할까요?'),
+    content: const Text('이 작업은 되돌릴 수 없습니다.'),
+    actions: [
+      TextButton(onPressed: () => Navigator.pop(context), child: const Text('취소')),
+      ElevatedButton(onPressed: () { /* delete */ }, child: const Text('삭제')),
+    ],
+  ),
+);</code></pre>
+  </div>
+</section>
+
+<section class="section">
+  <div class="h2">2) SnackBar</div>
+  <p class="p">짧은 피드백(저장됨/복사됨)에 적합합니다. 아래 버튼을 눌러보세요.</p>
+  <div class="demo">
+    <button class="btn" id="openSnack">스낵바 띄우기</button>
+    <button class="btn btn--secondary" id="openSnack2">실패 스낵바</button>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (ScaffoldMessenger)</div><button class="copyBtn" data-copy-target="#code08_2">코드 복사</button></div>
+    <pre id="code08_2"><code>ScaffoldMessenger.of(context).showSnackBar(
+  SnackBar(
+    content: const Text('저장되었습니다.'),
+    action: SnackBarAction(label: '실행취소', onPressed: () {}),
+  ),
+);</code></pre>
+  </div>
+</section>
+
+<section class="section">
+  <div class="h2">3) BottomSheet</div>
+  <p class="p">액션 목록(공유/신고/차단)을 보여줄 때 유용합니다.</p>
+  <div class="demo">
+    <button class="btn" id="openSheet">바텀시트 열기</button>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (showModalBottomSheet)</div><button class="copyBtn" data-copy-target="#code08_3">코드 복사</button></div>
+    <pre id="code08_3"><code>showModalBottomSheet(
+  context: context,
+  shape: const RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+  ),
+  builder: (_) => SafeArea(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ListTile(leading: Icon(Icons.share), title: Text('공유'), onTap: () {}),
+        ListTile(leading: Icon(Icons.report), title: Text('신고'), onTap: () {}),
+      ],
+    ),
+  ),
+);</code></pre>
+  </div>
+</section>
+
+<!-- Dialog(백드롭) -->
+<div class="backdrop" id="dlgBackdrop" role="dialog" aria-modal="true" aria-label="다이얼로그">
+  <div class="dialog">
+    <div class="dialog__title">삭제할까요?</div>
+    <div class="dialog__body">이 작업은 되돌릴 수 없습니다.</div>
+    <div class="dialog__actions">
+      <button class="btn btn--secondary" id="dlgCancel">취소</button>
+      <button class="btn" id="dlgOk">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- SnackBar -->
+<div class="snack" id="snack">
+  <div id="snackText">저장되었습니다.</div>
+  <button class="snack__action" id="snackAction">실행취소</button>
+</div>
+
+<!-- BottomSheet -->
+<div class="backdrop" id="sheetBackdrop" aria-hidden="true"></div>
+<div class="sheet" id="sheet" role="dialog" aria-label="바텀시트">
+  <div class="sheet__handle"></div>
+  <div class="sheet__title">작업 선택</div>
+  <div class="sheet__item" data-sheet-action="share"><span class="material-icons" style="vertical-align:-6px">share</span> 공유</div>
+  <div class="sheet__item" data-sheet-action="report"><span class="material-icons" style="vertical-align:-6px">report</span> 신고</div>
+  <div class="sheet__item" data-sheet-action="block"><span class="material-icons" style="vertical-align:-6px">block</span> 차단</div>
+  <div class="row" style="justify-content:flex-end;margin-top:var(--space-6)">
+    <button class="btn btn--secondary" id="closeSheet">닫기</button>
+  </div>
+</div>
+
+    <div class="p" style="margin-top:var(--space-12)">© Design System Guide. 이 페이지는 교육용 예시입니다.</div>
+  </main>
+
+  <script>
+
+// =========================================================
+// 공통 JS: 코드 복사 버튼
+// - 초보자 팁: "document.querySelectorAll"로 여러 요소를 한번에 찾습니다.
+// - 각 copy 버튼은 data-copy-target 속성으로 복사할 <pre>를 가리킵니다.
+// =========================================================
+function setupCopyButtons(){
+  document.querySelectorAll('[data-copy-target]').forEach((btn)=>{
+    btn.addEventListener('click', async ()=>{
+      const sel = btn.getAttribute('data-copy-target');
+      const pre = document.querySelector(sel);
+      if(!pre) return;
+      const text = pre.innerText;
+      try{
+        await navigator.clipboard.writeText(text);
+        const old = btn.innerText;
+        btn.innerText = '복사됨';
+        setTimeout(()=>btn.innerText = old, 900);
+      }catch(e){
+        alert('복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+      }
+    });
+  });
+}
+window.addEventListener('DOMContentLoaded', setupCopyButtons);
+
+
+function open(el){el.classList.add('is-open');}
+function close(el){el.classList.remove('is-open');}
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  // Dialog
+  const b = document.getElementById('dlgBackdrop');
+  document.getElementById('openDialog').addEventListener('click', ()=>open(b));
+  document.getElementById('dlgCancel').addEventListener('click', ()=>close(b));
+  document.getElementById('dlgOk').addEventListener('click', ()=>{
+    close(b);
+    showSnack('삭제되었습니다.', '되돌리기');
+  });
+  b.addEventListener('click', (e)=>{ if(e.target===b) close(b); });
+
+  // Snack
+  const snack = document.getElementById('snack');
+  const snackText = document.getElementById('snackText');
+  const snackAction = document.getElementById('snackAction');
+  let snackTimer;
+
+  function showSnack(text, actionLabel){
+    snackText.textContent = text;
+    snackAction.textContent = actionLabel || '';
+    open(snack);
+    clearTimeout(snackTimer);
+    snackTimer = setTimeout(()=>close(snack), 2600);
+  }
+  window.showSnack = showSnack;
+
+  document.getElementById('openSnack').addEventListener('click', ()=>showSnack('저장되었습니다.', '실행취소'));
+  document.getElementById('openSnack2').addEventListener('click', ()=>showSnack('네트워크 오류가 발생했습니다.', '재시도'));
+  snackAction.addEventListener('click', ()=>{ close(snack); showSnack('동작이 실행되었습니다.', ''); });
+
+  // BottomSheet
+  const sheet = document.getElementById('sheet');
+  const sheetBackdrop = document.getElementById('sheetBackdrop');
+  const openSheet = ()=>{open(sheet); open(sheetBackdrop);};
+  const closeSheet = ()=>{close(sheet); close(sheetBackdrop);};
+
+  document.getElementById('openSheet').addEventListener('click', openSheet);
+  document.getElementById('closeSheet').addEventListener('click', closeSheet);
+  sheetBackdrop.addEventListener('click', closeSheet);
+  document.querySelectorAll('[data-sheet-action]').forEach((it)=>{
+    it.addEventListener('click', ()=>{ closeSheet(); showSnack('선택: '+it.dataset.sheetAction, ''); });
+  });
+});
+
+  </script>
+</body>
+</html>

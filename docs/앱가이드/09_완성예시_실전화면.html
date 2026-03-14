@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>09. 완성 예시 · 실전화면</title>
+  <!-- Pretendard: 한글 가독성이 좋은 폰트 (디자인 일관성의 핵심) -->
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Material Icons: Flutter의 Icons.*와 느낌을 맞추기 좋습니다 -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <style>
+
+/* =========================================================
+   디자인 토큰(Design Tokens)
+   - Flutter의 ThemeData/ColorScheme/TextTheme와 같은 역할
+   - "여기 정의된 값만" 쓰면 화면마다 톤앤매너가 자동으로 맞춰집니다.
+   - AI(코파일럿/커서)에게도 "토큰 외 하드코딩 금지"를 명확히 전달하세요.
+========================================================= */
+:root{
+  /* ---------- 브랜드 핵심 색상(Primary) ---------- */
+  --color-primary-main:#4A7FFF;    /* 주색: 주요 CTA, 선택 상태 */
+  --color-primary-light:#7BA3FF;   /* 주색의 밝은 버전: hover 배경 등 */
+  --color-primary-dark:#2E5FCC;    /* 주색의 어두운 버전: pressed 등 */
+  --color-on-primary:#FFFFFF;      /* 주색 위 텍스트/아이콘 색 */
+
+  /* ---------- 보조 색상(Secondary) ---------- */
+  --color-secondary-main:#FF9D3D;
+  --color-secondary-light:#FFB76B;
+  --color-secondary-dark:#E68429;
+  --color-on-secondary:#FFFFFF;
+
+  /* ---------- 배경/서피스(Background/Surface) ---------- */
+  --color-bg:#F8F9FA;              /* 앱 전체 배경(Scaffold 배경에 해당) */
+  --color-surface:#FFFFFF;         /* 카드/시트 등 표면색 */
+  --color-surface-2:#F1F3F5;       /* 약간 구분되는 표면(필드 배경 등) */
+
+  /* ---------- 텍스트(Text) ---------- */
+  --color-text:#212529;            /* 본문/제목 기본 텍스트 */
+  --color-text-2:#6C757D;          /* 보조 설명 텍스트 */
+  --color-text-3:#ADB5BD;          /* disabled 텍스트 */
+  --color-hint:#CED4DA;            /* placeholder/hint */
+
+  /* ---------- 테두리/구분선(Border/Divider) ---------- */
+  --color-border-1:#E9ECEF;        /* 매우 연한 경계 */
+  --color-border-2:#DEE2E6;        /* 기본 경계 */
+  --color-divider:#E9ECEF;         /* 구분선 */
+
+  /* ---------- 상태 색상(Semantic) ---------- */
+  --color-success:#4CAF50; --color-success-bg:#E8F5E9; --color-success-text:#2E7D32;
+  --color-warning:#FFC107; --color-warning-bg:#FFF8E1; --color-warning-text:#F57F17;
+  --color-error:#F44336;   --color-error-bg:#FFEBEE;   --color-error-text:#C62828;
+  --color-info:#2196F3;    --color-info-bg:#E3F2FD;    --color-info-text:#1565C0;
+
+  /* ---------- 간격(Spacing) : 4px 그리드 ---------- */
+  --space-1:4px;   /* xs */
+  --space-2:8px;   /* sm */
+  --space-3:12px;  /* sm+ : 필요시(아이콘/텍스트 간) */
+  --space-4:16px;  /* md : 기본 패딩 */
+  --space-5:20px;
+  --space-6:24px;  /* lg */
+  --space-8:32px;  /* xl */
+  --space-12:48px; /* 2xl */
+
+  /* ---------- 라운드(Border Radius) ---------- */
+  --radius-1:4px;   /* 뱃지/태그 */
+  --radius-2:8px;   /* 버튼/입력필드 */
+  --radius-3:12px;  /* 카드 */
+  --radius-4:16px;  /* 다이얼로그 */
+  --radius-full:9999px; /* 원형 */
+
+  /* ---------- 그림자(Shadow) : Flutter elevation 대응 ---------- */
+  --shadow-0:none;
+  --shadow-1:0 1px 2px rgba(0,0,0,.05);
+  --shadow-2:0 2px 8px rgba(0,0,0,.08);
+  --shadow-3:0 4px 16px rgba(0,0,0,.12);
+  --shadow-4:0 8px 24px rgba(0,0,0,.16);
+
+  /* ---------- 타이포그래피(Typography) ---------- */
+  --font:'Pretendard',-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
+  --fs-12:12px; --fs-14:14px; --fs-16:16px; --fs-18:18px; --fs-20:20px; --fs-24:24px; --fs-28:28px; --fs-32:32px;
+  --fw-400:400; --fw-500:500; --fw-600:600; --fw-700:700;
+  --lh-tight:1.2; --lh-normal:1.5; --lh-relaxed:1.75;
+
+  /* ---------- 모션(Motion) ---------- */
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --t-fast:150ms var(--ease);
+  --t-base:300ms var(--ease);
+
+  /* ---------- 레이어(Z-index) ---------- */
+  --z-sticky:1000;
+  --z-modal:1100;
+  --z-toast:1200;
+}
+
+
+/* =========================================================
+   베이스 스타일(Reset + 공통 레이아웃)
+   - 브라우저 기본 스타일 차이를 줄여 "항상 같은 UI"로 보이게 합니다.
+========================================================= */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;}
+body{
+  font-family:var(--font);
+  font-size:var(--fs-16);
+  line-height:var(--lh-normal);
+  color:var(--color-text);
+  background:var(--color-bg);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ---------- 페이지 래퍼 ---------- */
+.container{max-width:1100px;margin:0 auto;padding:var(--space-8);}
+
+/* ---------- 상단 AppBar(Flutter AppBar 대응) ---------- */
+.appbar{
+  position:sticky;top:0;z-index:var(--z-sticky);
+  height:56px;background:var(--color-surface);
+  border-bottom:1px solid var(--color-border-1);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 var(--space-4);
+  box-shadow:var(--shadow-1);
+}
+.appbar__title{font-weight:var(--fw-700);color:var(--color-primary-main);text-decoration:none;font-size:var(--fs-20);}
+.appbar__actions{display:flex;align-items:center;gap:var(--space-2);}
+
+/* ---------- 섹션 카드(가이드 콘텐츠 단위) ---------- */
+.section{
+  background:var(--color-surface);
+  border:1px solid var(--color-border-1);
+  border-radius:var(--radius-3);
+  box-shadow:var(--shadow-1);
+  padding:var(--space-8);
+  margin:0 0 var(--space-6);
+}
+.h1{font-size:var(--fs-32);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-6);}
+.h2{font-size:var(--fs-24);line-height:var(--lh-tight);font-weight:var(--fw-700);margin:0 0 var(--space-4);}
+.h3{font-size:var(--fs-18);font-weight:var(--fw-600);margin:var(--space-6) 0 var(--space-3);}
+.p{color:var(--color-text-2);font-size:var(--fs-14);}
+
+/* ---------- 데모 박스(컴포넌트 미리보기 영역) ---------- */
+.demo{
+  background:var(--color-surface-2);
+  border:1px dashed var(--color-border-2);
+  border-radius:var(--radius-3);
+  padding:var(--space-6);
+  display:flex;flex-wrap:wrap;gap:var(--space-4);
+  align-items:center;
+}
+
+/* ---------- 코드 블록(Flutter 예시) ---------- */
+.codeWrap{margin-top:var(--space-4);}
+.codeHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-2);}
+.codeTitle{font-weight:var(--fw-600);font-size:var(--fs-14);color:var(--color-text);}
+.copyBtn{
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  border-radius:var(--radius-2);
+  padding:8px 12px;
+  cursor:pointer;
+  transition:background var(--t-fast);
+}
+.copyBtn:hover{background:var(--color-surface-2);}
+pre{
+  background:#111827; /* 초보자에게: "코드용 어두운 배경" */
+  color:#E5E7EB;
+  padding:var(--space-4);
+  border-radius:var(--radius-3);
+  overflow:auto;
+  font-size:13px;
+  line-height:1.55;
+}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;}
+
+/* ---------- 유틸: Row/Column 느낌 ---------- */
+.row{display:flex;flex-wrap:wrap;gap:var(--space-4);align-items:center;}
+.col{display:flex;flex-direction:column;gap:var(--space-3);}
+
+/* ---------- 링크 목록(목차/페이지 이동) ---------- */
+.navlist{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 var(--space-4);}
+.navlist a{
+  font-size:13px;text-decoration:none;
+  padding:6px 10px;border-radius:var(--radius-full);
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  color:var(--color-text);
+}
+.navlist a:hover{border-color:var(--color-primary-main);color:var(--color-primary-main);}
+
+/* ---------- 반응형: 화면이 커지면 좌우 여백 확대 ---------- */
+@media (min-width:768px){
+  .appbar{height:64px;padding:0 var(--space-8);}
+}
+
+
+/* =========================================================
+   공통 아이콘 버튼(상단 AppBar 액션)
+   - Flutter의 IconButton과 유사
+========================================================= */
+.iconBtn{
+  width:40px;height:40px;
+  border:0;background:transparent;
+  border-radius:var(--radius-full);
+  display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;
+  transition:background var(--t-fast);
+  color:var(--color-text);
+}
+.iconBtn:hover{background:rgba(0,0,0,.05);} /* hover 상태 */
+.iconBtn:active{transform:scale(.98);}      /* active(pressed) 상태 */
+.iconBtn:disabled{opacity:.4;cursor:not-allowed;}
+
+/* 아이콘 기본 크기: Material Icons는 font-size로 크기 조절 */
+.material-icons{font-size:24px;}
+
+/* =========================================================
+   완성 예시: 실제 홈 화면 구성(Intercesso 스타일)
+   - 여기서 중요한 건 "토큰을 조합"해서 화면을 만드는 법입니다.
+========================================================= */
+
+/* 화면 레이아웃(모바일 카드 형태) */
+.screen{max-width:420px;margin:0 auto;background:var(--color-bg);border-radius:24px;overflow:hidden;border:1px solid var(--color-border-1);box-shadow:var(--shadow-3);} 
+.screenTop{background:var(--color-surface);padding:14px var(--space-4);display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--color-border-1);} 
+.screenTitle{font-weight:var(--fw-700);color:var(--color-primary-main);} 
+
+.hero{
+  margin:var(--space-4);
+  border-radius:var(--radius-3);
+  padding:var(--space-6);
+  color:white;
+  background:linear-gradient(135deg, var(--color-primary-main), #8B5CF6);
+  box-shadow:var(--shadow-2);
+}
+.hero .badge{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.18);padding:6px 10px;border-radius:var(--radius-full);font-size:12px;font-weight:var(--fw-600);} 
+.hero .verse{margin-top:var(--space-4);font-size:18px;line-height:1.45;font-weight:var(--fw-600);} 
+.hero .ref{margin-top:var(--space-2);opacity:.9;font-size:13px;} 
+
+/* CTA 버튼 2개(기도/감사) */
+.ctaRow{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);padding:0 var(--space-4);} 
+.cta{
+  border:0;border-radius:var(--radius-3);
+  padding:var(--space-4);
+  color:white;
+  display:flex;gap:var(--space-3);align-items:center;
+  cursor:pointer;
+  box-shadow:var(--shadow-2);
+  transition:transform var(--t-fast), box-shadow var(--t-fast);
+}
+.cta:hover{transform:translateY(-1px);box-shadow:var(--shadow-3);} 
+.cta:active{transform:scale(.98);} 
+.cta--pray{background:var(--color-primary-main);} 
+.cta--thanks{background:var(--color-secondary-main);} 
+.cta .sub{font-size:12px;opacity:.9;} 
+
+/* 탭(기도/감사 피드) */
+.feedTabs{display:flex;gap:8px;padding:var(--space-4);}
+.pill{
+  flex:0 0 auto;
+  border:1px solid var(--color-border-2);
+  background:var(--color-surface);
+  border-radius:var(--radius-full);
+  padding:8px 12px;
+  font-weight:var(--fw-600);
+  cursor:pointer;
+  transition:background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+.pill:hover{border-color:var(--color-primary-main);}
+.pill.is-active{background:rgba(74,127,255,.12);border-color:rgba(74,127,255,.35);color:var(--color-primary-dark);} 
+
+/* 피드 카드 */
+.feed{display:flex;flex-direction:column;gap:var(--space-4);padding:0 var(--space-4) var(--space-6);} 
+.post{background:var(--color-surface);border:1px solid var(--color-border-1);border-radius:var(--radius-3);padding:var(--space-4);box-shadow:var(--shadow-1);} 
+.postHead{display:flex;gap:var(--space-3);align-items:center;margin-bottom:var(--space-3);} 
+.avatar{width:36px;height:36px;border-radius:var(--radius-full);background:rgba(74,127,255,.15);color:var(--color-primary-main);display:flex;align-items:center;justify-content:center;font-weight:var(--fw-700);} 
+.tag{font-size:12px;font-weight:var(--fw-700);color:var(--color-primary-main);background:rgba(74,127,255,.12);padding:4px 8px;border-radius:var(--radius-full);} 
+.postTitle{font-weight:var(--fw-700);margin-top:2px;} 
+.postBody{font-size:14px;color:var(--color-text-2);margin-top:6px;} 
+.postMeta{display:flex;justify-content:space-between;align-items:center;margin-top:var(--space-4);color:var(--color-text-2);font-size:12px;} 
+
+/* 하단 네비(모바일) */
+.screenBottom{
+  position:sticky;bottom:0;
+  background:var(--color-surface);
+  border-top:1px solid var(--color-border-1);
+  display:flex;justify-content:space-around;
+  padding:10px 0;
+}
+.bn{width:64px;text-align:center;color:var(--color-text-2);text-decoration:none;} 
+.bn .material-icons{font-size:22px;display:block;} 
+.bn .lbl{font-size:11px;font-weight:var(--fw-500);} 
+.bn.is-active{color:var(--color-primary-main);} 
+
+  </style>
+</head>
+<body>
+  <!-- 상단바(AppBar): Flutter의 AppBar 구조를 웹으로 보여주는 예시 -->
+  <header class="appbar">
+    <a class="appbar__title" href="00_목차_및_색상시스템.html">Flutter 디자인 시스템</a>
+    <div class="appbar__actions">
+      <button class="iconBtn" aria-label="검색"><span class="material-icons">search</span></button>
+      <button class="iconBtn" aria-label="알림"><span class="material-icons">notifications</span></button>
+      <button class="iconBtn" aria-label="내 정보"><span class="material-icons">account_circle</span></button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="h1">09. 완성 예시 · 실전화면</div>
+    <div class="navlist"><a href="00_목차_및_색상시스템.html">목차_및_색상시스템</a><a href="01_버튼_모음.html">버튼_모음</a><a href="02_토글_체크_라디오.html">토글_체크_라디오</a><a href="03_탭바_네비게이션.html">탭바_네비게이션</a><a href="04_입력필드_폼.html">입력필드_폼</a><a href="05_카드_리스트타일.html">카드_리스트타일</a><a href="06_슬라이더_프로그레스.html">슬라이더_프로그레스</a><a href="07_칩_뱃지_태그.html">칩_뱃지_태그</a><a href="08_다이얼로그_스낵바.html">다이얼로그_스낵바</a><a href="09_완성예시_실전화면.html" style="border-color:var(--color-primary-main);color:var(--color-primary-main)">완성예시_실전화면</a></div>
+    
+<section class="section">
+  <div class="h2">실제 화면 조합 예시(홈)</div>
+  <p class="p">아래는 지금까지의 토큰/컴포넌트를 조합한 "실전" 홈 화면입니다. 이 구조를 기반으로 화면을 늘려가면 앱 전체가 자연스럽게 통일됩니다.</p>
+
+  <div class="demo" style="background:transparent;border:0;padding:0;justify-content:center">
+    <div class="screen" aria-label="Intercesso 홈 화면 데모">
+      <div class="screenTop">
+        <div class="screenTitle">Intercesso</div>
+        <div class="row" style="gap:6px">
+          <button class="iconBtn" aria-label="내 정보"><span class="material-icons">person</span></button>
+          <button class="iconBtn" aria-label="알림"><span class="material-icons">notifications</span></button>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="badge"><span class="material-icons" style="font-size:18px">menu_book</span> 오늘의 말씀</div>
+        <div class="verse">나는 부활이요 생명이니 나를 믿는 자는 죽어도 살겠고</div>
+        <div class="ref">요한복음 11:25</div>
+      </div>
+
+      <div class="ctaRow">
+        <button class="cta cta--pray"><span class="material-icons">edit</span><div><div style="font-weight:var(--fw-700)">기도 제목 쓰기</div><div class="sub">오늘의 기도</div></div></button>
+        <button class="cta cta--thanks"><span class="material-icons">favorite</span><div><div style="font-weight:var(--fw-700)">감사일기 쓰기</div><div class="sub">오늘의 감사</div></div></button>
+      </div>
+
+      <div class="feedTabs">
+        <button class="pill is-active" data-pill="pray">기도 피드</button>
+        <button class="pill" data-pill="thanks">감사 피드</button>
+      </div>
+
+      <div class="feed" id="feed">
+        <div class="post" data-type="pray">
+          <div class="postHead">
+            <div class="tag">기도</div>
+            <div style="flex:1">
+              <div style="font-weight:var(--fw-700)">살리주면마</div>
+              <div class="postTitle">오늘부터 기도</div>
+            </div>
+            <div class="avatar">S</div>
+          </div>
+          <div class="postBody">감사합니다 하나님. 오늘도 지켜주셔서 감사합니다.</div>
+          <div class="postMeta"><span>참여 1 · 댓글 2</span><span>6일 전</span></div>
+        </div>
+
+        <div class="post" data-type="pray">
+          <div class="postHead">
+            <div class="tag">기도</div>
+            <div style="flex:1">
+              <div style="font-weight:var(--fw-700)">피스티스</div>
+              <div class="postTitle">하나님의 능력</div>
+            </div>
+            <div class="avatar">P</div>
+          </div>
+          <div class="postBody">하나님의 능력을 의지합니다. 오늘도 승리하게 하소서.</div>
+          <div class="postMeta"><span>참여 0 · 댓글 2</span><span>7일 전</span></div>
+        </div>
+
+        <div class="post" data-type="thanks" style="display:none">
+          <div class="postHead">
+            <div class="tag" style="background:rgba(255,157,61,.18);color:var(--color-secondary-dark)">감사</div>
+            <div style="flex:1">
+              <div style="font-weight:var(--fw-700)">은혜</div>
+              <div class="postTitle">오늘의 작은 감사</div>
+            </div>
+            <div class="avatar" style="background:rgba(255,157,61,.18);color:var(--color-secondary-dark)">E</div>
+          </div>
+          <div class="postBody">따뜻한 햇살과 건강을 주셔서 감사합니다.</div>
+          <div class="postMeta"><span>공감 10 · 댓글 1</span><span>1일 전</span></div>
+        </div>
+      </div>
+
+      <div class="screenBottom">
+        <a class="bn is-active" href="#"><span class="material-icons">home</span><span class="lbl">홈</span></a>
+        <a class="bn" href="#"><span class="material-icons">book</span><span class="lbl">기도</span></a>
+        <a class="bn" href="#"><span class="material-icons">history</span><span class="lbl">로그</span></a>
+        <a class="bn" href="#"><span class="material-icons">favorite</span><span class="lbl">감사</span></a>
+        <a class="bn" href="#"><span class="material-icons">notifications</span><span class="lbl">알림</span></a>
+      </div>
+    </div>
+  </div>
+
+  <div class="codeWrap">
+    <div class="codeHead"><div class="codeTitle">Flutter 코드 (Home 스켈레톤)</div><button class="copyBtn" data-copy-target="#code09_1">코드 복사</button></div>
+    <pre id="code09_1"><code>// 실제 앱에서는 위젯을 "컴포넌트"로 쪼개서 재사용하세요.
+class HomePage extends StatelessWidget {
+  const HomePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Intercesso'),
+        actions: [
+          IconButton(onPressed: () {}, icon: const Icon(Icons.person)),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.notifications)),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: const [
+          DailyVerseCard(),
+          SizedBox(height: 16),
+          ActionButtonsRow(),
+          SizedBox(height: 16),
+          FeedTabs(),
+          SizedBox(height: 8),
+          FeedList(),
+        ],
+      ),
+      bottomNavigationBar: const HomeBottomNav(),
+    );
+  }
+}</code></pre>
+  </div>
+</section>
+
+    <div class="p" style="margin-top:var(--space-12)">© Design System Guide. 이 페이지는 교육용 예시입니다.</div>
+  </main>
+
+  <script>
+
+// =========================================================
+// 공통 JS: 코드 복사 버튼
+// - 초보자 팁: "document.querySelectorAll"로 여러 요소를 한번에 찾습니다.
+// - 각 copy 버튼은 data-copy-target 속성으로 복사할 <pre>를 가리킵니다.
+// =========================================================
+function setupCopyButtons(){
+  document.querySelectorAll('[data-copy-target]').forEach((btn)=>{
+    btn.addEventListener('click', async ()=>{
+      const sel = btn.getAttribute('data-copy-target');
+      const pre = document.querySelector(sel);
+      if(!pre) return;
+      const text = pre.innerText;
+      try{
+        await navigator.clipboard.writeText(text);
+        const old = btn.innerText;
+        btn.innerText = '복사됨';
+        setTimeout(()=>btn.innerText = old, 900);
+      }catch(e){
+        alert('복사에 실패했습니다. 브라우저 권한을 확인해주세요.');
+      }
+    });
+  });
+}
+window.addEventListener('DOMContentLoaded', setupCopyButtons);
+
+
+window.addEventListener('DOMContentLoaded', ()=>{
+  const pills = Array.from(document.querySelectorAll('[data-pill]'));
+  const posts = Array.from(document.querySelectorAll('.post'));
+  const show = (type)=>{
+    pills.forEach(p=>p.classList.toggle('is-active', p.dataset.pill===type));
+    posts.forEach(post=>{
+      const t = post.getAttribute('data-type');
+      post.style.display = (t===type) ? 'block' : 'none';
+    });
+  };
+  pills.forEach(p=>p.addEventListener('click', ()=>show(p.dataset.pill)));
+});
+
+  </script>
+</body>
+</html>

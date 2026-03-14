@@ -1,0 +1,52 @@
+---
+description: Intercesso 앱 색상·타이포·여백·라운드 표준 (theme.dart 기준)
+globs: intercesso_app/lib/**/*.dart
+alwaysApply: false
+---
+
+# Intercesso Design System
+
+- **디자인 참고**: `docs/앱가이드.html` — 색상·간격·라운드·타이포·컴포넌트는 가이드 기준.
+- UI 수정·추가 시 **반드시** `lib/config/theme.dart`의 `AppTheme` / `AppColors` / `AppSpacing` / `AppRadius`만 사용한다. 하드코딩 색상/폰트 금지.
+
+## 색상
+
+| 용도 | 사용처 | 변수 |
+|------|--------|------|
+| 메인/기도 | 버튼, 선택 탭, 링크 | `AppTheme.primary` |
+| 감사 | 감사 버튼·카드·강조 | `AppTheme.gamsa` |
+| 배경 | Scaffold | `AppTheme.background` |
+| 카드/입력 | 카드, 필드 배경 | `AppTheme.surface` |
+| 본문 | 제목·본문 | `AppTheme.textPrimary` |
+| 부가 | 부제목·날짜·힌트 | `AppTheme.textSecondary`, `AppTheme.textLight` |
+| 구분선 | Divider, 테두리 | `AppTheme.border` |
+| 성공/완료 | 응답됨, 완료 뱃지 | `AppTheme.success` |
+| 위험/삭제 | 에러, 삭제 버튼 | `AppTheme.error` |
+
+모듈 전용: `AppTheme.gamsaLight`, `gamsaBorder`, `primaryLight`, `seonggadae`(찬양대) 등은 해당 기능에서만 사용.
+
+## 타이포그래피
+
+- **앱바 제목**: 18, w700, `textPrimary`
+- **섹션 제목**: `AppTheme.sectionTitle` (16, w700)
+- **카드 제목**: `AppTheme.cardTitle` (15, w700)
+- **부제목/본문**: `AppTheme.cardSubtitle` (13, w400) 또는 14 Regular
+- **뱃지/캡션**: `AppTheme.badgeText` (11, w700) 또는 12 w600
+- 폰트 패밀리: Pretendard (theme에 설정됨). 추가 폰트는 theme에서만 정의.
+
+## 여백·라운드
+
+- **화면 패딩**: 16 (기본), 좌우 `EdgeInsets.symmetric(horizontal: 16)`
+- **카드 간격**: 세로 12 (`SizedBox(height: 12)`)
+- **카드 라운드**: 16~18 — `BorderRadius.circular(16)` 또는 `AppTheme.cardDecoration`(18)
+- **버튼·입력**: 12 — `BorderRadius.circular(12)`
+- **칩/태그**: 50 (pill) — `BorderRadius.circular(50)`
+
+## 카드·그림자
+
+- 일반 카드: `AppTheme.cardDecoration` (surface, 18px, 은은한 그림자)
+- 작은 카드: `AppTheme.cardDecorationSmall` (14px)
+- 강조 카드(예: 오늘의 말씀): `AppTheme.highlightCardDecoration` (primaryLight 배경)
+- 감사 카드: `AppTheme.gamsaCardDecoration` / `gamsaGradientDecoration`
+
+새 데코가 필요하면 `theme.dart`에 추가하고 여기 문서에 용도 기입.
