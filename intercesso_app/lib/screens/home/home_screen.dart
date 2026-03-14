@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/prayer_provider.dart';
 import '../../providers/gratitude_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../config/theme.dart';
+import '../../services/daily_verse_service.dart';
 import '../main/main_tab_screen.dart';
 import '../gratitude/create_gratitude_screen.dart';
 import 'bible_verses_data.dart';
@@ -33,7 +35,23 @@ class _HomeScreenState extends State<HomeScreen>
 
   Future<void> _loadAll() async {
     if (!mounted) return;
-    await Future.wait([_loadPrayers(), _loadGratitude()]);
+    await Future.wait([_loadTodayVerse(), _loadPrayers(), _loadGratitude()]);
+  }
+
+  Future<void> _loadTodayVerse() async {
+    if (!mounted) return;
+    try {
+      final v = await DailyVerseService().getTodayVerse();
+      if (!mounted) return;
+      setState(() {
+        // 서버 데이터가 비어있거나 실패하면 기존 로컬 fallback 유지
+        if ((v['text'] ?? '').toString().isNotEmpty) {
+          _todayVerse = v;
+        }
+      });
+    } catch (e) {
+      debugPrint('[HomeScreen] 오늘의 말씀 로드 오류: $e');
+    }
   }
 
   Future<void> _loadPrayers() async {
@@ -134,7 +152,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
             ),
 
-            // ── 오늘의 말씀 (상단 배치)
+            // ── 오늘의 말씀 (말씀+출처만, "오늘의 말씀" 글씨 없음)
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
@@ -305,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── 오늘의 말씀 (디자인 가이드 카드)
+  // ── 오늘의 말씀 카드 (제목 → 출처 오른쪽 정렬 → 성경 구절)
   Widget _buildTodayVerse() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -323,35 +341,39 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // 오늘의 말씀 + 출처 같은 줄 (왼쪽: 제목, 오른쪽: 출처)
           Row(
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryLight,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text('📖', style: TextStyle(fontSize: 12)),
-                    SizedBox(width: 4),
-                    Text(
-                      '오늘의 말씀',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w700,
-                        color: AppTheme.primary,
-                      ),
+              const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('📖', style: TextStyle(fontSize: 14)),
+                  SizedBox(width: 4),
+                  Text(
+                    '오늘의 말씀',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.primary,
                     ),
-                  ],
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Text(
+                _todayVerse['reference'] ?? '',
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppTheme.primary,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
+          // 성경 구절 (다른 글꼴 느낌, 폰트 크게)
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
@@ -361,24 +383,12 @@ class _HomeScreenState extends State<HomeScreen>
             ),
             child: Text(
               '"${_todayVerse['text'] ?? ''}"',
-              style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
+              style: GoogleFonts.notoSerifKr(
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
                 color: AppTheme.textPrimary,
                 height: 1.7,
-                letterSpacing: -0.2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(
-              _todayVerse['reference'] ?? '',
-              style: const TextStyle(
-                fontSize: 13,
-                color: AppTheme.primary,
-                fontWeight: FontWeight.w600,
+                letterSpacing: 0.2,
               ),
             ),
           ),
@@ -446,9 +456,9 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  // ── 기도 피드 (SliverList)
+  // ── 기도 피드 (SliverList) — homePrayers 비어 있으면 '전체 공개' 탭 데이터 사용
   Widget _buildPrayerFeedSliver(PrayerProvider provider) {
-    final prayers = provider.homePrayers;
+    final prayers = provider.homePrayersForDisplay;
     final isLoading = provider.isHomeLoading;
 
     if (isLoading && prayers.isEmpty) {
@@ -713,8 +723,6 @@ class _PrayerFeedCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 prayer.content!,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   fontSize: 13,
                   color: AppTheme.textSecondary,

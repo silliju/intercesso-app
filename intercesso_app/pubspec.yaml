@@ -26,6 +26,7 @@ dependencies:
 
   # UI 컴포넌트
   cupertino_icons: ^1.0.6
+  google_fonts: ^6.2.1
   flutter_svg: ^2.0.10+1
   cached_network_image: ^3.3.1
   shimmer: ^3.0.0

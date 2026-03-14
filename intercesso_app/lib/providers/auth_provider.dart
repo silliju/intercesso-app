@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/auth_service.dart';
@@ -127,8 +128,9 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  /// FCM 토큰 등록 (내부 헬퍼)
+  /// FCM 토큰 등록 (내부 헬퍼) — 웹에서는 미지원으로 스킵
   Future<void> _registerFcmToken() async {
+    if (kIsWeb) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.tokenKey);
@@ -140,8 +142,9 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  /// FCM 토큰 삭제 (내부 헬퍼)
+  /// FCM 토큰 삭제 (내부 헬퍼) — 웹에서는 스킵
   Future<void> _deleteFcmToken() async {
+    if (kIsWeb) return;
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString(AppConstants.tokenKey);

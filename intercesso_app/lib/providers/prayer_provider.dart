@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/models.dart';
 import '../services/prayer_service.dart';
@@ -48,6 +49,11 @@ class PrayerProvider extends ChangeNotifier {
   String? get error => _error;
 
   List<PrayerModel> get homePrayers => _homePrayers;
+  /// 홈 피드용: 홈 전용 리스트가 비어 있으면 '전체 공개' 탭 데이터 사용 (기도 목록과 동일 소스)
+  List<PrayerModel> get homePrayersForDisplay {
+    if (_homePrayers.isNotEmpty) return _homePrayers;
+    return _tabStates[null]?.prayers ?? [];
+  }
   bool get isHomeLoading => _isHomeLoading;
 
   // 하위 호환성 유지
@@ -129,11 +135,14 @@ class PrayerProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // 공개 기도 먼저 시도
+      // 공개 기도 로드 (15초 타임아웃으로 무한 로딩 방지)
       final response = await _prayerService.getPrayers(
         page: 1,
         limit: 10,
         scope: null,
+      ).timeout(
+        const Duration(seconds: 15),
+        onTimeout: () => throw TimeoutException('홈 기도 목록 로드 지연'),
       );
       final List<dynamic> data = response['data'] ?? [];
       _homePrayers = data.map((p) => PrayerModel.fromJson(p)).toList();
@@ -144,6 +153,9 @@ class PrayerProvider extends ChangeNotifier {
           page: 1,
           limit: 10,
           scope: 'mine',
+        ).timeout(
+          const Duration(seconds: 10),
+          onTimeout: () => throw TimeoutException('내 기도 목록 로드 지연'),
         );
         final List<dynamic> myData = myResponse['data'] ?? [];
         _homePrayers = myData.map((p) => PrayerModel.fromJson(p)).toList();
@@ -152,6 +164,10 @@ class PrayerProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isHomeLoading = false;
+      // 홈 전용 리스트가 비어 있으면 '전체 공개' 탭도 로드해 두어 homePrayersForDisplay에서 사용
+      if (_homePrayers.isEmpty) {
+        await loadPrayers(refresh: true, scope: null);
+      }
       notifyListeners();
     }
   }
