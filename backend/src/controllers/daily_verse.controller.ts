@@ -9,29 +9,39 @@ type DailyVerse = {
   reference: string;
 };
 
-function toBaseDateString(now = new Date()): string {
-  const m = String(now.getMonth() + 1).padStart(2, '0');
-  const d = String(now.getDate()).padStart(2, '0');
-  // 기준 윤년(2000)로 고정 저장/조회
-  return `2000-${m}-${d}`;
+/** 한국(Asia/Seoul) 기준 오늘 날짜 YYYY-MM-DD */
+function getTodayDateString(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Seoul' });
 }
 
 export const getTodayDailyVerse = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const verseDate = toBaseDateString();
+    const today = getTodayDateString(); // 예: 2026-03-14
+    const verseDateFallback = `2000-${today.slice(5)}`;   // 2000-03-14
 
-    const { data, error } = await supabaseAdmin
+    const { data: dataCurrent, error: errCurrent } = await supabaseAdmin
       .from('daily_verse')
       .select('verse_date, text, reference')
-      .eq('verse_date', verseDate)
+      .eq('verse_date', today)
       .single();
 
-    if (error || !data) {
-      sendError(res, '오늘의 말씀 조회 실패', 404, 'DAILY_VERSE_NOT_FOUND', error?.message);
+    if (!errCurrent && dataCurrent) {
+      sendSuccess<DailyVerse>(res, dataCurrent as DailyVerse, '오늘의 말씀 조회 성공');
       return;
     }
 
-    sendSuccess<DailyVerse>(res, data as DailyVerse, '오늘의 말씀 조회 성공');
+    const { data: dataFallback, error: errFallback } = await supabaseAdmin
+      .from('daily_verse')
+      .select('verse_date, text, reference')
+      .eq('verse_date', verseDateFallback)
+      .single();
+
+    if (!errFallback && dataFallback) {
+      sendSuccess<DailyVerse>(res, dataFallback as DailyVerse, '오늘의 말씀 조회 성공');
+      return;
+    }
+
+    sendError(res, '오늘의 말씀 조회 실패', 404, 'DAILY_VERSE_NOT_FOUND', errCurrent?.message ?? errFallback?.message);
   } catch {
     sendError(res, '서버 오류', 500, 'SERVER_ERROR');
   }
