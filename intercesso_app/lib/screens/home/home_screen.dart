@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/prayer_provider.dart';
 import '../../providers/gratitude_provider.dart';
@@ -10,6 +11,7 @@ import '../../services/daily_verse_service.dart';
 import '../main/main_tab_screen.dart';
 import '../gratitude/create_gratitude_screen.dart';
 import 'bible_verses_data.dart';
+import '../prayer/prayer_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,8 +24,8 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   bool _showPrayerFeed = true;
   late Map<String, String> _todayVerse;
-  /// 첫 진입 시 로드 완료 후 본문 표시. 페이지 들어오자마자 데이터가 나오도록.
-  bool _initialLoadDone = false;
+  /// true면 본문 표시. (false일 때는 전체 로딩 화면만 보임 — 현재는 진입 시 바로 본문 표시 후 백그라운드 로드)
+  bool _initialLoadDone = true;
 
   @override
   bool get wantKeepAlive => false;
@@ -35,12 +37,18 @@ class _HomeScreenState extends State<HomeScreen>
     WidgetsBinding.instance.addPostFrameCallback((_) => _runInitialLoad());
   }
 
-  /// 페이지 진입 시 첫 로드를 끝까지 기다린 뒤 화면 표시. 기도 피드가 바로 나오도록.
-  Future<void> _runInitialLoad() async {
+  /// 페이지 진입 시 본문은 이미 보이므로, 백그라운드에서 말씀/기도/감사만 로드.
+  void _runInitialLoad() {
     if (!mounted) return;
-    await _loadAll();
+    _loadAllInBackground();
+  }
+
+  /// 백그라운드에서 말씀/기도/감사 로드 (기다리지 않음)
+  void _loadAllInBackground() {
     if (!mounted) return;
-    setState(() => _initialLoadDone = true);
+    _loadTodayVerse();
+    _loadPrayers();
+    _loadGratitude();
   }
 
   /// 당겨서 새로고침: 세 로드 모두 끝날 때까지 대기.
@@ -706,7 +714,41 @@ class _PrayerFeedCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/prayer/${prayer.id}'),
+      onTap: () {
+        showModalBottomSheet<void>(
+          context: context,
+          isScrollControlled: true,
+          backgroundColor: Colors.transparent,
+          builder: (ctx) => DraggableScrollableSheet(
+            initialChildSize: 0.92,
+            minChildSize: 0.5,
+            maxChildSize: 1,
+            builder: (_, scrollController) => Container(
+              decoration: const BoxDecoration(
+                color: AppTheme.background,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                children: [
+                  const SizedBox(height: 12),
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppTheme.border,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: PrayerDetailScreen(prayerId: prayer.id),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
@@ -735,9 +777,34 @@ class _PrayerFeedCard extends StatelessWidget {
                     color: AppTheme.primaryLight,
                   ),
                   child: ClipOval(
-                    child: prayer.user?.profileImageUrl != null
-                        ? Image.network(prayer.user!.profileImageUrl!,
-                            fit: BoxFit.cover)
+                    child: prayer.user?.profileImageUrl != null &&
+                            prayer.user!.profileImageUrl!.isNotEmpty
+                        ? CachedNetworkImage(
+                            imageUrl: prayer.user!.profileImageUrl!,
+                            fit: BoxFit.cover,
+                            width: 36,
+                            height: 36,
+                            placeholder: (_, __) => Center(
+                              child: Text(
+                                (prayer.user?.nickname ?? '?')[0],
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (_, __, ___) => Center(
+                              child: Text(
+                                (prayer.user?.nickname ?? '?')[0],
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppTheme.primary,
+                                ),
+                              ),
+                            ),
+                          )
                         : Center(
                             child: Text(
                               (prayer.user?.nickname ?? '?')[0],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/api_service.dart';
 import '../../services/prayer_service.dart';
@@ -871,12 +872,26 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                                   CircleAvatar(
                                     radius: 22,
                                     backgroundColor: AppTheme.primaryLight,
-                                    backgroundImage: _prayer!.user?.profileImageUrl != null
-                                        ? NetworkImage(_prayer!.user!.profileImageUrl!) : null,
-                                    child: _prayer!.user?.profileImageUrl == null
-                                        ? Text(_prayer!.user?.nickname[0] ?? '?',
-                                            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold))
-                                        : null,
+                                    child: _prayer!.user?.profileImageUrl != null &&
+                                            _prayer!.user!.profileImageUrl!.isNotEmpty
+                                        ? ClipOval(
+                                            child: CachedNetworkImage(
+                                              imageUrl: _prayer!.user!.profileImageUrl!,
+                                              fit: BoxFit.cover,
+                                              width: 44,
+                                              height: 44,
+                                              placeholder: (_, __) => Center(
+                                                child: Text(_prayer!.user?.nickname[0] ?? '?',
+                                                    style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
+                                              ),
+                                              errorWidget: (_, __, ___) => Center(
+                                                child: Text(_prayer!.user?.nickname[0] ?? '?',
+                                                    style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold, fontSize: 16)),
+                                              ),
+                                            ),
+                                          )
+                                        : Text(_prayer!.user?.nickname[0] ?? '?',
+                                            style: const TextStyle(color: AppTheme.primary, fontWeight: FontWeight.bold)),
                                   ),
                                   const SizedBox(width: 12),
                                   Expanded(
@@ -1035,11 +1050,29 @@ class _PrayerDetailScreenState extends State<PrayerDetailScreen> {
                                     CircleAvatar(
                                       radius: 16,
                                       backgroundColor: AppTheme.primaryLight,
-                                      child: Text(
-                                        comment.user?.nickname[0] ?? '?',
-                                        style: const TextStyle(
-                                            color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
-                                      ),
+                                      child: comment.user?.profileImageUrl != null &&
+                                              comment.user!.profileImageUrl!.isNotEmpty
+                                          ? ClipOval(
+                                              child: CachedNetworkImage(
+                                                imageUrl: comment.user!.profileImageUrl!,
+                                                fit: BoxFit.cover,
+                                                width: 32,
+                                                height: 32,
+                                                placeholder: (_, __) => Text(
+                                                  comment.user?.nickname[0] ?? '?',
+                                                  style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                                                ),
+                                                errorWidget: (_, __, ___) => Text(
+                                                  comment.user?.nickname[0] ?? '?',
+                                                  style: const TextStyle(color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                                                ),
+                                              ),
+                                            )
+                                          : Text(
+                                              comment.user?.nickname[0] ?? '?',
+                                              style: const TextStyle(
+                                                  color: AppTheme.primary, fontSize: 12, fontWeight: FontWeight.bold),
+                                            ),
                                     ),
                                     const SizedBox(width: 10),
                                     Expanded(

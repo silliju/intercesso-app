@@ -1,8 +1,9 @@
-import 'dart:io';
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
 import '../../config/theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -22,7 +23,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _churchController = TextEditingController();
   final _bioController = TextEditingController();
   bool _isSubmitting = false;
-  File? _selectedImage;
+  /// 선택한 이미지 바이트 (웹/모바일 공통, Image.memory 사용)
+  Uint8List? _selectedImageBytes;
   final ImagePicker _picker = ImagePicker();
 
   @override
@@ -42,6 +44,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     _churchController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  Widget _buildAvatarPlaceholder(dynamic user) {
+    final nickname = user?.nickname?.toString() ?? '';
+    return Container(
+      width: 104,
+      height: 104,
+      color: AppTheme.primaryLight,
+      alignment: Alignment.center,
+      child: Text(
+        nickname.isNotEmpty ? nickname[0] : '?',
+        style: const TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.bold,
+          color: AppTheme.primary,
+        ),
+      ),
+    );
   }
 
   Future<void> _pickImage() async {
@@ -66,7 +86,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  if (img != null) setState(() => _selectedImage = File(img.path));
+                  if (img != null) {
+                    final bytes = await img.readAsBytes();
+                    if (mounted) setState(() => _selectedImageBytes = bytes);
+                  }
                 },
               ),
               ListTile(
@@ -80,16 +103,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     maxWidth: 512,
                     maxHeight: 512,
                   );
-                  if (img != null) setState(() => _selectedImage = File(img.path));
+                  if (img != null) {
+                    final bytes = await img.readAsBytes();
+                    if (mounted) setState(() => _selectedImageBytes = bytes);
+                  }
                 },
               ),
-              if (_selectedImage != null)
+              if (_selectedImageBytes != null)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: AppTheme.error),
                   title: const Text('사진 제거', style: TextStyle(color: AppTheme.error)),
                   onTap: () {
                     Navigator.pop(ctx);
-                    setState(() => _selectedImage = null);
+                    setState(() => _selectedImageBytes = null);
                   },
                 ),
             ],
@@ -106,9 +132,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       String? profileImageUrl;
 
       // 이미지 선택된 경우 base64로 인코딩해서 전송
-      if (_selectedImage != null) {
-        final bytes = await _selectedImage!.readAsBytes();
-        final base64Image = base64Encode(bytes);
+      if (_selectedImageBytes != null) {
+        final base64Image = base64Encode(_selectedImageBytes!);
         profileImageUrl = 'data:image/jpeg;base64,$base64Image';
       }
 
@@ -156,27 +181,33 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // 프로필 사진 선택
+              // 프로필 사진 선택 (선택한 파일 즉시 미리보기, 저장 후 URL도 정상 표시)
               Center(
                 child: Stack(
                   children: [
-                    CircleAvatar(
-                      radius: 52,
-                      backgroundColor: AppTheme.primaryLight,
-                      backgroundImage: _selectedImage != null
-                          ? FileImage(_selectedImage!)
-                          : (user?.profileImageUrl != null
-                              ? NetworkImage(user!.profileImageUrl!) as ImageProvider
-                              : null),
-                      child: (_selectedImage == null && user?.profileImageUrl == null)
-                          ? Text(
-                              user?.nickname.isNotEmpty == true ? user!.nickname[0] : '?',
-                              style: const TextStyle(
-                                  fontSize: 32,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppTheme.primary),
-                            )
-                          : null,
+                    SizedBox(
+                      width: 104,
+                      height: 104,
+                      child: ClipOval(
+                        child: _selectedImageBytes != null
+                            ? Image.memory(
+                                _selectedImageBytes!,
+                                fit: BoxFit.cover,
+                                width: 104,
+                                height: 104,
+                                errorBuilder: (_, __, ___) => _buildAvatarPlaceholder(user),
+                              )
+                            : (user?.profileImageUrl != null && user!.profileImageUrl!.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: user.profileImageUrl!,
+                                    fit: BoxFit.cover,
+                                    width: 104,
+                                    height: 104,
+                                    placeholder: (_, __) => _buildAvatarPlaceholder(user),
+                                    errorWidget: (_, __, ___) => _buildAvatarPlaceholder(user),
+                                  )
+                                : _buildAvatarPlaceholder(user)),
+                      ),
                     ),
                     Positioned(
                       bottom: 0,
