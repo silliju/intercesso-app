@@ -24,16 +24,57 @@ export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
   }
 };
 
+/** Supabase Storage 버킷 이름. 대시보드에서 public 버킷 'avatars' 생성 필요 */
+const AVATARS_BUCKET = 'avatars';
+const DATA_URL_PREFIX = 'data:image/';
+
+/** data:image/xxx;base64,... 형태면 Buffer로 디코딩 */
+function decodeDataUrl(dataUrl: string): { buffer: Buffer; mime: string } | null {
+  if (typeof dataUrl !== 'string' || !dataUrl.startsWith(DATA_URL_PREFIX)) return null;
+  const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i);
+  if (!match) return null;
+  try {
+    const buffer = Buffer.from(match[2], 'base64');
+    return { buffer, mime: match[1] };
+  } catch {
+    return null;
+  }
+}
+
+/** 프로필 이미지를 Storage에 업로드하고 공개 URL 반환. 실패 시 null */
+async function uploadProfileImage(userId: string, dataUrl: string): Promise<string | null> {
+  const decoded = decodeDataUrl(dataUrl);
+  if (!decoded) return null;
+  const ext = decoded.mime === 'image/png' ? 'png' : 'jpg';
+  const path = `${userId}/${Date.now()}.${ext}`;
+  const { error } = await supabaseAdmin.storage
+    .from(AVATARS_BUCKET)
+    .upload(path, decoded.buffer, {
+      contentType: decoded.mime,
+      upsert: false,
+    });
+  if (error) return null;
+  const { data } = supabaseAdmin.storage.from(AVATARS_BUCKET).getPublicUrl(path);
+  return data?.publicUrl ?? null;
+}
+
 export const updateMe = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const userId = req.user!.userId;
-    const { nickname, church_id, church_name, denomination, bio, profile_image_url } = req.body;
+    let { nickname, church_id, church_name, denomination, bio, profile_image_url } = req.body;
+
+    // data URL이면 Storage에 업로드 후 공개 URL로 교체
+    if (profile_image_url && typeof profile_image_url === 'string' && profile_image_url.startsWith(DATA_URL_PREFIX)) {
+      const publicUrl = await uploadProfileImage(userId, profile_image_url);
+      if (publicUrl) profile_image_url = publicUrl;
+      else profile_image_url = undefined; // 업로드 실패 시 기존 이미지 유지
+    }
 
     const updatePayload: Record<string, unknown> = {
       nickname,
       denomination,
       bio,
-      profile_image_url,
+      ...(profile_image_url !== undefined && { profile_image_url }),
       updated_at: new Date().toISOString(),
     };
 

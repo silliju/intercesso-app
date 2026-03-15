@@ -128,6 +128,7 @@ class PrayerProvider extends ChangeNotifier {
 
   // ─────────────────────────────────────────────────────────────
   // 홈 전용 공개 기도 로드 (최대 5개). 캐시 있으면 즉시 표시 후 백그라운드 갱신.
+  // 첫 로드 실패 시 자동으로 1회 재시도 (콜드 스타트/일시 지연 대응).
   // ─────────────────────────────────────────────────────────────
   Future<void> loadHomePrayers() async {
     if (_isHomeLoading) return;
@@ -138,36 +139,59 @@ class PrayerProvider extends ChangeNotifier {
       notifyListeners();
     }
 
+    bool didFail = false;
     try {
-      final response = await _prayerService.getPrayers(
-        page: 1,
-        limit: 5,
-        scope: null,
-      ).timeout(
-        const Duration(seconds: 12),
-        onTimeout: () => throw TimeoutException('홈 기도 목록 로드 지연'),
-      );
-      final List<dynamic> data = response['data'] ?? [];
-      _homePrayers = data.map((p) => PrayerModel.fromJson(p)).toList();
-
-      if (_homePrayers.isEmpty) {
-        final myResponse = await _prayerService.getPrayers(
-          page: 1,
-          limit: 5,
-          scope: 'mine',
-        ).timeout(
-          const Duration(seconds: 8),
-          onTimeout: () => throw TimeoutException('내 기도 목록 로드 지연'),
-        );
-        final List<dynamic> myData = myResponse['data'] ?? [];
-        _homePrayers = myData.map((p) => PrayerModel.fromJson(p)).toList();
-      }
+      await _fetchHomePrayersOnce();
     } catch (e) {
+      didFail = true;
       _error = e.toString();
       if (!hasCache) _homePrayers = [];
     } finally {
       _isHomeLoading = false;
       notifyListeners();
+    }
+
+    // 캐시 없을 때 첫 시도 실패면 자동 1회 재시도
+    if (!hasCache && didFail) {
+      await Future<void>.delayed(const Duration(milliseconds: 600));
+      _error = null;
+      _isHomeLoading = true;
+      notifyListeners();
+      try {
+        await _fetchHomePrayersOnce();
+      } catch (e) {
+        _error = e.toString();
+        _homePrayers = [];
+      } finally {
+        _isHomeLoading = false;
+        notifyListeners();
+      }
+    }
+  }
+
+  Future<void> _fetchHomePrayersOnce() async {
+    final response = await _prayerService.getPrayers(
+      page: 1,
+      limit: 5,
+      scope: null,
+    ).timeout(
+      const Duration(seconds: 12),
+      onTimeout: () => throw TimeoutException('홈 기도 목록 로드 지연'),
+    );
+    final List<dynamic> data = response['data'] ?? [];
+    _homePrayers = data.map((p) => PrayerModel.fromJson(p)).toList();
+
+    if (_homePrayers.isEmpty) {
+      final myResponse = await _prayerService.getPrayers(
+        page: 1,
+        limit: 5,
+        scope: 'mine',
+      ).timeout(
+        const Duration(seconds: 8),
+        onTimeout: () => throw TimeoutException('내 기도 목록 로드 지연'),
+      );
+      final List<dynamic> myData = myResponse['data'] ?? [];
+      _homePrayers = myData.map((p) => PrayerModel.fromJson(p)).toList();
     }
   }
 

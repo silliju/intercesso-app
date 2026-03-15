@@ -22,6 +22,8 @@ class _HomeScreenState extends State<HomeScreen>
     with AutomaticKeepAliveClientMixin {
   bool _showPrayerFeed = true;
   late Map<String, String> _todayVerse;
+  /// 첫 진입 시 로드 완료 후 본문 표시. 페이지 들어오자마자 데이터가 나오도록.
+  bool _initialLoadDone = false;
 
   @override
   bool get wantKeepAlive => false;
@@ -30,15 +32,15 @@ class _HomeScreenState extends State<HomeScreen>
   void initState() {
     super.initState();
     _todayVerse = BibleVersesData.getTodayVerse();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadAllInBackground());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _runInitialLoad());
   }
 
-  /// 첫 진입: API 기다리지 않고 화면 먼저 그림. 데이터는 백그라운드에서 들어오면 갱신.
-  void _loadAllInBackground() {
+  /// 페이지 진입 시 첫 로드를 끝까지 기다린 뒤 화면 표시. 기도 피드가 바로 나오도록.
+  Future<void> _runInitialLoad() async {
     if (!mounted) return;
-    _loadTodayVerse();
-    _loadPrayers();
-    _loadGratitude();
+    await _loadAll();
+    if (!mounted) return;
+    setState(() => _initialLoadDone = true);
   }
 
   /// 당겨서 새로고침: 세 로드 모두 끝날 때까지 대기.
@@ -104,6 +106,25 @@ class _HomeScreenState extends State<HomeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    if (!_initialLoadDone) {
+      return Scaffold(
+        backgroundColor: AppTheme.background,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const CircularProgressIndicator(color: AppTheme.primary),
+              const SizedBox(height: 16),
+              Text(
+                '불러오는 중…',
+                style: TextStyle(color: AppTheme.textSecondary, fontSize: 14),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     final gratProvider = context.watch<GratitudeProvider>();
     final prayerProvider = context.watch<PrayerProvider>();
 
@@ -785,7 +806,7 @@ class _PrayerFeedCard extends StatelessWidget {
             // 하단 액션
             Row(
               children: [
-                _actionChip('🙏', '${prayer.prayerCount ?? 0}명', AppTheme.primaryLight, AppTheme.primary),
+                _actionChip('🙏', '${prayer.prayerCount ?? 0}명', AppTheme.background, AppTheme.textSecondary),
                 const SizedBox(width: 8),
                 _actionChip('💬', '${prayer.commentCount ?? 0}', AppTheme.background, AppTheme.textSecondary),
                 const Spacer(),
