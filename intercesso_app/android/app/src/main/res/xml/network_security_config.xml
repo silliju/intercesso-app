@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 프로필 사진 등 외부 이미지( Supabase Storage ) 로드 시 APK에서 차단되지 않도록 허용 -->
+<network-security-config>
+    <!-- 기본: HTTPS 허용, 필요 시 아래 domain-config에서 HTTP 허용 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+    <!-- Railway API / Supabase: HTTPS 기본, 개발 시 HTTP도 허용하려면 cleartextTrafficPermitted="true" -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">intercesso-app-production.up.railway.app</domain>
+        <domain includeSubdomains="true">supabase.co</domain>
+    </domain-config>
+</network-security-config>

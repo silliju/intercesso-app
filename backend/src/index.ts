@@ -332,11 +332,29 @@ function handleAddressSearchPage(req: express.Request, res: express.Response) {
               buildingName: data.buildingName || '',
               zonecode: data.zonecode || ''
             };
-            if (window.Address && typeof window.Address.postMessage === 'function') {
-              window.Address.postMessage(JSON.stringify(payload));
+            var payloadStr = JSON.stringify(payload);
+            function sendToApp() {
+              if (window.Address && typeof window.Address.postMessage === 'function') {
+                window.Address.postMessage(payloadStr);
+                return;
+              }
+              if (window.flutter_inappwebview && typeof window.flutter_inappwebview.callHandler === 'function') {
+                window.flutter_inappwebview.callHandler('addressResult', payloadStr);
+                return;
+              }
             }
+            sendToApp();
+            var attempts = 0;
+            var t = setInterval(function() {
+              attempts++;
+              if (attempts > 15) { clearInterval(t); return; }
+              if (window.Address && typeof window.Address.postMessage === 'function') {
+                clearInterval(t);
+                window.Address.postMessage(payloadStr);
+              }
+            }, 100);
             if (window.opener) {
-              window.opener.postMessage(JSON.stringify(payload), '*');
+              window.opener.postMessage(payloadStr, '*');
               setTimeout(function() { window.close(); }, 150);
             }
           }
